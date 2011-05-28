@@ -1,43 +1,12 @@
-MODULE MyX11Api; (** AUTHOR ""; PURPOSE ""; *)
+MODULE MyX11Api; (** AUTHOR "fnecati"; PURPOSE "some missing structures and functions in Unix.X11.Mod"; *)
 
 IMPORT
 		X11, Unix, Modules, Trace,  SYSTEM;	
 		
 TYPE 
-	   Address= SYSTEM.ADDRESS;
+	   ADDRESS= SYSTEM.ADDRESS;
 	   VisualInfoPtr*  = POINTER TO X11.VisualInfo; 
 	   DisplayPtr* = X11.DisplayPtr;
-
-(*
-(* ------------------------------------------------------------------------
- Framebuffer configuration descriptor, i.e. buffers and their sizes
- Also a platform specific ID used to map back to the actual backend APIs
- This is used to pass framebuffer parameters from the platform independent
- code to the platform specific code, and also to enumerate and select
- available framebuffer configurations
------------------------------------------------------------------------- *)
-TYPE 
-	TGLXFBConfig* = RECORD
-		redBits* : LONGINT;
-		greenBits* : LONGINT;
-		blueBits* : LONGINT;
-		alphaBits* : LONGINT;
-		depthBits* : LONGINT;
-		stencilBits* : LONGINT;
-		accumRedBits* : LONGINT;
-		accumGreenBits* : LONGINT;
-		accumBlueBits* : LONGINT;
-		accumAlphaBits* : LONGINT;
-		auxBuffers* : LONGINT;
-		stereo* : LONGINT;
-		samples* : LONGINT;
-    		platformID*: LONGINT; (* Pointer length integer, intptr_t *)
-	END;
-
-	PGLXFBConfig* = POINTER TO ARRAY OF TGLXFBConfig;
-*)
-
-
 
 (* Cursor control & motion *)
 (* X11/keysymdef.h *)
@@ -54,9 +23,42 @@ CONST
  XK_Page_Down* = 0FF56H;
  XK_End* = 	0FF57H;  (* EOL *)
  XK_Begin* = 	0FF58H;  (* BOL *)
+
+
+(* EVENT DEFINITIONS
+    similar to Unix.X11.Mod but changed types to SET for easy usage 
+*)
  
-(* Event types X11/X.h *)
-	ConfigureNotify* = 22;
+(*  Input Event Masks. Used as event-mask window attribute and as arguments
+   to Grab requests.  Not to be confused with event names. *)
+
+CONST
+    NoEventMask* =	{ };  KeyPressMask* = { 0 }; KeyReleaseMask* = { 1 };
+    ButtonPressMask* = { 2 };  ButtonReleaseMask* = { 3 };  EnterWindowMask* = { 4 };  
+    LeaveWindowMask* = { 5 };  PointerMotionMask* = { 6 };  PointerMotionHintMask* = { 7 };  
+    Button1MotionMask* = { 8 }; Button2MotionMask* = { 9 }; Button3MotionMask* = { 10 }; 
+    Button4MotionMask* = { 11 };  Button5MotionMask* = { 12 };  ButtonMotionMask* = { 13 }; 
+    KeymapStateMask* = { 14 }; ExposureMask* = { 15 }; VisibilityChangeMask* = { 16 }; 
+    StructureNotifyMask* = { 17 }; ResizeRedirectMask* = { 18 }; SubstructureNotifyMask* = { 19 }; 
+    SubstructureRedirectMask	* = { 20 }; FocusChangeMask	* = { 21 }; PropertyChangeMask* = { 22 }; 
+    ColormapChangeMask* = { 23 }; OwnerGrabButtonMask* = { 24 }; 
+
+(* Event names.  Used in "type" field in XEvent structures.  Not to be
+confused with event masks above.  They start from 2 because 0 and 1
+are reserved in the protocol for errors and replies. *)
+
+(* missing constants are added *)
+CONST
+    KeyPress* = 2;  KeyRelease* =3;  ButtonPress* = 4;  ButtonRelease* = 5;  MotionNotify* =6;
+    EnterNotify* = 7; LeaveNotify* =8;  FocusIn* = 9;  FocusOut* = 10;  KeymapNotify* = 11;
+    Expose* = 12;  GraphicsExpose* = 13;  NoExpose* = 14;  VisibilityNotify* = 15;
+    CreateNotify* = 16; DestroyNotify* = 17; UnmapNotify* = 18;  MapNotify* = 19;
+    MapRequest* = 20;  ReparentNotify* = 21; ConfigureNotify* = 22; ConfigureRequest* = 23;
+    GravityNotify* = 24; ResizeRequest* =	25; CirculateNotify* = 26; CirculateRequest* = 27;
+    PropertyNotify* = 28; SelectionClear* = 29; SelectionRequest* =30; SelectionNotify* = 31;
+    ColormapNotify* = 32;  ClientMessage* = 33;  MappingNotify* = 34;  GenericEvent* = 35;
+    LASTEvent* =		36;	 (* must be bigger than any event # *)
+     
 	
 	 (*  Window classes used by CreateWindow *)
 	   InputOutput* = 1;
@@ -90,8 +92,8 @@ TYPE
            backing_planes*: LONGINT;(* planes to be preserved if possible *)
             backing_pixel*: LONGINT;(* value to use in restoring planes *)
             save_under*: BOOLEAN;         (* should bits under be saved? (popups) *)
-            event_mask*:  LONGINT;         (* set of events that should be saved *)
-             do_not_propagate_mask*: LONGINT;(* set of events that should not propagate *)
+            event_mask*:  SET;         (* set of events that should be saved *)
+             do_not_propagate_mask*: SET;(* set of events that should not propagate *)
             override_redirect*: BOOLEAN;  (* boolean value for override_redirect *)
              colormap*: X11.Colormap;       (* color map to be associated with window *)
              cursor*: X11.Cursor ;           (* cursor to be displayed (or None) *)
@@ -114,9 +116,9 @@ XWindowAttributes* = RECORD
 	colormap*: X11.Colormap;			(* color map to be associated with window *)
 	map_installed*: BOOLEAN;		(* boolean, is color map currently installed*)
 	map_state*: LONGINT;		(* IsUnmapped, IsUnviewable, IsViewable *)
-	all_event_masks*: LONGINT;		(* set of events all people have interest in*)
-	your_event_mask*: LONGINT;		(* my event mask *)
-	do_not_propagate_mask*: LONGINT;	(* set of events that should not propagate *)
+	all_event_masks*: SET;		(* set of events all people have interest in*)
+	your_event_mask*: SET;		(* my event mask *)
+	do_not_propagate_mask*: SET;	(* set of events that should not propagate *)
 	override_redirect*: BOOLEAN;		(* boolean value for override-redirect *)
 	screen*: LONGINT; (*X11.Screen;*)			(* back pointer to correct screen *)
 END;
@@ -142,35 +144,33 @@ VAR
 	CloseDisplay- : PROCEDURE { C } (display:X11.DisplayPtr): LONGINT;
 	DestroyWindow-: PROCEDURE { C }(display:X11.DisplayPtr; win: X11.Window): LONGINT;
 	FreeColormap- : PROCEDURE { C } (display:X11.DisplayPtr;  colormap: X11.Colormap);
-	GetWindowAttributes- : PROCEDURE { C } (display:X11.DisplayPtr; win: X11.Window; attr: LONGINT): LONGINT;
+	GetWindowAttributes- : PROCEDURE { C } (display:X11.DisplayPtr; win: X11.Window; attr: ADDRESS): LONGINT;
 	InternAtom-: PROCEDURE {C} ( d: X11.DisplayPtr;  CONST name: ARRAY OF CHAR;  onlyifexists: X11.Bool ): X11.Atom;
 	MapWindow- : PROCEDURE { C } (display:X11.DisplayPtr; win: X11.Window);	
 	UnmapWindow- : PROCEDURE { C } (display:X11.DisplayPtr; win: X11.Window);	
 	Pending- : PROCEDURE { C } (display:X11.DisplayPtr): LONGINT;
 	RaiseWindow-: PROCEDURE { C }(display:X11.DisplayPtr; win: X11.Window);
 	StoreName- : PROCEDURE { C } (display:X11.DisplayPtr; win: X11.Window; CONST s: ARRAY OF CHAR): LONGINT;
-	CreateWindow- : PROCEDURE { C } (display: X11.DisplayPtr; parent: X11.Window;  x,  y: LONGINT;  width, height, border_width, depth, class: LONGINT; visual: X11.VisualPtr; valuemask: SET;  attributes: Address (*XSetWindowAttributes*) ): X11.Window;
+	CreateWindow- : PROCEDURE { C } (display: X11.DisplayPtr; parent: X11.Window;  x,  y: LONGINT;  width, height, border_width, depth, class: LONGINT; visual: X11.VisualPtr; valuemask: SET;  attributes: ADDRESS (*XSetWindowAttributes*) ): X11.Window;
 	LookupKeysym- : PROCEDURE { C } ( CONST event: X11.KeyEvent; index: LONGINT): X11.KeySym;
 
-(** *)
 PROCEDURE LoadX11Functions;
-	
 BEGIN {EXCLUSIVE}
 
 		xlib := Unix.Dlopen( Unix.libX11name, 2 );
 	
-		Unix.Dlsym( xlib, "XCloseDisplay", SYSTEM.VAL( Address, CloseDisplay));
-		Unix.Dlsym( xlib, "XCreateWindow", SYSTEM.VAL( Address, CreateWindow));
-		Unix.Dlsym( xlib, "XDestroyWindow", SYSTEM.VAL( Address, DestroyWindow));
-		Unix.Dlsym( xlib, "XFreeColormap", SYSTEM.VAL( Address, FreeColormap));
-		Unix.Dlsym( xlib, "XGetWindowAttributes", SYSTEM.VAL( Address, GetWindowAttributes));
-		Unix.Dlsym( xlib, "XInternAtom", SYSTEM.VAL( Address, InternAtom));
-		Unix.Dlsym( xlib, "XMapWindow", SYSTEM.VAL( Address, MapWindow));
-		Unix.Dlsym( xlib, "XUnmapWindow", SYSTEM.VAL( Address, UnmapWindow));	
-		Unix.Dlsym( xlib, "XPending", SYSTEM.VAL( Address, Pending));
-		Unix.Dlsym( xlib, "XRaiseWindow", SYSTEM.VAL( Address, RaiseWindow));
-		Unix.Dlsym( xlib, "XStoreName", SYSTEM.VAL( Address, StoreName));
-		Unix.Dlsym( xlib, "XLookupKeysym", SYSTEM.VAL( Address, LookupKeysym));
+		Unix.Dlsym( xlib, "XCloseDisplay", SYSTEM.VAL( ADDRESS, CloseDisplay));
+		Unix.Dlsym( xlib, "XCreateWindow", SYSTEM.VAL( ADDRESS, CreateWindow));
+		Unix.Dlsym( xlib, "XDestroyWindow", SYSTEM.VAL( ADDRESS, DestroyWindow));
+		Unix.Dlsym( xlib, "XFreeColormap", SYSTEM.VAL( ADDRESS, FreeColormap));
+		Unix.Dlsym( xlib, "XGetWindowAttributes", SYSTEM.VAL( ADDRESS, GetWindowAttributes));
+		Unix.Dlsym( xlib, "XInternAtom", SYSTEM.VAL( ADDRESS, InternAtom));
+		Unix.Dlsym( xlib, "XMapWindow", SYSTEM.VAL( ADDRESS, MapWindow));
+		Unix.Dlsym( xlib, "XUnmapWindow", SYSTEM.VAL( ADDRESS, UnmapWindow));	
+		Unix.Dlsym( xlib, "XPending", SYSTEM.VAL( ADDRESS, Pending));
+		Unix.Dlsym( xlib, "XRaiseWindow", SYSTEM.VAL( ADDRESS, RaiseWindow));
+		Unix.Dlsym( xlib, "XStoreName", SYSTEM.VAL( ADDRESS, StoreName));
+		Unix.Dlsym( xlib, "XLookupKeysym", SYSTEM.VAL( ADDRESS, LookupKeysym));
 		
 END LoadX11Functions;
 

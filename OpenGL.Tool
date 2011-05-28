@@ -15,6 +15,7 @@ Compile Examples:
 
 Compiler.Compile  
 GLinfo.Mod GLTest.Mod 
+MyXGear.Mod 
 MyWMGLWindow.Mod
 MyWMGLWindow2.Mod
 MyWMGLWindow3.Mod

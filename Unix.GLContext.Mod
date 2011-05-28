@@ -3,7 +3,7 @@ IMPORT
 	X11, GL:=OpenGL, GLC := OpenGLConst, Api:=MyX11Api, Raster,
 	Trace,  SYSTEM;
 
-CONST debug = TRUE;
+CONST debug = FALSE;
 
 TYPE
 GLWindowContext*=RECORD
@@ -17,7 +17,7 @@ END;
 TYPE Context* = OBJECT
 VAR
 	width*, height*: LONGINT; (* size of GL window *)
-	glWin* {UNTRACED}: GLWindowContext; 
+	glWin* : GLWindowContext; 
 	doublebuffered*: BOOLEAN; (* is context doublebuffered *)
 	visible*: BOOLEAN; (* is window hidden *) 	
  
@@ -93,7 +93,7 @@ END;
  	RETURN;
  END;
 
- masks := SYSTEM.VAL(LONGINT, (SYSTEM.VAL(SET,  X11.ExposureMask) + SYSTEM.VAL(SET,  X11.KeyPressMask) + SYSTEM.VAL(SET, X11.StructureNotifyMask)));
+ masks := SYSTEM.VAL(LONGINT, Api.ExposureMask + Api.StructureNotifyMask);
  X11.SelectInput(glWin.display, glWin.win, masks ); 
  
 IF visible THEN
@@ -103,11 +103,12 @@ IF visible THEN
 	(* Make sure that our window ends up on top of things *)
 	(* Api.RaiseWindow(glWin.display, glWin.win);*)
 
-(*  Trace.String(" Opened "); Trace.Ln; *)
+	IF debug THEN   Trace.String(" Opened "); Trace.Ln; END;
+	
 	(* Wait for map notification *)	
  	REPEAT  
  		X11.NextEvent( glWin.display, xev );
- 		(* Trace.String("NexEv.  type"); Trace.Int(xev.typ,4); Trace.Ln; *)
+ 		IF debug THEN Trace.String("Event type="); Trace.Int(xev.typ,4); Trace.Ln; END;
 	UNTIL (xev.typ = X11.MapNotify) & (xev.window =glWin. win);
 
 END;
@@ -134,18 +135,22 @@ END;
     RETURN;
   END;  
 
-(* Trace.String("glXCreateContext glctx= "); Trace.Int(glWin.glctx, 0); Trace.Ln;
-Trace.String("glXCreateContext glctx1= "); Trace.Int(glWin.glctx1, 0); Trace.Ln;
-  
+ IF debug THEN
+	Trace.String("glXCreateContext glctx= "); Trace.Int(glWin.glctx, 0); Trace.Ln;
+	Trace.String("glXCreateContext glctx1= "); Trace.Int(glWin.glctx1, 0); Trace.Ln;
+ END;  
+ 
  res := GL.glXMakeCurrent(glWin.display, glWin.win, glWin.glctx);
- Trace.String("glXMakeCurrent res= "); Trace.Int(res, 0); Trace.Ln; *)
+ IF debug THEN
+	Trace.String("glXMakeCurrent res= "); Trace.Int(res, 0); Trace.Ln;	
+ END;
  
  X11.Flush(glWin.display);
  GL.glXWaitX();
  
 X11.Unlock;
 
-(* Trace.String("GL.glXIsDirect(glWin.display, gglWin.lctx)= "); Trace.Boolean(GL.glXIsDirect(glWin.display, glWin.glctx)=1); Trace.Ln; *)
+IF debug THEN Trace.String("GL.glXIsDirect(glWin.display, gglWin.lctx)= "); Trace.Boolean(GL.glXIsDirect(glWin.display, glWin.glctx)=1); Trace.Ln; END;
  
  END Init;
  
@@ -353,4 +358,4 @@ GLContext.ShowDisp ~
 
 GLContext.CloseDisp ~ 
 
-SystemTools.Free GLContext   OpenGL MyX11Api OpenGLConst ~
+SystemTools.Free GLContext ~
