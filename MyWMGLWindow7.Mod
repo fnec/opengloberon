@@ -102,8 +102,8 @@ TYPE
 			t := GetTicks();
 			context.MakeCurrent();
 				Display;
-				context.RenderInto(img);
-				(*context.RenderIntoBuffered(img, buffer);*)
+				(*context.RenderInto(img);*)
+				context.RenderIntoBuffered(img, buffer);
 			context.DeActivate();
 			
 			IF framesCount > 1000 THEN
