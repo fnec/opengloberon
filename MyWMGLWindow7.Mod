@@ -15,7 +15,7 @@ TYPE
 	
 	GLWindow* =  OBJECT(WM.BufferWindow)
 	VAR
-		 timer: Kernel.MilliTimer; 
+		timer: Kernel.MilliTimer; 
 		alive,  animated: BOOLEAN;
 		context:   GLContext.Context;
 		width, height: LONGINT;
@@ -23,6 +23,7 @@ TYPE
  		quad: GL.TGLUQuadricObj;
 		drawMode: LONGINT;
 		font: WMGraphics.Font;
+		buffer: GLContext.Buffer;
 				
 		PROCEDURE &New(w, h: LONGINT);
 		BEGIN
@@ -35,6 +36,8 @@ TYPE
 			
 			canvas.SetColor(WMGraphics.Green);
 			font := canvas.GetFont();
+			
+			NEW(buffer, w * h * 4);
 
 			NEW(context);
 			context.Init(w, h, "MyGLWindow", FALSE);
@@ -91,22 +94,33 @@ TYPE
 		PROCEDURE UpdateImage;	
 		VAR
 			t: HUGEINT;	
-			fps: REAL;
+			fpsAverage: REAL;
 			str: ARRAY 30 OF CHAR;
 			textWidth, textHeight: LONGINT;
 		BEGIN {EXCLUSIVE}
+			INC(framesCount);
 			t := GetTicks();
 			context.MakeCurrent();
 				Display;
-				context.RenderInto(img); 
+				context.RenderInto(img);
+				(*context.RenderIntoBuffered(img, buffer);*)
 			context.DeActivate();
-			fps := 1 / GetTime(GetTicks() - t);
-			IF animated THEN
-				Strings.FloatToStr(fps, 0, 2, 0, str);
-				Strings.Concat("FPS:", str, str);
-				font.GetStringSize(str, textWidth, textHeight);
-				canvas.DrawString(4, textHeight, str);
+			
+			IF framesCount > 1000 THEN
+				framesCount := 1;
+				frameTimeSum := frameTimeAverage
+			ELSE
+				frameTimeSum := frameTimeSum + GetTime(GetTicks() - t)
 			END;
+
+			frameTimeAverage := frameTimeSum / framesCount;
+			fpsAverage := 1 / frameTimeAverage;			
+			
+			Strings.FloatToStr(fpsAverage, 0, 2, 0, str);
+			Strings.Concat("FPS:", str, str);
+			font.GetStringSize(str, textWidth, textHeight);
+			canvas.DrawString(4, textHeight, str);
+				
 			Invalidate(WMRectangles.MakeRect(0, 0, width, height));
 		END UpdateImage;
 
@@ -309,6 +323,10 @@ BEGIN  {ACTIVE}
 	END;
 END GLWindow;
 
+VAR
+	framesCount: LONGINT;
+	frameTimeSum, frameTimeAverage: REAL;
+
 PROCEDURE QueryPerformanceCounter(): HUGEINT;
 VAR
 	t: HUGEINT;
@@ -343,6 +361,8 @@ PROCEDURE Open*;
 VAR 
 	window: GLWindow;
 BEGIN
+	framesCount := 0;
+	frameTimeSum := 0.0;
 	NEW(window, 512, 512);
 END Open;
 
