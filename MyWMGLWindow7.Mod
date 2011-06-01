@@ -2,7 +2,7 @@ MODULE MyWMGLWindow7;  (** AUTHOR "fnecati"; PURPOSE ""; *)
  (* mirroring effect *)
  
 IMPORT
-	WMRectangles, WMGraphics, Strings, Kernel, Math, SYSTEM,
+	WMRectangles, WMGraphics, Strings, Kernel, Math, SYSTEM, Kernel32,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
 	GL := OpenGL, GLC := OpenGLConst, GLContext;
 
@@ -22,6 +22,7 @@ TYPE
 		xrot : REAL;
  		quad: GL.TGLUQuadricObj;
 		drawMode: LONGINT;
+		font: WMGraphics.Font;
 				
 		PROCEDURE &New(w, h: LONGINT);
 		BEGIN
@@ -31,6 +32,9 @@ TYPE
 			manager.Add(100, 100, SELF, {WM.FlagFrame, WM.FlagClose, WM.FlagNoResizing});
 
 			SetTitle(Strings.NewString("MyGLWindow-Mirror"));
+			
+			canvas.SetColor(WMGraphics.Green);
+			font := canvas.GetFont();
 
 			NEW(context);
 			context.Init(w, h, "MyGLWindow", FALSE);
@@ -84,13 +88,25 @@ TYPE
 		END Close;
 
 
-		PROCEDURE UpdateImage;		
+		PROCEDURE UpdateImage;	
+		VAR
+			t: HUGEINT;	
+			fps: REAL;
+			str: ARRAY 30 OF CHAR;
+			textWidth, textHeight: LONGINT;
 		BEGIN {EXCLUSIVE}
+			t := GetTicks();
 			context.MakeCurrent();
 				Display;
 				context.RenderInto(img); 
-				
 			context.DeActivate();
+			fps := 1 / GetTime(GetTicks() - t);
+			IF animated THEN
+				Strings.FloatToStr(fps, 0, 2, 0, str);
+				Strings.Concat("FPS:", str, str);
+				font.GetStringSize(str, textWidth, textHeight);
+				canvas.DrawString(4, textHeight, str);
+			END;
 			Invalidate(WMRectangles.MakeRect(0, 0, width, height));
 		END UpdateImage;
 
@@ -293,8 +309,35 @@ BEGIN  {ACTIVE}
 	END;
 END GLWindow;
 
-	    		
+PROCEDURE QueryPerformanceCounter(): HUGEINT;
+VAR
+	t: HUGEINT;
+	res: Kernel32.BOOL;
+BEGIN
+	res := Kernel32.QueryPerformanceCounter(SYSTEM.VAL(Kernel32.LargeInteger, t));
+	RETURN t
+END QueryPerformanceCounter;
 
+PROCEDURE QueryPerformanceFrequency(): HUGEINT;
+VAR
+	t: HUGEINT;
+	res: Kernel32.BOOL;
+BEGIN
+	res := Kernel32.QueryPerformanceFrequency(SYSTEM.VAL(Kernel32.LargeInteger, t));
+	RETURN t
+END QueryPerformanceFrequency;
+
+PROCEDURE GetTicks(): HUGEINT;
+BEGIN
+	(*RETURN Kernel.GetTicks()*)
+	RETURN QueryPerformanceCounter()
+END GetTicks;
+
+PROCEDURE GetTime(t: HUGEINT): REAL;
+BEGIN
+	(*RETURN t / 1000*)
+	RETURN t / QueryPerformanceFrequency()
+END GetTime;	    		
  
 PROCEDURE Open*;
 VAR 
