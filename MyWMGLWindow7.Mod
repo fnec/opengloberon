@@ -2,7 +2,7 @@ MODULE MyWMGLWindow7;  (** AUTHOR "fnecati"; PURPOSE ""; *)
  (* mirroring effect *)
  
 IMPORT
-	WMRectangles, WMGraphics, Strings, Kernel, Math, SYSTEM, Kernel32,
+	WMRectangles, WMGraphics, Strings, Kernel, SYSTEM, Kernel32,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
 	GL := OpenGL, GLC := OpenGLConst, GLContext;
 
@@ -12,6 +12,35 @@ TYPE
 	KillerMsg = OBJECT
 	END KillerMsg;
 
+	FPSCounter = OBJECT
+	VAR
+		nCount, nMaxMeasuresCount: LONGINT;
+		fTimeAverage, fTimeAverageOld, fFPSAverage: REAL;
+		
+	PROCEDURE &New(nMaxMeasuresCount: LONGINT);
+	BEGIN
+		SELF.nMaxMeasuresCount := nMaxMeasuresCount;
+		nCount := 0;
+		fTimeAverage := 0.0;
+		fTimeAverageOld := 0.0;
+	END New;
+	
+	PROCEDURE AddTimeMeasure(fTime: REAL);
+	BEGIN
+		INC(nCount);
+		fTimeAverageOld := fTimeAverage;
+		IF nCount > nMaxMeasuresCount THEN nCount := ENTIER(nMaxMeasuresCount * 0.9) END;
+		fTimeAverage := (fTimeAverageOld * (nCount - 1) + fTime) / nCount;
+		fFPSAverage := 1 / fTimeAverage;
+		fFPSAverage := ENTIER(fFPSAverage * 10 + 0.5) / 10;
+	END AddTimeMeasure;
+	
+	PROCEDURE GetAverageFPS(): REAL;
+	BEGIN
+		RETURN fFPSAverage
+	END GetAverageFPS;
+	
+	END FPSCounter;
 	
 	GLWindow* =  OBJECT(WM.BufferWindow)
 	VAR
@@ -94,29 +123,21 @@ TYPE
 		PROCEDURE UpdateImage;	
 		VAR
 			t: HUGEINT;	
-			fpsAverage: REAL;
 			str: ARRAY 30 OF CHAR;
 			textWidth, textHeight: LONGINT;
 		BEGIN {EXCLUSIVE}
-			INC(framesCount);
+
 			t := GetTicks();
+			
 			context.MakeCurrent();
 				Display;
 				(*context.RenderInto(img);*)
 				context.RenderIntoBuffered(img, buffer);
 			context.DeActivate();
 			
-			IF framesCount > 1000 THEN
-				framesCount := 1;
-				frameTimeSum := frameTimeAverage
-			ELSE
-				frameTimeSum := frameTimeSum + GetTime(GetTicks() - t)
-			END;
-
-			frameTimeAverage := frameTimeSum / framesCount;
-			fpsAverage := 1 / frameTimeAverage;			
+			fpsCounter.AddTimeMeasure(GetTime(GetTicks() - t));
 			
-			Strings.FloatToStr(fpsAverage, 0, 2, 0, str);
+			Strings.FloatToStr(fpsCounter.GetAverageFPS(), 0, 1, 0, str);
 			Strings.Concat("FPS:", str, str);
 			font.GetStringSize(str, textWidth, textHeight);
 			canvas.DrawString(4, textHeight, str);
@@ -314,18 +335,17 @@ BEGIN  {ACTIVE}
 	Kernel.SetTimer(timer, waittime);
 	WHILE alive DO
 		IF animated THEN
-			 IF Kernel.Expired(timer) THEN  			 	
+			 IF Kernel.Expired(timer) THEN
 			 	 UpdateImage();
-			 	  xrot := xrot + 1.0;
+			 	  xrot := xrot + 5.0;
 				Kernel.SetTimer(timer, waittime);
-			END;	
+			END;
 		END; 
 	END;
 END GLWindow;
 
 VAR
-	framesCount: LONGINT;
-	frameTimeSum, frameTimeAverage: REAL;
+	fpsCounter: FPSCounter;
 
 PROCEDURE QueryPerformanceCounter(): HUGEINT;
 VAR
@@ -361,8 +381,7 @@ PROCEDURE Open*;
 VAR 
 	window: GLWindow;
 BEGIN
-	framesCount := 0;
-	frameTimeSum := 0.0;
+	NEW(fpsCounter, 100);
 	NEW(window, 512, 512);
 END Open;
 
