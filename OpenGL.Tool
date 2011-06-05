@@ -8,7 +8,7 @@ Compiler.Compile OpenGLConst.Mod MyX11Api.Mod Unix.OpenGL.Mod  Unix.GLContext.Mo
 
 WinAos:
 
-Compiler.Compile OpenGLConst.Mod WinApi.Mod Win32.OpenGL.Mod  Win32.GLContext.Mod ~
+Compiler.Compile OpenGLConst.Mod WinApi.Mod Win32.OpenGL.Mod  Win32.GLContext.Mod~
 
 
 Compile Examples:
@@ -26,6 +26,9 @@ MyWMGLWindow9.Mod
 MyWMGLWindowFlags.Mod 
 MyWMGLWindowLorenz.Mod 
 MyWMGLPlotSurface.Mod ~
+
+WinAos specific version of MyWMGLWindow7.Mod by tobj..@ .., thanks :
+Compiler.Compile  Win32.MyWMGLWindow7b.Mod ~ 
 
 How to use:
 
@@ -111,8 +114,8 @@ VAR
  context untill previous thread release it (context.DeActivate).
   
   Nvidia, Ati, Intel, Mesa drivers may behave differently depending on extensions. The examples are tested on 
-  Nvidia 8500GT GPU vith latest driver (Windows-XP32-SP3, Ubuntu 10.04 X64, Pardus-32bit-2011 with MESA) and not all OpenGL functions are tested, there can be miss-definition 
-  in the OpenGL.Mod functions.
+  Nvidia 8500GT GPU vith latest driver (Windows-XP32-SP3, Ubuntu 10.04 X64, Pardus-32bit-2011 with MESA) and not 
+  all OpenGL functions are tested, there can be miss-definition in the OpenGL.Mod functions.
   
 
  All contributions and corrections are welcome ...

@@ -24,7 +24,7 @@ TYPE
 	
 TYPE
 
-Buffer* = POINTER TO ARRAY OF CHAR;
+	Buffer = POINTER TO ARRAY OF CHAR;
 
 Context*= OBJECT
 VAR
@@ -32,7 +32,9 @@ VAR
 		wincreated*: BOOLEAN;
 		initialized: BOOLEAN;
 		res: BOOLEAN;
-	
+		buffer: Buffer;	(* for speedup flip image in y*)
+		mode: Raster.Mode;  
+		
 	PROCEDURE &New*;
 	BEGIN
 		wincreated := FALSE;
@@ -47,6 +49,10 @@ VAR
     		winGL.width := w; winGL.height := h;
     		winGL.isvisible := isvisible;
     		COPY(winGL.title, title);
+    		
+    		NEW(buffer, w*h*4); 
+		Raster.InitMode(mode, Raster.srcCopy);
+		
     		initialized := TRUE;
 		AWAIT (wincreated);
     	END Init;
@@ -87,38 +93,21 @@ VAR
 		END;	
 	END SwapBuffers;
  	
-PROCEDURE RenderIntoBuffered*(image: Raster.Image; buffer: Buffer);
-VAR
-	i: LONGINT;
-	w, h: LONGINT;
-	mode: Raster.Mode;
-BEGIN
-	IF buffer # NIL THEN
-		w := image.width;
-		h := image.height;
-		Raster.InitMode(mode, Raster.srcCopy);
-		GL.glReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, SYSTEM.ADR(buffer^[0])); 
-		(* flip vertical, y *)
-		FOR i := 0 TO h - 1 DO
-			Raster.PutPixels(image, 0, h-1-i, w, Raster.BGRA8888, buffer^, i * w * 4, mode)
-		END
-	ELSE
-		RenderInto(image)
-	END
-END RenderIntoBuffered;
-
 PROCEDURE RenderInto*(image: Raster.Image);
 VAR
 	i: LONGINT;
 	w, h: LONGINT;
+
 BEGIN
-	w := image.width;
-	h := image.height;
-	(* flip vertical, y *)
-	FOR i:=0 TO h-1 DO
-		GL.glReadPixels(0, h - 1 - i, w, 1, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, image.adr + i * w * 4)
-	END
+		w := image.width;
+		h := image.height;
+		GL.glReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, SYSTEM.ADR(buffer^[0])); 
+		(* flip vertical, y *)
+		FOR i := 0 TO h - 1 DO
+			Raster.PutPixels(image, 0, h-1-i, w, Raster.BGRA8888, buffer^, i * w * 4, mode)
+		END;
 END RenderInto;
+
 
 
 	PROCEDURE MyLoop;

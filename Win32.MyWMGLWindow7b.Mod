@@ -1,10 +1,10 @@
-MODULE MyWMGLWindow7;  (** AUTHOR "fnecati"; PURPOSE ""; *)
+MODULE MyWMGLWindow7b;  (** AUTHOR "fnecati"; PURPOSE ""; *)
  (* mirroring effect *)
  
 IMPORT
-	WMRectangles, WMGraphics, Strings, Kernel, Math, SYSTEM,
-	WM := WMWindowManager,  WMMessages, WMDialogs, Trace,	
-	GL := OpenGL, GLC := OpenGLConst, GLContext, Objects;
+	WMRectangles, WMGraphics, Strings, Kernel, SYSTEM, Kernel32,
+	WM := WMWindowManager,  WMMessages, WMDialogs,
+	GL := OpenGL, GLC := OpenGLConst, GLContext;
 
 CONST waittime = 5;
 
@@ -12,6 +12,35 @@ TYPE
 	KillerMsg = OBJECT
 	END KillerMsg;
 
+	FPSCounter = OBJECT
+	VAR
+		nCount, nMaxMeasuresCount: LONGINT;
+		fTimeAverage, fTimeAverageOld, fFPSAverage: REAL;
+		
+	PROCEDURE &New(nMaxMeasuresCount: LONGINT);
+	BEGIN
+		SELF.nMaxMeasuresCount := nMaxMeasuresCount;
+		nCount := 0;
+		fTimeAverage := 0.0;
+		fTimeAverageOld := 0.0;
+	END New;
+	
+	PROCEDURE AddTimeMeasure(fTime: REAL);
+	BEGIN
+		INC(nCount);
+		fTimeAverageOld := fTimeAverage;
+		IF nCount > nMaxMeasuresCount THEN nCount := ENTIER(nMaxMeasuresCount * 0.9) END;
+		fTimeAverage := (fTimeAverageOld * (nCount - 1) + fTime) / nCount;
+		fFPSAverage := 1 / fTimeAverage;
+		fFPSAverage := ENTIER(fFPSAverage * 10 + 0.5) / 10;
+	END AddTimeMeasure;
+	
+	PROCEDURE GetAverageFPS(): REAL;
+	BEGIN
+		RETURN fFPSAverage
+	END GetAverageFPS;
+	
+	END FPSCounter;
 	
 	GLWindow* =  OBJECT(WM.BufferWindow)
 	VAR
@@ -23,9 +52,7 @@ TYPE
  		quad: GL.TGLUQuadricObj;
 		drawMode: LONGINT;
 		font: WMGraphics.Font;
-		frames: LONGINT;
-		fpsstr: ARRAY 30 OF CHAR;
-		
+				
 		PROCEDURE &New(w, h: LONGINT);
 		BEGIN
 			width := w; height := h;
@@ -37,7 +64,8 @@ TYPE
 			
 			canvas.SetColor(WMGraphics.Green);
 			font := canvas.GetFont();
-			fpsstr := "FPS: ";
+			
+			NEW(buffer, w * h * 4);
 
 			NEW(context);
 			context.Init(w, h, "MyGLWindow", FALSE);
@@ -86,22 +114,32 @@ TYPE
 		BEGIN
 			alive := FALSE;	
 			Close^;
-			context.Close;
-			context := NIL;
+			 context.Close;
+			 context := NIL;
 		END Close;
 
 
 		PROCEDURE UpdateImage;	
 		VAR
+			t: HUGEINT;	
+			str: ARRAY 30 OF CHAR;
 			textWidth, textHeight: LONGINT;
-		BEGIN 
+		BEGIN {EXCLUSIVE}
+
+			t := GetTicks();
+			
 			context.MakeCurrent();
 				Display;
-				context.RenderInto(img);				
-			context.DeActivate();			
+				context.RenderInto(img);
+		
+			context.DeActivate();
 			
-			font.GetStringSize(fpsstr, textWidth, textHeight);
-			canvas.DrawString(4, textHeight, fpsstr);
+			fpsCounter.AddTimeMeasure(GetTime(GetTicks() - t));
+			
+			Strings.FloatToStr(fpsCounter.GetAverageFPS(), 0, 1, 0, str);
+			Strings.Concat("FPS:", str, str);
+			font.GetStringSize(str, textWidth, textHeight);
+			canvas.DrawString(4, textHeight, str);
 				
 			Invalidate(WMRectangles.MakeRect(0, 0, width, height));
 		END UpdateImage;
@@ -296,36 +334,60 @@ BEGIN  {ACTIVE}
 	Kernel.SetTimer(timer, waittime);
 	WHILE alive DO
 		IF animated THEN
-	 		UpdateImage();
-	 		xrot := xrot + 1.0;
-
-			INC(frames);
-			IF Kernel.Expired(timer) THEN
-				Strings.FloatToStr(frames/5.0, 0, 2, 0, fpsstr);
-				Strings.Concat("FPS:", fpsstr, fpsstr);
-				Trace.String(fpsstr); Trace.Ln;
-				Kernel.SetTimer(timer,5000);
-				
-				frames := 0;
+			 IF Kernel.Expired(timer) THEN
+			 	 UpdateImage();
+			 	  xrot := xrot + 5.0;
+				Kernel.SetTimer(timer, waittime);
 			END;
-		
 		END; 
 	END;
 END GLWindow;
 
+VAR
+	fpsCounter: FPSCounter;
+
+PROCEDURE QueryPerformanceCounter(): HUGEINT;
+VAR
+	t: HUGEINT;
+	res: Kernel32.BOOL;
+BEGIN
+	res := Kernel32.QueryPerformanceCounter(SYSTEM.VAL(Kernel32.LargeInteger, t));
+	RETURN t
+END QueryPerformanceCounter;
+
+PROCEDURE QueryPerformanceFrequency(): HUGEINT;
+VAR
+	t: HUGEINT;
+	res: Kernel32.BOOL;
+BEGIN
+	res := Kernel32.QueryPerformanceFrequency(SYSTEM.VAL(Kernel32.LargeInteger, t));
+	RETURN t
+END QueryPerformanceFrequency;
+
+PROCEDURE GetTicks(): HUGEINT;
+BEGIN
+	(*RETURN Kernel.GetTicks()*)
+	RETURN QueryPerformanceCounter()
+END GetTicks;
+
+PROCEDURE GetTime(t: HUGEINT): REAL;
+BEGIN
+	(*RETURN t / 1000*)
+	RETURN t / QueryPerformanceFrequency()
+END GetTime;	    		
  
 PROCEDURE Open*;
 VAR 
 	window: GLWindow;
 BEGIN
-
+	NEW(fpsCounter, 100);
 	NEW(window, 512, 512);
 END Open;
 
 BEGIN
 
-END MyWMGLWindow7.
+END MyWMGLWindow7b.
 
-SystemTools.Free  MyWMGLWindow7 GLContext~ OpenGL OpenGLConst ~
+SystemTools.Free  MyWMGLWindow7b GLContext~ OpenGL OpenGLConst ~
 
-MyWMGLWindow7.Open ~
+MyWMGLWindow7b.Open ~
