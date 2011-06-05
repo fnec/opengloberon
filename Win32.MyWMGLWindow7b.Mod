@@ -65,8 +65,6 @@ TYPE
 			canvas.SetColor(WMGraphics.Green);
 			font := canvas.GetFont();
 			
-			NEW(buffer, w * h * 4);
-
 			NEW(context);
 			context.Init(w, h, "MyGLWindow", FALSE);
 
@@ -336,7 +334,7 @@ BEGIN  {ACTIVE}
 		IF animated THEN
 			 IF Kernel.Expired(timer) THEN
 			 	 UpdateImage();
-			 	  xrot := xrot + 5.0;
+			 	  xrot := xrot + 1.0;
 				Kernel.SetTimer(timer, waittime);
 			END;
 		END; 

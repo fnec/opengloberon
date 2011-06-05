@@ -2,11 +2,9 @@ MODULE MyWMGLWindow7;  (** AUTHOR "fnecati"; PURPOSE ""; *)
  (* mirroring effect *)
  
 IMPORT
-	WMRectangles, WMGraphics, Strings, Kernel, Math, SYSTEM,
-	WM := WMWindowManager,  WMMessages, WMDialogs, Trace,	
-	GL := OpenGL, GLC := OpenGLConst, GLContext, Objects;
-
-CONST waittime = 5;
+	WMRectangles, WMGraphics, Strings, Kernel, SYSTEM,
+	WM := WMWindowManager,  WMMessages, WMDialogs,	
+	GL := OpenGL, GLC := OpenGLConst, GLContext;
 
 TYPE
 	KillerMsg = OBJECT
@@ -293,7 +291,7 @@ END Reshape;
 
 BEGIN  {ACTIVE} 
 
-	Kernel.SetTimer(timer, waittime);
+	Kernel.SetTimer(timer, 1);
 	WHILE alive DO
 		IF animated THEN
 	 		UpdateImage();
@@ -303,9 +301,7 @@ BEGIN  {ACTIVE}
 			IF Kernel.Expired(timer) THEN
 				Strings.FloatToStr(frames/5.0, 0, 2, 0, fpsstr);
 				Strings.Concat("FPS:", fpsstr, fpsstr);
-				Trace.String(fpsstr); Trace.Ln;
-				Kernel.SetTimer(timer,5000);
-				
+				Kernel.SetTimer(timer, 5000);				
 				frames := 0;
 			END;
 		
