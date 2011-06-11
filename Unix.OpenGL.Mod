@@ -59,13 +59,9 @@ VAR
 	oldfcr-, newfcr-: SET;
 		
 CONST 
-
-(*   GL_LibName = '/usr/lib/libGL.so';  (* for pardus x86 *)
-    GLU_LibName = '/usr/lib/libGLU.so';
-*)    
   
-   GL_LibName = '/usr/lib32/libGL.so';  (* for ubuntu 10.04 LTS,  x64 *)
-    GLU_LibName = '/usr/lib32/libGLU.so';
+   GL_LibName = 'libGL.so'; 
+    GLU_LibName = 'libGLU.so';
 
 
 TYPE
@@ -6003,8 +5999,7 @@ PROCEDURE InitOpenGL*;
 VAR 
   name: ARRAY 64 OF CHAR;
 BEGIN {EXCLUSIVE}
-Trace.String(" InitOpenGL .."); 
-   
+ 
    GL_LibHandle := Unix.Dlopen(GL_LibName,2);
   ASSERT(GL_LibHandle # 0,101);
 
@@ -6482,7 +6477,6 @@ glVertexPointer := SYSTEM.VAL(TglVertexPointer, glXGetProcAddress('glVertexPoint
       Trace.String(GLU_LibName); Trace.StringLn(" loaded.");  
 
   END;
-  Trace.String(" Ok."); Trace.Ln; 
 END InitOpenGL;
 
 
