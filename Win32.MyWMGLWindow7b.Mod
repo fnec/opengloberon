@@ -2,11 +2,9 @@ MODULE MyWMGLWindow7b;  (** AUTHOR "fnecati"; PURPOSE ""; *)
  (* mirroring effect *)
  
 IMPORT
-	WMRectangles, WMGraphics, Strings, Kernel, SYSTEM, Kernel32,
+	WMRectangles, WMGraphics, Strings, Raster, Objects, SYSTEM, Kernel32,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
 	GL := OpenGL, GLC := OpenGLConst, GLContext;
-
-CONST waittime = 5;
 
 TYPE
 	KillerMsg = OBJECT
@@ -42,28 +40,43 @@ TYPE
 	
 	END FPSCounter;
 	
-	GLWindow* =  OBJECT(WM.BufferWindow)
+	GLWindow* =  OBJECT(WM.DoubleBufferWindow)
 	VAR
-		timer: Kernel.MilliTimer; 
 		alive,  animated: BOOLEAN;
 		context:   GLContext.Context;
 		width, height: LONGINT;
 		xrot : REAL;
  		quad: GL.TGLUQuadricObj;
 		drawMode: LONGINT;
+		
 		font: WMGraphics.Font;
+		textRect: WMRectangles.Rectangle;
+		textImage: Raster.Image;
+		textCanvas: WMGraphics.BufferCanvas;
+		mode: Raster.Mode;
 				
 		PROCEDURE &New(w, h: LONGINT);
+		VAR
+			textWidth, textHeight: LONGINT;
 		BEGIN
+		
 			width := w; height := h;
-			Init(w, h, TRUE); (* use alpha, for 32bpp img *)
-			manager := WM.GetDefaultManager();
-			manager.Add(100, 100, SELF, {WM.FlagFrame, WM.FlagClose, WM.FlagNoResizing});
+			Init(w, h, FALSE);
+			WM.ExtAddWindow(SELF, 100, 100, {WM.FlagFrame, WM.FlagClose, WM.FlagNoResizing});
+			manager.SetFocus(SELF);
 
 			SetTitle(Strings.NewString("MyGLWindow-Mirror"));
 			
-			canvas.SetColor(WMGraphics.Green);
 			font := canvas.GetFont();
+			textRect := WMRectangles.MakeRect(0, 0, 0, 0);
+			font.GetStringSize("FPS: 9999.9", textWidth, textHeight);
+			INC(textRect.b, textHeight); textRect.r := MAX(textRect.r, textWidth);
+			NEW(textImage);
+			Raster.Create(textImage, textRect.r, textRect.b, Raster.BGRA8888);
+			NEW(textCanvas, textImage);
+			textCanvas.SetFont(font);
+			textCanvas.SetColor(WMGraphics.White);
+			Raster.InitMode(mode, Raster.srcOverDst);
 			
 			NEW(context);
 			context.Init(w, h, "MyGLWindow", FALSE);
@@ -115,31 +128,34 @@ TYPE
 			 context.Close;
 			 context := NIL;
 		END Close;
-
-
+		
 		PROCEDURE UpdateImage;	
 		VAR
 			t: HUGEINT;	
+			rect: WMRectangles.Rectangle;
 			str: ARRAY 30 OF CHAR;
-			textWidth, textHeight: LONGINT;
 		BEGIN {EXCLUSIVE}
-
+		
 			t := GetTicks();
 			
 			context.MakeCurrent();
-				Display;
-				context.RenderInto(img);
-		
+			Display;
+			context.RenderInto(img);
 			context.DeActivate();
-			
-			fpsCounter.AddTimeMeasure(GetTime(GetTicks() - t));
 			
 			Strings.FloatToStr(fpsCounter.GetAverageFPS(), 0, 1, 0, str);
 			Strings.Concat("FPS:", str, str);
-			font.GetStringSize(str, textWidth, textHeight);
-			canvas.DrawString(4, textHeight, str);
-				
-			Invalidate(WMRectangles.MakeRect(0, 0, width, height));
+			textCanvas.Fill(textRect, 0, WMGraphics.ModeCopy);
+			textCanvas.DrawString(textRect.l, textRect.b, str);
+			Raster.Copy(textImage, img, 0, 0, textImage.width, textImage.height, 8, 8, mode);
+			
+			rect := WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight());
+			WMRectangles.MoveRel(rect, bounds.l, bounds.t);
+			WMRectangles.ClipRect(rect, bounds);
+			manager.AddDirty(rect);
+			
+			fpsCounter.AddTimeMeasure(GetTime(GetTicks() - t));
+			
 		END UpdateImage;
 
 		PROCEDURE SaveImage;
@@ -327,16 +343,12 @@ context.DeActivate();
 END Reshape;
 
 
-BEGIN  {ACTIVE} 
-
-	Kernel.SetTimer(timer, waittime);
+BEGIN  {ACTIVE}
+	Objects.SetPriority(Objects.Low);
 	WHILE alive DO
 		IF animated THEN
-			 IF Kernel.Expired(timer) THEN
-			 	 UpdateImage();
-			 	  xrot := xrot + 1.0;
-				Kernel.SetTimer(timer, waittime);
-			END;
+			UpdateImage();
+			xrot := xrot + 1.0;
 		END; 
 	END;
 END GLWindow;
@@ -378,7 +390,7 @@ PROCEDURE Open*;
 VAR 
 	window: GLWindow;
 BEGIN
-	NEW(fpsCounter, 100);
+	NEW(fpsCounter, 1000);
 	NEW(window, 512, 512);
 END Open;
 
