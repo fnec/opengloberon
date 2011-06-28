@@ -40,7 +40,7 @@ TYPE
 	
 	END FPSCounter;
 	
-	GLWindow* =  OBJECT(WM.DoubleBufferWindow)
+	GLWindow* =  OBJECT(WM.BufferWindow)
 	VAR
 		alive,  animated: BOOLEAN;
 		context:   GLContext.Context;
@@ -49,15 +49,7 @@ TYPE
  		quad: GL.TGLUQuadricObj;
 		drawMode: LONGINT;
 		
-		font: WMGraphics.Font;
-		textRect: WMRectangles.Rectangle;
-		textImage: Raster.Image;
-		textCanvas: WMGraphics.BufferCanvas;
-		mode: Raster.Mode;
-				
 		PROCEDURE &New(w, h: LONGINT);
-		VAR
-			textWidth, textHeight: LONGINT;
 		BEGIN
 		
 			width := w; height := h;
@@ -66,18 +58,7 @@ TYPE
 			manager.SetFocus(SELF);
 
 			SetTitle(Strings.NewString("MyGLWindow-Mirror"));
-			
-			font := canvas.GetFont();
-			textRect := WMRectangles.MakeRect(0, 0, 0, 0);
-			font.GetStringSize("FPS: 9999.9", textWidth, textHeight);
-			INC(textRect.b, textHeight); textRect.r := MAX(textRect.r, textWidth);
-			NEW(textImage);
-			Raster.Create(textImage, textRect.r, textRect.b, Raster.BGRA8888);
-			NEW(textCanvas, textImage);
-			textCanvas.SetFont(font);
-			textCanvas.SetColor(WMGraphics.White);
-			Raster.InitMode(mode, Raster.srcOverDst);
-			
+						
 			NEW(context);
 			context.Init(w, h, "MyGLWindow", FALSE);
 
@@ -129,11 +110,25 @@ TYPE
 			 context := NIL;
 		END Close;
 		
+		PROCEDURE Draw(canvas: WMGraphics.Canvas; w, h, q: LONGINT);
+		VAR
+			str: ARRAY 30 OF CHAR;
+			font: WMGraphics.Font;
+			textWidth, textHeight: LONGINT;
+		BEGIN
+			Draw^(canvas, w, h, q);
+			canvas.SetColor(WMGraphics.White);
+			font := canvas.GetFont();
+			Strings.FloatToStr(fpsCounter.GetAverageFPS(), 0, 1, 0, str);
+			Strings.Concat("FPS:", str, str);
+			font.GetStringSize(str, textWidth, textHeight);
+			canvas.DrawString(8, textHeight + 8, str);
+		END Draw;
+		
 		PROCEDURE UpdateImage;	
 		VAR
 			t: HUGEINT;	
 			rect: WMRectangles.Rectangle;
-			str: ARRAY 30 OF CHAR;
 		BEGIN {EXCLUSIVE}
 		
 			t := GetTicks();
@@ -142,12 +137,6 @@ TYPE
 			Display;
 			context.RenderInto(img);
 			context.DeActivate();
-			
-			Strings.FloatToStr(fpsCounter.GetAverageFPS(), 0, 1, 0, str);
-			Strings.Concat("FPS:", str, str);
-			textCanvas.Fill(textRect, 0, WMGraphics.ModeCopy);
-			textCanvas.DrawString(textRect.l, textRect.b, str);
-			Raster.Copy(textImage, img, 0, 0, textImage.width, textImage.height, 8, 8, mode);
 			
 			rect := WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight());
 			WMRectangles.MoveRel(rect, bounds.l, bounds.t);
