@@ -1,7 +1,7 @@
 MODULE MyXGear; (** AUTHOR "fnecati"; PURPOSE "Adjusted for commandline run"; *)
 
 IMPORT
-	X11, Api := MyX11Api, GL:=OpenGL, GLC := OpenGLConst, Kernel, 
+	X11, Api := X11Api, GL:=OpenGL, GLC := OpenGLConst, Kernel, 
 	Trace,  Math ,  SYSTEM ;
 
 (* 
@@ -344,14 +344,14 @@ END;
  END;
 
  (* window event masks *)	
- masks :=  Api.KeyPressMask + Api.KeyReleaseMask + Api.ButtonPressMask + Api.ButtonReleaseMask + Api.PointerMotionMask
- + Api.ButtonMotionMask + Api.ExposureMask + Api.StructureNotifyMask + Api.FocusChangeMask;
+ masks :=  {Api.KeyPressMask, Api.KeyReleaseMask, Api.ButtonPressMask, Api.ButtonReleaseMask, Api.PointerMotionMask,
+ Api.ButtonMotionMask, Api.ExposureMask, Api.StructureNotifyMask, Api.FocusChangeMask};
 
   (* window attributes *)
- swa.background_pixel := 0;
- swa.border_pixel := 0;
+ swa.backgroundPixel := 0;
+ swa.borderPixel := 0;
  swa.colormap := cmap;
- swa.event_mask := masks;
+ swa.eventMask := masks;
  
  masks := { Api.CWBackPixel, Api.CWBorderPixel, Api.CWColormap, Api.CWEventMask};
  
@@ -391,36 +391,36 @@ END Wr;
 
 (* process pending X11 events *)
 PROCEDURE LoopForEvents;
-VAR xev: X11.Event;
+VAR xev: Api.XEvent;
 	res: LONGINT;
 BEGIN
  WHILE Api.Pending(display)>0 DO 
-	X11.NextEvent(display, xev);
+	Api.NextEvent(display, xev);
 			CASE xev.typ OF
-			X11.Expose:
+			Api.Expose:
 					res := Api.GetWindowAttributes(display, win, SYSTEM.ADR(gwa));					
 					Reshape(gwa.width, gwa.height);
 					Wr("Expose");
-			| X11.KeyPress:	Wr("KeyPressed");
+			| Api.KeyPress:	Wr("KeyPressed");
 							alive := FALSE;
-			| X11.KeyRelease:	Wr("KeyReleased");
-			| X11.ButtonPress: Wr("ButtonPressed");
-			| X11.ButtonRelease: Wr("ButtonRelease");
-			| X11.MotionNotify: Wr("MotionNotify");
-			| X11.FocusIn: Wr("FocusIn");
-			| X11.FocusOut: Wr("FocusOut");
-			| X11.GraphicsExpose: Wr("GraphicsExpose");
-			| X11.NoExpose: Wr("NoExpose");
-			| X11.UnmapNotify: Wr("UnmapNotify");
-			| X11.MapNotify: Wr("MapNotify");
-			| X11.PropertyNotify: Wr("PropertyNotify");						
-			| X11.SelectionClear: Wr("SelectionClear");
-			| X11.SelectionRequest: Wr("SelectionRequest");
-			| X11.SelectionNotify: Wr("SelectionNotify");				
+			| Api.KeyRelease:	Wr("KeyReleased");
+			| Api.ButtonPress: Wr("ButtonPressed");
+			| Api.ButtonRelease: Wr("ButtonRelease");
+			| Api.MotionNotify: Wr("MotionNotify");
+			| Api.FocusIn: Wr("FocusIn");
+			| Api.FocusOut: Wr("FocusOut");
+			| Api.GraphicsExpose: Wr("GraphicsExpose");
+			| Api.NoExpose: Wr("NoExpose");
+			| Api.UnmapNotify: Wr("UnmapNotify");
+			| Api.MapNotify: Wr("MapNotify");
+			| Api.PropertyNotify: Wr("PropertyNotify");						
+			| Api.SelectionClear: Wr("SelectionClear");
+			| Api.SelectionRequest: Wr("SelectionRequest");
+			| Api.SelectionNotify: Wr("SelectionNotify");				
 
 			(* and others .... *)
-			| X11.ClientMessage: Wr("ClientMessage");
-			| X11.MappingNotify: Wr("MappingNotify");
+			| Api.ClientMessage: Wr("ClientMessage");
+			| Api.MappingNotify: Wr("MappingNotify");
 			ELSE	
 			END;	
 	   	END;

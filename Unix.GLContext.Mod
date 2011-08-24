@@ -1,6 +1,6 @@
 MODULE GLContext; (** AUTHOR "fnecati"; PURPOSE "OpenGL Context for LinuxAos"; *) 
 IMPORT
-	X11, GL:=OpenGL, GLC := OpenGLConst, Api:=MyX11Api, Raster,
+	X11, GL:=OpenGL, GLC := OpenGLConst, Api:=X11Api, Raster,
 	Trace,  SYSTEM;
 
 CONST debug = FALSE;
@@ -29,7 +29,7 @@ VAR
 	VAR
 		res: LONGINT;
 		att : ARRAY [*] OF GL.GLint;
-		xev  : X11.Event;
+		xev  : Api.XEvent;
 	  	masks: LONGINT;
  
 	BEGIN {EXCLUSIVE}
@@ -55,7 +55,7 @@ VAR
 		END;
 
 		(* Catch WM close*)
-		glWin.wmDeleteWindow := Api.InternAtom( glWin.display, "WM_DELETE_WINDOW", X11.False);
+		glWin.wmDeleteWindow := Api.InternAtom( glWin.display, "WM_DELETE_WINDOW", Api.False);
 
 
 		NEW(att, 13);
@@ -109,9 +109,9 @@ VAR
 	
 			(* Wait for map notification *)	
 		 	REPEAT  
-		 		X11.NextEvent( glWin.display, xev );
+		 		Api.NextEvent( glWin.display, xev );
 		 		IF debug THEN Trace.String("Event type="); Trace.Int(xev.typ,4); Trace.Ln; END;
-			UNTIL (xev.typ = X11.MapNotify) & (xev.window =glWin. win);
+			UNTIL (xev.typ = Api.MapNotify) & (xev.window =glWin. win);
 
 		END;
 

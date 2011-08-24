@@ -1,7 +1,7 @@
 MODULE OpenGL; (** AUTHOR "fnecati"; PURPOSE "OpenGL binding for WinAos"; *)
 IMPORT SYSTEM, Kernel32, Modules,  Strings, GLC := OpenGLConst, KernelLog;
 (* Compiler.Compile  Win32.OpenGL.Mod~ 
-Compiler.Compile OpenGLConst.Mod Win32.OpenGL.Mod WinApi.Mod  Win32.GLContext.Mod ~
+Compiler.Compile opengloberon/OpenGLConst.Mod Win32.OpenGL.Mod opengloberon/WinApi.Mod  opengloberon/Win32.GLContext.Mod ~
 *)
 
 VAR
@@ -687,7 +687,7 @@ VAR
   GL_WIN_specular_fog* ,
   WGL_3DFX_multisample* ,
   WGL_ARB_buffer_region* ,
-  WGL_ARB_extensions_string* ,
+  WGL_ARB_extensionsxstring* ,
   WGL_ARB_make_current_read* ,
   WGL_ARB_multisample* ,
   WGL_ARB_pbuffer* ,
@@ -702,7 +702,7 @@ VAR
   WGL_AMD_gpu_association* ,
   WGL_EXT_depth_float* ,
   WGL_EXT_display_color_table* ,
-  WGL_EXT_extensions_string* ,
+  WGL_EXT_extensionsxstring* ,
   WGL_EXT_make_current_read* ,
   WGL_EXT_multisample* ,
   WGL_EXT_pbuffer* ,
@@ -1263,13 +1263,13 @@ TYPE
   TglGetActiveAttrib = PROCEDURE { WINAPI }(programObj: GLHandle; index: GLuint; maxlength: GLsizei; VAR length: GLint; VAR size: GLint; VAR _type: GLenum; name: PGLchar); 
   TglGetActiveUniform = PROCEDURE { WINAPI }(programObj: GLHandle; index: GLuint; maxLength: GLsizei; VAR length: GLsizei; VAR size: GLint; VAR _type: GLenum; name: PGLchar); 
   TglGetAttachedShaders = PROCEDURE { WINAPI }(programObj: GLHandle; MaxCount: GLsizei; VAR Count: GLint; shaders: PGLuint); 
-  TglGetAttribLocation = PROCEDURE { WINAPI } (programObj: GLHandle; char: PGLchar): GLint; 
+  TglGetAttribLocation = PROCEDURE { WINAPI } (programObj: GLHandle; CONST chars: ARRAY OF CHAR): GLint; 
   TglGetProgramiv = PROCEDURE { WINAPI }(programObj: GLHandle; pname: TGLenum; params: PGLint); 
-  TglGetProgramInfoLog = PROCEDURE { WINAPI }(programObj: GLHandle; maxLength: GLsizei; VAR length: GLint; infoLog: PGLchar); 
+  TglGetProgramInfoLog = PROCEDURE { WINAPI }(programObj: GLHandle; maxLength: GLsizei; VAR length: GLint; infoLog: ADDRESS(* PGLchar *)); 
   TglGetShaderiv = PROCEDURE { WINAPI }(shaderObj: GLHandle; pname: TGLenum; params: PGLint); 
-  TglGetShaderInfoLog = PROCEDURE { WINAPI }(shaderObj: GLHandle; maxLength: GLsizei; VAR length: GLint; infoLog: PGLchar); 
+  TglGetShaderInfoLog = PROCEDURE { WINAPI }(shaderObj: GLHandle; maxLength: GLsizei; VAR length: GLint; infoLog: ADDRESS(* PGLchar *)); 
   TglGetShaderSource = PROCEDURE { WINAPI }(shaderObj: GLHandle; maxlength: GLsizei; VAR length: GLsizei; source: PGLchar); 
-  TglGetUniformLocation = PROCEDURE { WINAPI } (programObj: GLHandle; CONST char: PGLchar): GLint; 
+  TglGetUniformLocation = PROCEDURE { WINAPI } (programObj: GLHandle; CONST chars: ARRAY OF CHAR): GLint; 
   TglGetUniformfv = PROCEDURE { WINAPI }(programObj: GLHandle; location: GLint; params: PGLfloat); 
   TglGetUniformiv = PROCEDURE { WINAPI }(programObj: GLHandle; location: GLint; params: PGLint); 
   TglGetVertexAttribfv = PROCEDURE { WINAPI }(index: GLuint; pname: GLenum; params: PGLfloat); 
@@ -1278,7 +1278,7 @@ TYPE
   TglIsProgram = PROCEDURE { WINAPI } (programObj: GLHandle) : TGLboolean; 
   TglIsShader = PROCEDURE { WINAPI } (shaderObj: GLHandle) : TGLboolean; 
   TglLinkProgram = PROCEDURE { WINAPI }(programObj: GLHandle); 
-  TglShaderSource = PROCEDURE { WINAPI }(shaderObj: GLHandle; count: GLsizei; _string: PPGLchar; lengths: PGLint); 
+  TglShaderSource = PROCEDURE { WINAPI }(shaderObj: GLHandle; count: GLsizei; xstring: ADDRESS(* PPGLchar *); lengths: PGLint); 
   TglUseProgram = PROCEDURE { WINAPI }(programObj: GLHandle); 
   TglUniform1f = PROCEDURE { WINAPI }(location: GLint; v0: GLfloat); 
   TglUniform2f = PROCEDURE { WINAPI }(location: GLint; v0, v1: GLfloat); 
@@ -1390,7 +1390,7 @@ TYPE
   TglVertexAttribI4ubv = PROCEDURE { WINAPI }(index_: GLuint; CONST v: PGLubyte); 
   TglVertexAttribI4usv = PROCEDURE { WINAPI }(index_: GLuint; CONST v: PGLushort); 
   TglGetUniformuiv = PROCEDURE { WINAPI }(program_: GLuint; location: GLint; params: PGLuint); 
-  TglBindFragDataLocation = PROCEDURE { WINAPI }(program_: GLuint; color: GLuint; CONST name: PGLchar); 
+  TglBindFragDataLocation = PROCEDURE { WINAPI }(program_: GLuint; color: GLuint; CONST name: ARRAY OF CHAR); 
   TglGetFragDataLocation = PROCEDURE { WINAPI } (program_: GLuint; CONST name: PGLchar): GLint; 
   TglUniform1ui = PROCEDURE { WINAPI }(location: GLint; v0: GLuint); 
   TglUniform2ui = PROCEDURE { WINAPI }(location: GLint; v0: GLuint; v1: GLuint); 
@@ -1608,7 +1608,7 @@ TYPE
   TglVertexAttribPointerARB = PROCEDURE { WINAPI }(index: TGLuint; size: TGLint; _type: TGLenum; normalized: TGLboolean; stride: TGLsizei; CONST _pointer: PGLvoid); 
   TglEnableVertexAttribArrayARB = PROCEDURE { WINAPI }(index: TGLuint); 
   TglDisableVertexAttribArrayARB = PROCEDURE { WINAPI }(index: TGLuint); 
-  TglProgramStringARB = PROCEDURE { WINAPI }(target: TGLenum; format: TGLenum; len: TGLsizei; CONST _string: PGLvoid); 
+  TglProgramStringARB = PROCEDURE { WINAPI }(target: TGLenum; format: TGLenum; len: TGLsizei; CONST xstring: PGLvoid); 
   TglBindProgramARB = PROCEDURE { WINAPI }(target: TGLenum; _program: TGLuint); 
   TglDeleteProgramsARB = PROCEDURE { WINAPI }(n: TGLsizei; CONST programs: PGLuint); 
   TglGenProgramsARB = PROCEDURE { WINAPI }(n: TGLsizei; programs: PGLuint); 
@@ -1625,7 +1625,7 @@ TYPE
   TglGetProgramLocalParameterdvARB = PROCEDURE { WINAPI }(target: TGLenum; index: TGLuint; params: PGLdouble); 
   TglGetProgramLocalParameterfvARB = PROCEDURE { WINAPI }(target: TGLenum; index: TGLuint; params: PGLfloat); 
   TglGetProgramivARB = PROCEDURE { WINAPI }(target: TGLenum; pname: TGLenum; params: PGLint); 
-  TglGetProgramStringARB = PROCEDURE { WINAPI }(target: TGLenum; pname: TGLenum; _string: PGLvoid); 
+  TglGetProgramStringARB = PROCEDURE { WINAPI }(target: TGLenum; pname: TGLenum; xstring: PGLvoid); 
   TglGetVertexAttribdvARB = PROCEDURE { WINAPI }(index: TGLuint; pname: TGLenum; params: PGLdouble); 
   TglGetVertexAttribfvARB = PROCEDURE { WINAPI }(index: TGLuint; pname: TGLenum; params: PGLfloat); 
   TglGetVertexAttribivARB = PROCEDURE { WINAPI }(index: TGLuint; pname: TGLenum; params: PGLint); 
@@ -1658,7 +1658,7 @@ TYPE
 
   (* GL_ARB_vertex_shader *)
   TglGetActiveAttribARB = PROCEDURE { WINAPI }(programobj: GLHandleARB; index: GLuint; maxLength: GLsizei; VAR length: GLsizei; VAR size: GLint; VAR _type: GLenum; name: PGLcharARB); 
-  TglGetAttribLocationARB = PROCEDURE { WINAPI } (programObj: GLHandleARB; CONST char: PGLcharARB): GLint; 
+  TglGetAttribLocationARB = PROCEDURE { WINAPI } (programObj: GLHandleARB; CONST chars: ARRAY OF CHAR): GLint; 
   TglBindAttribLocationARB = PROCEDURE { WINAPI }(programObj: GLHandleARB; index: GLuint; CONST name: PGLcharARB); 
 
   (* GL_ARB_shader_objects *)
@@ -1666,7 +1666,7 @@ TYPE
   TglGetHandleARB = PROCEDURE { WINAPI } (pname: GLenum): GLHandleARB; 
   TglDetachObjectARB = PROCEDURE { WINAPI }(container, attached: GLHandleARB); 
   TglCreateShaderObjectARB = PROCEDURE { WINAPI } (shaderType: GLenum): GLHandleARB; 
-  TglShaderSourceARB = PROCEDURE { WINAPI }(shaderObj: GLHandleARB; count: GLsizei; _string: PPGLcharARB; lengths: PGLint); 
+  TglShaderSourceARB = PROCEDURE { WINAPI }(shaderObj: GLHandleARB; count: GLsizei; xstring: ADDRESS (*PPGLcharARB*); lengths: PGLint); 
   TglCompileShaderARB = PROCEDURE { WINAPI }(shaderObj: GLHandleARB); 
   TglCreateProgramObjectARB = PROCEDURE { WINAPI }(): GLHandleARB; 
   TglAttachObjectARB = PROCEDURE { WINAPI }(programObj, shaderObj: GLHandleARB); 
@@ -1694,9 +1694,9 @@ TYPE
   TglUniformMatrix4fvARB = PROCEDURE { WINAPI }(location: GLint; count: GLsizei; transpose: GLboolean; value: PGLfloat); 
   TglGetObjectParameterfvARB = PROCEDURE { WINAPI }(Obj: GLHandleARB; pname: GLenum; params: PGLfloat); 
   TglGetObjectParameterivARB = PROCEDURE { WINAPI }(Obj: GLHandleARB; pname: GLenum; params: PGLint); 
-  TglGetInfoLogARB = PROCEDURE { WINAPI }(shaderObj: GLHandleARB; maxLength: GLsizei; VAR length: GLint; infoLog: PGLcharARB); 
+  TglGetInfoLogARB = PROCEDURE { WINAPI }(shaderObj: GLHandleARB; maxLength: GLsizei; VAR length: GLint; infoLog: ADDRESS (*PGLcharARB*)); 
   TglGetAttachedObjectsARB = PROCEDURE { WINAPI }(programobj: GLHandleARB; maxCount: GLsizei; VAR count: GLsizei; objects: PGLHandleARB); 
-  TglGetUniformLocationARB = PROCEDURE { WINAPI } (programObj: GLHandleARB; CONST char: PGLcharARB): GLint; 
+  TglGetUniformLocationARB = PROCEDURE { WINAPI } (programObj: GLHandleARB; CONST chars: ARRAY OF CHAR): GLint; 
   TglGetActiveUniformARB = PROCEDURE { WINAPI }(programobj: GLHandleARB; index: GLuint; maxLength: GLsizei; VAR length: GLsizei; VAR size: GLint; VAR _type: GLenum; name: PGLcharARB); 
   TglGetUniformfvARB = PROCEDURE { WINAPI }(programObj: GLHandleARB; location: GLint; params: PGLfloat); 
   TglGetUniformivARB = PROCEDURE { WINAPI }(programObj: GLHandleARB; location: GLint; params: PGLint); 
@@ -1814,7 +1814,7 @@ TYPE
   TglGetNamedStringivARB = PROCEDURE { WINAPI }(namelen: GLint; CONST name: PGLchar; pname: GLenum; params: PGLint); 
 
   (*  GL_ARB_blend_func_extended *)
-  TglBindFragDataLocationIndexed = PROCEDURE { WINAPI }(program_: GLuint; colorNumber: GLuint; index: GLuint; CONST name: PGLchar); 
+  TglBindFragDataLocationIndexed = PROCEDURE { WINAPI }(program_: GLuint; colorNumber: GLuint; index: GLuint; CONST name: ARRAY OF CHAR); 
   TglGetFragDataIndex = PROCEDURE { WINAPI }(program_: GLuint; CONST name: PGLchar): GLint; 
 
   (*  GL_ARB_sampler_objects *)
@@ -2523,7 +2523,7 @@ TYPE
   TglUniform4uivEXT = PROCEDURE { WINAPI }(location: TGLint; count: TGLsizei; CONST value: PGLuint); 
   TglGetUniformuivEXT = PROCEDURE { WINAPI }(_program: TGLuint; location: TGLint; params: PGLuint); 
   TglBindFragDataLocationEXT = PROCEDURE { WINAPI }(_program: TGLuint; colorNumber: TGLuint; CONST name: PGLchar); 
-  TglGetFragDataLocationEXT = PROCEDURE { WINAPI } (_program: TGLuint; CONST name: PGLchar): TGLint;
+  TglGetFragDataLocationEXT = PROCEDURE { WINAPI } (_program: TGLuint; CONST name: ARRAY OF CHAR): TGLint;
 
   (* GL_EXT_texture_array *)
   TglFramebufferTextureLayerEXT = PROCEDURE { WINAPI }(target: TGLenum; attachment: TGLenum; texture: TGLuint; level: TGLint; layer: TGLint); 
@@ -2773,7 +2773,7 @@ TYPE
   (* GL_EXT_separate_shader_objects *)
   TglUseShaderProgramEXT = PROCEDURE { WINAPI }(_type: GLenum; _program: GLuint); 
   TglActiveProgramEXT = PROCEDURE { WINAPI }(_program: GLuint); 
-  TglCreateShaderProgramEXT = PROCEDURE { WINAPI } (_type: GLenum; CONST _string: PGLchar): GLuint; 
+  TglCreateShaderProgramEXT = PROCEDURE { WINAPI } (_type: GLenum; CONST xstring: PGLchar): GLuint; 
 
    (* GL_EXT_shader_image_load_store *)
   TglBindImageTextureEXT = PROCEDURE { WINAPI }(index: GLuint; texture: GLuint; level: GLint; layered: GLboolean; layer: GLint; access: GLenum; format: GLint);  
@@ -3237,7 +3237,7 @@ TYPE
   TwglSaveBufferRegionARB  = PROCEDURE { WINAPI } (hRegion: THandle; x: TGLint; y: TGLint; width: TGLint; height: TGLint): BOOLEAN; 
   TwglRestoreBufferRegionARB  = PROCEDURE { WINAPI } (hRegion: THandle; x: TGLint; y: TGLint; width: TGLint; height: TGLint; xSrc: TGLint; ySrc: TGLint): BOOLEAN; 
 
-  (* WGL_ARB_extensions_string *)
+  (* WGL_ARB_extensionsxstring *)
   TwglGetExtensionsStringARB = PROCEDURE { WINAPI } (hdc: HDC): ADDRESS; 
 
   
@@ -3285,7 +3285,7 @@ TYPE
   TwglBindDisplayColorTableEXT  = PROCEDURE { WINAPI } (id: TGLushort): TGLboolean; 
   TwglDestroyDisplayColorTableEXT  = PROCEDURE { WINAPI }(id: TGLushort); 
 
-  (* WGL_EXT_extensions_string *)
+  (* WGL_EXT_extensionsxstring *)
   TwglGetExtensionsStringEXT  = PROCEDURE { WINAPI } (): ADDRESS; 
 
   (* WGL_EXT_make_current_read *)
@@ -3415,7 +3415,7 @@ TYPE
   (*! GL utility functions and procedures *)
 VAR
 
-  gluErrorString - : PROCEDURE { WINAPI } (errCode: TGLenum): AnsiChar; 
+  gluErrorString - : PROCEDURE { WINAPI } (errCode: TGLenum): ADDRESS; (* AnsiChar; *)
   gluGetString - : PROCEDURE { WINAPI } (name: TGLenum): ADDRESS; 
   gluOrtho2D - : PROCEDURE { WINAPI }(left, right, bottom, top: TGLdouble); 
   gluPerspective - : PROCEDURE { WINAPI }(fovy, aspect, zNear, zFar: TGLdouble); 
@@ -6009,7 +6009,7 @@ VAR
   wglSaveBufferRegionARB- : TwglSaveBufferRegionARB;
   wglRestoreBufferRegionARB- : TwglRestoreBufferRegionARB;
 
-  (* WGL_ARB_extensions_string *)
+  (* WGL_ARB_extensionsxstring *)
   wglGetExtensionsStringARB- : TwglGetExtensionsStringARB;
 
   (* WGL_ARB_make_current_read *)
@@ -6055,7 +6055,7 @@ VAR
   wglBindDisplayColorTableEXT- : TwglBindDisplayColorTableEXT;
   wglDestroyDisplayColorTableEXT- : TwglDestroyDisplayColorTableEXT;
 
-  (* WGL_EXT_extensions_string *)
+  (* WGL_EXT_extensionsxstring *)
   wglGetExtensionsStringEXT- : TwglGetExtensionsStringEXT;
 
   (* WGL_EXT_make_current_read *)
@@ -9329,10 +9329,10 @@ BEGIN
      wglRestoreBufferRegionARB := SYSTEM.VAL(TwglRestoreBufferRegionARB, wglGetProcAddress('wglRestoreBufferRegionARB'));
 END Read_WGL_ARB_buffer_region;
 
-PROCEDURE Read_WGL_ARB_extensions_string;
+PROCEDURE Read_WGL_ARB_extensionsxstring;
 BEGIN
      wglGetExtensionsStringARB := SYSTEM.VAL(TwglGetExtensionsStringARB, wglGetProcAddress('wglGetExtensionsStringARB'));
-END Read_WGL_ARB_extensions_string;
+END Read_WGL_ARB_extensionsxstring;
 
 PROCEDURE Read_WGL_ARB_make_current_read;
 BEGIN
@@ -9394,10 +9394,10 @@ BEGIN
      wglDestroyDisplayColorTableEXT := SYSTEM.VAL(TwglDestroyDisplayColorTableEXT, wglGetProcAddress('wglDestroyDisplayColorTableEXT'));
 END Read_WGL_EXT_display_color_table;
 
-PROCEDURE Read_WGL_EXT_extensions_string;
+PROCEDURE Read_WGL_EXT_extensionsxstring;
 BEGIN
      wglGetExtensionsStringEXT := SYSTEM.VAL(TwglGetExtensionsStringEXT, wglGetProcAddress('wglGetExtensionsStringEXT'));
-END Read_WGL_EXT_extensions_string;
+END Read_WGL_EXT_extensionsxstring;
 
 PROCEDURE Read_WGL_EXT_make_current_read;
 BEGIN
@@ -9758,7 +9758,7 @@ BEGIN
 
 (* IFDEF DGL_WIN *)
   Read_WGL_ARB_buffer_region;
-  Read_WGL_ARB_extensions_string;
+  Read_WGL_ARB_extensionsxstring;
   Read_WGL_ARB_make_current_read;
   Read_WGL_ARB_pbuffer;
   Read_WGL_ARB_pixel_format;
@@ -9767,7 +9767,7 @@ BEGIN
   Read_WGL_ARB_create_context;
   Read_WGL_AMD_gpu_association;
   Read_WGL_EXT_display_color_table;
-  Read_WGL_EXT_extensions_string;
+  Read_WGL_EXT_extensionsxstring;
   Read_WGL_EXT_make_current_read;
   Read_WGL_EXT_pbuffer;
   Read_WGL_EXT_pixel_format;
@@ -9842,6 +9842,14 @@ BEGIN {EXCLUSIVE}
   	sadr := gluGetString(name); 
 	RETURN GetStringFromAddr(sadr);	
 END GLUGetString;
+
+PROCEDURE GLUErrorString*(err: GLenum):Strings.String;
+VAR  sadr: LONGINT;
+BEGIN {EXCLUSIVE}
+  	sadr := gluErrorString(err); 
+	RETURN GetStringFromAddr(sadr);	
+END GLUErrorString;
+
 
 PROCEDURE wglEXTStrings*(): Strings.String;
 VAR  sadr: LONGINT;
@@ -10478,7 +10486,7 @@ BEGIN
   (* === WGL ===================================================================== *)
   WGL_3DFX_multisample := Int_CheckExtension(Buffer, 'WGL_3DFX_multisample');
   WGL_ARB_buffer_region := Int_CheckExtension(Buffer, 'WGL_ARB_buffer_region');
-  WGL_ARB_extensions_string := Int_CheckExtension(Buffer, 'WGL_ARB_extensions_string');
+  WGL_ARB_extensionsxstring := Int_CheckExtension(Buffer, 'WGL_ARB_extensionsxstring');
   WGL_ARB_make_current_read := Int_CheckExtension(Buffer, 'WGL_ARB_make_current_read');
   WGL_ARB_multisample := Int_CheckExtension(Buffer, 'WGL_ARB_multisample');
   WGL_ARB_pbuffer := Int_CheckExtension(Buffer, 'WGL_ARB_pbuffer');
@@ -10493,7 +10501,7 @@ BEGIN
   WGL_AMD_gpu_association := Int_CheckExtension(Buffer, 'WGL_AMD_gpu_association');
   WGL_EXT_depth_float := Int_CheckExtension(Buffer, 'WGL_EXT_depth_float');
   WGL_EXT_display_color_table := Int_CheckExtension(Buffer, 'WGL_EXT_display_color_table');
-  WGL_EXT_extensions_string := Int_CheckExtension(Buffer, 'WGL_EXT_extensions_string');
+  WGL_EXT_extensionsxstring := Int_CheckExtension(Buffer, 'WGL_EXT_extensionsxstring');
   WGL_EXT_make_current_read := Int_CheckExtension(Buffer, 'WGL_EXT_make_current_read');
   WGL_EXT_multisample := Int_CheckExtension(Buffer, 'WGL_EXT_multisample');
   WGL_EXT_pbuffer := Int_CheckExtension(Buffer, 'WGL_EXT_pbuffer');

@@ -1,9 +1,9 @@
 MODULE OpenGL; (** AUTHOR "fnecati"; PURPOSE "OpenGL binding for UnixAos"; *)
 
-IMPORT SYSTEM, Unix, Modules, MyX11Api, Strings, GLC := OpenGLConst, Trace;
+IMPORT SYSTEM, Unix, Modules, X11Api, Strings, GLC := OpenGLConst, Trace;
 
 (* Compiler.Compile  Unix.OpenGL.Mod~ 
-Compiler.Compile OpenGLConst.Mod MyX11Api.Mod Unix.OpenGL.Mod Unix.GLContext.Mod ~
+Compiler.Compile OpenGLConst.Mod Unix.OpenGL.Mod Unix.GLContext.Mod ~
 *)
 
 
@@ -57,20 +57,21 @@ VAR
  	GL_LibHandle-: LONGINT;
 	GLU_LibHandle-:LONGINT;
 	oldfcr-, newfcr-: SET;
-		
+
 CONST 
-  
+
    GL_LibName = 'libGL.so'; 
-    GLU_LibName = 'libGLU.so';
+   GLU_LibName = 'libGLU.so';
 
 
 TYPE
 
-  ADDRESS * = SYSTEM.ADDRESS;
+  ADDRESS * =X11Api.ADDRESS;
   AnsiChar* = POINTER TO ARRAY OF CHAR;	
-  PAnsiChar * = POINTER TO ARRAY OF AnsiChar;
+  (*PAnsiChar * = POINTER TO ARRAY OF AnsiChar;*)
+  PAnsiChar * = ADDRESS;
   THandle * = LONGINT;
-  TXID* = LONGINT;
+  XID* = X11Api.XID;
 
   Pointer * = ADDRESS;
   Integer * = LONGINT;
@@ -143,11 +144,11 @@ TYPE
    PGLhalfNV * = POINTER TO ARRAY OF GLhalfNV;
 
  (* GL_ARB_shader_objects *)
-  PGLHandleARB * = POINTER TO ARRAY OF GLHandleARB ;
+  PGLHandleARB * = ADDRESS ;
   GLHandleARB * = Integer;
   GLcharARB * = AnsiChar;
   PGLcharARB * = PAnsiChar;
-  PPGLcharARB * =  POINTER TO ARRAY OF PGLcharARB;
+  PPGLcharARB * =  ADDRESS; (* POINTER TO ARRAY OF PGLcharARB; *)
 
 (* GL_VERSION_1_5 *)
   GLintptr* = GLint;
@@ -156,12 +157,12 @@ TYPE
  (* GL_ARB_vertex_buffer_object *)
   GLintptrARB* = GLint;
   GLsizeiptrARB* = GLsizei;
-    
+
   (* GL_VERSION_2_0 *)
   GLHandle * = Integer;
   PGLchar * = PAnsiChar;
   PPGLchar * = POINTER TO ARRAY OF PGLchar;
-  
+
   (* GL_EXT_timer_query*)
   GLint64EXT * = Int64;
   TGLint64EXT * = GLint64EXT;
@@ -222,21 +223,21 @@ TYPE
 
  (*! GLX - LINUX *)
 
-    PDisplay* = MyX11Api.DisplayPtr; 
-    PXVisualInfo* = MyX11Api.VisualInfoPtr;
+    PDisplay* = X11Api.DisplayPtr; 
+    PXVisualInfo* = X11Api.VisualInfoPtr;
 
-    GLXContext* = TXID; (* Pointer *)
-    GLXContextID* = TXID;
-    GLXDrawable* = TXID;
-    GLXFBConfig* = TXID; (* Pointer *)
-    GLXPbuffer* = TXID;
-    GLXPixmap* = TXID;
-    GLXWindow* = TXID;
+    GLXContext* = XID; (* Pointer *)
+    GLXContextID* = XID;
+    GLXDrawable* = XID;
+    GLXFBConfig* = XID; (* Pointer *)
+    GLXPbuffer* = XID;
+    GLXPixmap* = XID;
+    GLXWindow* = XID;
 
-    Window* = TXID;
-    Colormap* = TXID;
-    Pixmap* = TXID;
-    Font* = TXID;
+    Window* = XID;
+    Colormap* = XID;
+    Pixmap* = XID;
+    Font* = XID;
 
 (*    Datatypes corresponding to GL's types TGL(name)(type)(count) *)
   TGLVectorub2 * = ARRAY 2 OF TGLubyte;
@@ -1351,13 +1352,13 @@ TYPE
   TglGetActiveAttrib = PROCEDURE { C }(programObj: GLHandle; index: GLuint; maxlength: GLsizei; VAR length: GLint; VAR size: GLint; VAR _type: GLenum; name: PGLchar); 
   TglGetActiveUniform = PROCEDURE { C }(programObj: GLHandle; index: GLuint; maxLength: GLsizei; VAR length: GLsizei; VAR size: GLint; VAR _type: GLenum; name: PGLchar); 
   TglGetAttachedShaders = PROCEDURE { C }(programObj: GLHandle; MaxCount: GLsizei; VAR Count: GLint; shaders: PGLuint); 
-  TglGetAttribLocation = PROCEDURE { C } (programObj: GLHandle; char: PGLchar): GLint; 
+  TglGetAttribLocation = PROCEDURE { C } (programObj: GLHandle; CONST chars: ARRAY OF CHAR): GLint; 
   TglGetProgramiv = PROCEDURE { C }(programObj: GLHandle; pname: TGLenum; params: PGLint); 
   TglGetProgramInfoLog = PROCEDURE { C }(programObj: GLHandle; maxLength: GLsizei; VAR length: GLint; infoLog: PGLchar); 
   TglGetShaderiv = PROCEDURE { C }(shaderObj: GLHandle; pname: TGLenum; params: PGLint); 
   TglGetShaderInfoLog = PROCEDURE { C }(shaderObj: GLHandle; maxLength: GLsizei; VAR length: GLint; infoLog: PGLchar); 
   TglGetShaderSource = PROCEDURE { C }(shaderObj: GLHandle; maxlength: GLsizei; VAR length: GLsizei; source: PGLchar); 
-  TglGetUniformLocation = PROCEDURE { C } (programObj: GLHandle; CONST char: PGLchar): GLint; 
+  TglGetUniformLocation = PROCEDURE { C } (programObj: GLHandle; CONST char: ARRAY OF CHAR): GLint; 
   TglGetUniformfv = PROCEDURE { C }(programObj: GLHandle; location: GLint; params: PGLfloat); 
   TglGetUniformiv = PROCEDURE { C }(programObj: GLHandle; location: GLint; params: PGLint); 
   TglGetVertexAttribfv = PROCEDURE { C }(index: GLuint; pname: GLenum; params: PGLfloat); 
@@ -1366,7 +1367,7 @@ TYPE
   TglIsProgram = PROCEDURE { C } (programObj: GLHandle) : TGLboolean; 
   TglIsShader = PROCEDURE { C } (shaderObj: GLHandle) : TGLboolean; 
   TglLinkProgram = PROCEDURE { C }(programObj: GLHandle); 
-  TglShaderSource = PROCEDURE { C }(shaderObj: GLHandle; count: GLsizei; _string: PPGLchar; lengths: PGLint); 
+  TglShaderSource = PROCEDURE { C }(shaderObj: GLHandle; count: GLsizei; xstring: PGLchar; lengths: PGLint); 
   TglUseProgram = PROCEDURE { C }(programObj: GLHandle); 
   TglUniform1f = PROCEDURE { C }(location: GLint; v0: GLfloat); 
   TglUniform2f = PROCEDURE { C }(location: GLint; v0, v1: GLfloat); 
@@ -1478,7 +1479,7 @@ TYPE
   TglVertexAttribI4ubv = PROCEDURE { C }(index_: GLuint; CONST v: PGLubyte); 
   TglVertexAttribI4usv = PROCEDURE { C }(index_: GLuint; CONST v: PGLushort); 
   TglGetUniformuiv = PROCEDURE { C }(program_: GLuint; location: GLint; params: PGLuint); 
-  TglBindFragDataLocation = PROCEDURE { C }(program_: GLuint; color: GLuint; CONST name: PGLchar); 
+  TglBindFragDataLocation = PROCEDURE { C }(program_: GLuint; color: GLuint; CONST name: ARRAY OF CHAR); 
   TglGetFragDataLocation = PROCEDURE { C } (program_: GLuint; CONST name: PGLchar): GLint; 
   TglUniform1ui = PROCEDURE { C }(location: GLint; v0: GLuint); 
   TglUniform2ui = PROCEDURE { C }(location: GLint; v0: GLuint; v1: GLuint); 
@@ -1745,7 +1746,7 @@ TYPE
 
   (* GL_ARB_vertex_shader *)
   TglGetActiveAttribARB = PROCEDURE { C }(programobj: GLHandleARB; index: GLuint; maxLength: GLsizei; VAR length: GLsizei; VAR size: GLint; VAR _type: GLenum; name: PGLcharARB); 
-  TglGetAttribLocationARB = PROCEDURE { C } (programObj: GLHandleARB; CONST char: PGLcharARB): GLint; 
+  TglGetAttribLocationARB = PROCEDURE { C } (programObj: GLHandleARB; CONST chars: ARRAY OF CHAR): GLint; 
   TglBindAttribLocationARB = PROCEDURE { C }(programObj: GLHandleARB; index: GLuint; CONST name: PGLcharARB); 
 
   (* GL_ARB_shader_objects *)
@@ -1753,7 +1754,7 @@ TYPE
   TglGetHandleARB = PROCEDURE { C } (pname: GLenum): GLHandleARB; 
   TglDetachObjectARB = PROCEDURE { C }(container, attached: GLHandleARB); 
   TglCreateShaderObjectARB = PROCEDURE { C } (shaderType: GLenum): GLHandleARB; 
-  TglShaderSourceARB = PROCEDURE { C }(shaderObj: GLHandleARB; count: GLsizei; _string: PPGLcharARB; lengths: PGLint); 
+  TglShaderSourceARB = PROCEDURE { C }(shaderObj: GLHandleARB; count: GLsizei; xstring: PPGLcharARB; lengths: PGLint); 
   TglCompileShaderARB = PROCEDURE { C }(shaderObj: GLHandleARB); 
   TglCreateProgramObjectARB = PROCEDURE { C }(): GLHandleARB; 
   TglAttachObjectARB = PROCEDURE { C }(programObj, shaderObj: GLHandleARB); 
@@ -1901,7 +1902,7 @@ TYPE
   TglGetNamedStringivARB = PROCEDURE { C }(namelen: GLint; CONST name: PGLchar; pname: GLenum; params: PGLint); 
 
   (*  GL_ARB_blend_func_extended *)
-  TglBindFragDataLocationIndexed = PROCEDURE { C }(program_: GLuint; colorNumber: GLuint; index: GLuint; CONST name: PGLchar); 
+  TglBindFragDataLocationIndexed = PROCEDURE { C }(program_: GLuint; colorNumber: GLuint; index: GLuint; CONST name: ARRAY OF CHAR); 
   TglGetFragDataIndex = PROCEDURE { C }(program_: GLuint; CONST name: PGLchar): GLint; 
 
   (*  GL_ARB_sampler_objects *)
@@ -2609,7 +2610,7 @@ TYPE
   TglUniform3uivEXT = PROCEDURE { C }(location: TGLint; count: TGLsizei; CONST value: PGLuint); 
   TglUniform4uivEXT = PROCEDURE { C }(location: TGLint; count: TGLsizei; CONST value: PGLuint); 
   TglGetUniformuivEXT = PROCEDURE { C }(_program: TGLuint; location: TGLint; params: PGLuint); 
-  TglBindFragDataLocationEXT = PROCEDURE { C }(_program: TGLuint; colorNumber: TGLuint; CONST name: PGLchar); 
+  TglBindFragDataLocationEXT = PROCEDURE { C }(_program: TGLuint; colorNumber: TGLuint; CONST name: ARRAY OF CHAR); 
   TglGetFragDataLocationEXT = PROCEDURE { C } (_program: TGLuint; CONST name: PGLchar): TGLint;
 
   (* GL_EXT_texture_array *)
@@ -3363,7 +3364,7 @@ TYPE
   (*! GL utility functions and procedures *)
 VAR
 
-  gluErrorString - : PROCEDURE { C } (errCode: TGLenum): AnsiChar; 
+  gluErrorString - : PROCEDURE { C } (errCode: TGLenum): ADDRESS; (* AnsiChar; *)
   gluGetString - : PROCEDURE { C } (name: TGLenum): ADDRESS; 
   gluOrtho2D - : PROCEDURE { C }(left, right, bottom, top: TGLdouble); 
   gluPerspective - : PROCEDURE { C }(fovy, aspect, zNear, zFar: TGLdouble); 
@@ -9420,6 +9421,12 @@ BEGIN
 	RETURN GetStringFromAddr(sadr);	
 END GLUGetString;
 
+PROCEDURE GLUErrorString*(err: GLenum):Strings.String;
+VAR  sadr: LONGINT;
+BEGIN 
+  	sadr := gluErrorString(err); 
+	RETURN GetStringFromAddr(sadr);	
+END GLUErrorString;
 
 PROCEDURE ReadCoreVersion;
 VAR
@@ -10034,16 +10041,15 @@ PROCEDURE OnClose;
 BEGIN {EXCLUSIVE}
 DelFCR();
 
-IF GL_LibHandle # 0 THEN
-      Unix.Dlclose(GL_LibHandle);
-       Trace.String(GL_LibName); Trace.String(" unloaded."); Trace.Ln; 
-END;
-
-
 IF GLU_LibHandle # 0 THEN
        Unix.Dlclose(GLU_LibHandle);
        Trace.String(GLU_LibName); Trace.String(" unloaded."); Trace.Ln; 
 END;	 
+
+IF GL_LibHandle # 0 THEN
+      Unix.Dlclose(GL_LibHandle);
+       Trace.String(GL_LibName); Trace.String(" unloaded."); Trace.Ln; 
+END;
 
 END OnClose;
 
@@ -10097,6 +10103,5 @@ BEGIN
  *)
  oldfcr := FCR();
  newfcr := SYSTEM.VAL(SET, 133FH);
-
 END OpenGL.
 

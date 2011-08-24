@@ -4,7 +4,7 @@ Compile Libraries:
 
 LinuxAos:
 
-Compiler.Compile OpenGLConst.Mod MyX11Api.Mod Unix.OpenGL.Mod  Unix.GLContext.Mod ~
+Compiler.Compile OpenGLConst.Mod Unix.OpenGL.Mod  Unix.GLContext.Mod ~
 
 WinAos:
 
@@ -15,8 +15,8 @@ Compile Examples:
 
 Compiler.Compile  
 GLinfo.Mod GLTest.Mod 
-MyXGear.Mod 
 MyWMGLWindow.Mod
+MyWMGLWindow1.Mod
 MyWMGLWindow2.Mod
 MyWMGLWindow3.Mod
 MyWMGLWindow4.Mod
@@ -25,7 +25,14 @@ MyWMGLWindow7.Mod
 MyWMGLWindow9.Mod
 MyWMGLWindowFlags.Mod 
 MyWMGLWindowLorenz.Mod 
-MyWMGLPlotSurface.Mod ~
+MyWMGLPlotSurface.Mod 
+GLLib.Mod
+GLShaderUtils.Mod
+MyWMGLSLBrics.Mod
+~
+
+LinuxAos specific: 
+Compiler.Compile MyXGear.Mod MyXGear1.Mod ~ 
 
 WinAos specific version of MyWMGLWindow7.Mod by tobj..@ .., thanks :
 Compiler.Compile  Win32.MyWMGLWindow7b.Mod ~ 

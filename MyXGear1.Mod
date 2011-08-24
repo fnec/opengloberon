@@ -1,7 +1,7 @@
 MODULE MyXGear1; (** AUTHOR "fnecati"; PURPOSE "Adjusted for commandline run"; *)
 
 IMPORT
-	X11, Api := MyX11Api, GL:=OpenGL, GLC := OpenGLConst, Kernel, Inputs, 
+	X11, Api := X11Api, GL:=OpenGL, GLC := OpenGLConst, Kernel, Inputs, 
 	Trace,  Math , Raster, WMGraphics,  SYSTEM ;
 
 (* 
@@ -44,7 +44,7 @@ CONST
 	Mod2KeyBit = 4;  Mod3KeyBit = 5;  Mod4KeyBit = 6;  Mod5KeyBit = 7;
 	
 VAR
-	event: X11.Event;  xbuttons: SET;
+	event: Api.XEvent;  xbuttons: SET;
 	compstatus: X11.ComposeStatus;
 
 	MMseen, MRseen: BOOLEAN;
@@ -365,14 +365,14 @@ END;
  END;
 
  (* window event masks *)	
- masks :=  Api.KeyPressMask + Api.KeyReleaseMask + Api.ButtonPressMask + Api.ButtonReleaseMask + Api.PointerMotionMask
- + Api.ButtonMotionMask + Api.ExposureMask + Api.StructureNotifyMask + Api.FocusChangeMask;
+ masks :=  {Api.KeyPressMask, Api.KeyReleaseMask, Api.ButtonPressMask, Api.ButtonReleaseMask, Api.PointerMotionMask,
+ Api.ButtonMotionMask ,Api.ExposureMask ,Api.StructureNotifyMask, Api.FocusChangeMask};
 
   (* window attributes *)
- swa.background_pixel := 0;
- swa.border_pixel := 0;
+ swa.backgroundPixel := 0;
+ swa.borderPixel := 0;
  swa.colormap := cmap;
- swa.event_mask := masks;
+ swa.eventMask := masks;
  
  masks := { Api.CWBackPixel, Api.CWBorderPixel, Api.CWColormap, Api.CWEventMask};
  
@@ -480,15 +480,16 @@ END SaveImage;
 		rw, cw: X11.Window;  buffer: X11.Buffer;  keysym: X11.KeySym;
 		newxbuttons, bdiff: SET;
 		 km: Inputs.KeyboardMsg;
+		 be : Api.XButtonEvent;
 	BEGIN
 		eventcount := X11.EventsQueued( display, X11.QueuedAfterReading );
 		IF eventcount > 0 THEN
 			noEventCount := 0;
 			REPEAT
-				X11.NextEvent( display, event );
+				Api.NextEvent( display, event );
 				CASE event.typ OF
-				| X11.KeyPress:
-						keycount := X11.LookupString( event, buffer, X11.BufferSize, keysym, compstatus );
+				| Api.KeyPress:
+						keycount := Api.LookupString( SYSTEM.VAL(Api.XKeyEvent,event), buffer, X11.BufferSize, keysym, compstatus );
 						X11.QueryPointer( display, event.window, rw, cw, xr, yr, x, y, newxbuttons );
 						i := 0;
 						IF keycount = 0 THEN
@@ -514,7 +515,7 @@ END SaveImage;
 								INC( i )
 							END
 						END;
-				| X11.KeyRelease:
+				| Api.KeyRelease:
 						X11.QueryPointer( display, event.window, rw, cw, xr, yr, x, y, newxbuttons );
 						bdiff := newxbuttons / xbuttons;  xbuttons := newxbuttons;
 						IF bdiff # {} THEN
@@ -528,46 +529,46 @@ END SaveImage;
 							km.flags := KeyState( )+ {Inputs.Release};
 							SendKeyboardMsg( km )
 						END
-				| X11.ButtonPress:
+				| Api.ButtonPress: be := SYSTEM.VAL(Api.XButtonEvent, event);
 						dz := 0;
-						CASE event.button OF
-						| X11.Button1:  INCL( xbuttons, Button1Bit )
-						| X11.Button2:  INCL( xbuttons, Button2Bit )
-						| X11.Button3:  INCL( xbuttons, Button3Bit )
-						| 4: dz := -1
-						| 5: dz := +1
+						CASE be.button OF
+						| Api.Button1:  INCL( xbuttons, Button1Bit )
+						| Api.Button2:  INCL( xbuttons, Button2Bit )
+						| Api.Button3:  INCL( xbuttons, Button3Bit )
+						| Api.Button4: dz := -1
+						| Api.Button5: dz := +1
 						ELSE  (* ignore *)
 						END;
-						SendMouseMsg( event.x, event.y, dz, xbuttons )
-				| X11.ButtonRelease:
-						CASE event.button OF
-						| X11.Button1:  EXCL( xbuttons, Button1Bit )
-						| X11.Button2:  EXCL( xbuttons, Button2Bit )
-						| X11.Button3:  EXCL( xbuttons, Button3Bit )
+						SendMouseMsg( be.x, be.y, dz, xbuttons )
+				| Api.ButtonRelease: be := SYSTEM.VAL(Api.XButtonEvent, event);
+						CASE be.button OF
+						| Api.Button1:  EXCL( xbuttons, Button1Bit )
+						| Api.Button2:  EXCL( xbuttons, Button2Bit )
+						| Api.Button3:  EXCL( xbuttons, Button3Bit )
 						ELSE  (* ignore *)
 						END;
-						SendMouseMsg( event.x, event.y, 0, xbuttons )
-				| X11.MotionNotify:
+						SendMouseMsg( be.x, be.y, 0, xbuttons )
+				| Api.MotionNotify:
 						X11.QueryPointer( display, event.window, rw, cw, xr, yr, x, y, xbuttons );
 						SendMouseMsg( x, y, 0, xbuttons )
-				| X11.Expose, X11.GraphicsExpose:
+				| Api.Expose, Api.GraphicsExpose:
 							res := Api.GetWindowAttributes(display, win, SYSTEM.ADR(gwa));
 							width := gwa.width; height := gwa.height;
 							Reshape(width, height);
 							Wr("Expose");
 					
-				| X11.NoExpose:
-				| X11.MappingNotify:
+				| Api.NoExpose:
+				| Api.MappingNotify:
 						X11.RefreshKeyboardMapping( SYSTEM.ADR( event ) )
-				| X11.ClientMessage:
-				| X11.UnmapNotify:
-				| X11.MapNotify:
-				| X11.SelectionClear:
-						IF X11.ClearSelection # NIL THEN X11.ClearSelection() END
-				| X11.SelectionNotify:
-						IF X11.ReceiveSelection # NIL THEN X11.ReceiveSelection( SYSTEM.VAL( X11.SelectionEvent, event ) ) END
-				| X11.SelectionRequest:
-						IF X11.SendSelection # NIL THEN X11.SendSelection( SYSTEM.VAL( X11.SelectionRequestEvent, event ) ) END
+				| Api.ClientMessage:
+				| Api.UnmapNotify:
+				| Api.MapNotify:
+				| Api.SelectionClear:
+						IF Api.ClearSelection # NIL THEN Api.ClearSelection() END
+				| Api.SelectionNotify:
+						IF Api.ReceiveSelection # NIL THEN Api.ReceiveSelection( SYSTEM.VAL( Api.XSelectionEvent, event ) ) END
+				| Api.SelectionRequest:
+						IF Api.SendSelection # NIL THEN Api.SendSelection( SYSTEM.VAL( Api.XSelectionRequestEvent, event ) ) END
 				ELSE
 				END;
 				DEC( eventcount );
