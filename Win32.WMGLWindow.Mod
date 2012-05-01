@@ -1,7 +1,8 @@
-MODULE GLContextSized; (** AUTHOR "fnecati"; PURPOSE "OpenGL Win32 Context for WinAos; *)
+MODULE WMGLWindow; (** AUTHOR "fnecati"; PURPOSE "an OpenGL Context enabled WM.Window using GLXPixmap for LinuxAos"; *)
 
-IMPORT SYSTEM, Kernel32, User32, KernelLog, WinApi,
-	Strings, GL := OpenGL, GLC := OpenGLConst, Raster ;
+IMPORT
+	Kernel32, User32, KernelLog, WinApi, GL:=OpenGL, GLC := OpenGLConst, Raster,
+	WM := WMWindowManager,  SYSTEM, Strings;
 
 CONST
 	debug = FALSE;
@@ -25,6 +26,7 @@ TYPE
 
 	Buffer = POINTER TO ARRAY OF CHAR;
 
+
 TYPE
 	Context*= OBJECT
 	VAR
@@ -44,8 +46,8 @@ TYPE
     		winGL.width := w; winGL.height := h;
 
     		winGL.title:="GLContext.Window";
-		Resize(w, h);
-    		(* NEW(buffer, w*h*3); *)
+		(* Resize(w, h); *)
+    		NEW(buffer, w*h*4);
 		Raster.InitMode(mode, Raster.srcCopy);
     		initialized := TRUE;
 		AWAIT (wincreated);
@@ -151,6 +153,45 @@ BEGIN {ACTIVE}
 			MyLoop;
 END Context;
 
+TYPE
+	Window* =  OBJECT(WM.DoubleBufferWindow)
+	VAR
+		context* : Context;
+
+		PROCEDURE &Init(w, h: LONGINT; alpha: BOOLEAN);
+		BEGIN
+			Init^(w, h, alpha); (* use alpha, for 32bpp img *)
+			NEW(context);
+			context.Init(w, h);
+		END Init;
+
+		(** *)
+		PROCEDURE Close*();
+		BEGIN
+			context.Close();
+			context := NIL;
+			Close^;
+		END Close;
+
+		PROCEDURE Reshape*(w,h: LONGINT);
+		BEGIN
+		END Reshape;
+
+		PROCEDURE UpdateImage*();
+		BEGIN
+
+		END UpdateImage;
+
+		PROCEDURE Resized(w, h: LONGINT);
+		BEGIN
+			context.Resize(w, h);
+			ReInit(w, h);
+			Reshape(w, h);
+			UpdateImage;
+		END Resized;
+
+	END Window;
+
 VAR
 	ctxtcounter: LONGINT;
 
@@ -221,7 +262,7 @@ VAR
 		END;
 
 		(* create GL context for this window *)
-		bres := CreateGLRC(glWin, {opDoubleBuffered}, 32, 8, 8, 8,0,0);
+		bres := CreateGLRC(glWin, {opDoubleBuffered}, 24, 8, 8, 8,0,0);
 		RETURN bres;
 	END CreateHWND;
 
@@ -356,10 +397,11 @@ BEGIN
   RETURN User32.DefWindowProc(wnd, uMsg, wParam, lParam)
 END WindowProc;
 
+
 BEGIN
-	ctxtcounter := 0;
-END GLContextSized.
+ctxtcounter := 0;
+END WMGLWindow.
 
+SystemTools.Free WMGLWindow ~
 
-SystemTools.Free GLContextSized WinApi OpenGL OpenGLConst~
-
+SystemTools.FreeDownTo OpenGL ~ 

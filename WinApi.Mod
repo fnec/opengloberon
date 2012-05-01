@@ -6,7 +6,6 @@ IMPORT
 CONST
 		NULL* = Kernel32.NULL;
 
-
 	 (** CreateWindow dwStyle values *)
 		WS_OVERLAPPED* = {};
 		WS_POPUP* = {31};
@@ -35,7 +34,7 @@ CONST
 		WS_OVERLAPPEDWINDOW* = {16..19, 22, 23};
 		WS_POPUPWINDOW* = {19, 23, 31};
 		WS_CHILDWINDOW* = {30};
-		
+
 		(** CreateWindow dwExStyle values *)
 		WS_EX_DLGMODALFRAME* = {0};
 		WS_EX_NOPARENTNOTIFY* = {2};
@@ -58,7 +57,7 @@ CONST
 		WS_EX_APPWINDOW* = {18};
 		WS_EX_OVERLAPPEDWINDOW* = {8, 9};
 		WS_EX_PALETTEWINDOW* = {3, 7, 8};
-		
+
 		(** window Class styles*)
 		CS_VREDRAW* = {0};
 		CS_HREDRAW* = {1};
@@ -74,9 +73,87 @@ CONST
 		CS_BYTEALIGNWINDOW* = {13};
 		CS_GLOBALCLASS* = {14};
 		CS_IME* = {16};
-		
 
-		(* pixel format description values *)		
+		(* size messages?  *)
+		SM_CXSCREEN* = 0 (* {} *);
+		SM_CYSCREEN* = 1 (* {0} *);
+		SM_CXVSCROLL* = 2 (* {1} *);
+		SM_CYHSCROLL* = 3 (* {0, 1} *);
+		SM_CYCAPTION* = 4 (* {2} *);
+		SM_CXBORDER* = 5 (* {0, 2} *);
+		SM_CYBORDER* = 6 (* {1, 2} *);
+		SM_CXDLGFRAME* = 7 (* {0..2} *);
+		SM_CYDLGFRAME* = 8 (* {3} *);
+		SM_CYVTHUMB* = 9 (* {0, 3} *);
+		SM_CXHTHUMB* = 10 (* {1, 3} *);
+		SM_CXICON* = 11 (* {0, 1, 3} *);
+		SM_CYICON* = 12 (* {2, 3} *);
+		SM_CXCURSOR* = 13 (* {0, 2, 3} *);
+		SM_CYCURSOR* = 14 (* {1..3} *);
+		SM_CYMENU* = 15 (* {0..3} *);
+		SM_CXFULLSCREEN* = 16 (* {4} *);
+		SM_CYFULLSCREEN* = 17 (* {0, 4} *);
+		SM_CYKANJIWINDOW* = 18 (* {1, 4} *);
+		SM_MOUSEPRESENT* = 19 (* {0, 1, 4} *);
+		SM_CYVSCROLL* = 20 (* {2, 4} *);
+		SM_CXHSCROLL* = 21 (* {0, 2, 4} *);
+		SM_DEBUG* = 22 (* {1, 2, 4} *);
+		SM_SWAPBUTTON* = 23 (* {0..2, 4} *);
+		SM_RESERVED1* = 24 (* {3, 4} *);
+		SM_RESERVED2* = 25 (* {0, 3, 4} *);
+		SM_RESERVED3* = 26 (* {1, 3, 4} *);
+		SM_RESERVED4* = 27 (* {0, 1, 3, 4} *);
+		SM_CXMIN* = 28 (* {2..4} *);
+		SM_CYMIN* = 29 (* {0, 2..4} *);
+		SM_CXSIZE* = 30 (* {1..4} *);
+		SM_CYSIZE* = 31 (* {0..4} *);
+		SM_CXFRAME* = 32 (* {5} *);
+		SM_CYFRAME* = 33 (* {0, 5} *);
+		SM_CXMINTRACK* = 34 (* {1, 5} *);
+		SM_CYMINTRACK* = 35 (* {0, 1, 5} *);
+		SM_CXDOUBLECLK* = 36 (* {2, 5} *);
+		SM_CYDOUBLECLK* = 37 (* {0, 2, 5} *);
+		SM_CXICONSPACING* = 38 (* {1, 2, 5} *);
+		SM_CYICONSPACING* = 39 (* {0..2, 5} *);
+		SM_MENUDROPALIGNMENT* = 40 (* {3, 5} *);
+		SM_PENWINDOWS* = 41 (* {0, 3, 5} *);
+		SM_DBCSENABLED* = 42 (* {1, 3, 5} *);
+		SM_CMOUSEBUTTONS* = 43 (* {0, 1, 3, 5} *);
+		SM_CXFIXEDFRAME* = 7 (* {0..2} *);
+		SM_CYFIXEDFRAME* = 8 (* {3} *);
+		SM_CXSIZEFRAME* = 32 (* {5} *);
+		SM_CYSIZEFRAME* = 33 (* {0, 5} *);
+		SM_SECURE* = 44 (* {2, 3, 5} *);
+		SM_CXEDGE* = 45 (* {0, 2, 3, 5} *);
+		SM_CYEDGE* = 46 (* {1..3, 5} *);
+		SM_CXMINSPACING* = 47 (* {0..3, 5} *);
+		SM_CYMINSPACING* = 48 (* {4, 5} *);
+		SM_CXSMICON* = 49 (* {0, 4, 5} *);
+		SM_CYSMICON* = 50 (* {1, 4, 5} *);
+		SM_CYSMCAPTION* = 51 (* {0, 1, 4, 5} *);
+		SM_CXSMSIZE* = 52 (* {2, 4, 5} *);
+		SM_CYSMSIZE* = 53 (* {0, 2, 4, 5} *);
+		SM_CXMENUSIZE* = 54 (* {1, 2, 4, 5} *);
+		SM_CYMENUSIZE* = 55 (* {0..2, 4, 5} *);
+		SM_ARRANGE* = 56 (* {3..5} *);
+		SM_CXMINIMIZED* = 57 (* {0, 3..5} *);
+		SM_CYMINIMIZED* = 58 (* {1, 3..5} *);
+		SM_CXMAXTRACK* = 59 (* {0, 1, 3..5} *);
+		SM_CYMAXTRACK* = 60 (* {2..5} *);
+		SM_CXMAXIMIZED* = 61 (* {0, 2..5} *);
+		SM_CYMAXIMIZED* = 62 (* {1..5} *);
+		SM_NETWORK* = 63 (* {0..5} *);
+		SM_CLEANBOOT* = 67 (* {0, 1, 6} *);
+		SM_CXDRAG* = 68 (* {2, 6} *);
+		SM_CYDRAG* = 69 (* {0, 2, 6} *);
+		SM_SHOWSOUNDS* = 70 (* {1, 2, 6} *);
+		SM_CXMENUCHECK* = 71 (* {0..2, 6} *);
+		SM_CYMENUCHECK* = 72 (* {3, 6} *);
+		SM_SLOWMACHINE* = 73 (* {0, 3, 6} *);
+		SM_MIDEASTENABLED* = 74 (* {1, 3, 6} *);
+		SM_CMETRICS* = 75  (* {0, 1, 3, 6} *);
+
+		(* pixel format description values *)
 		PFD_TYPE_RGBA* = 0 (* {} *);
 		PFD_TYPE_COLORINDEX* = 1 (* {0} *);
 		PFD_MAIN_PLANE* = 0 (* {} *);
@@ -97,21 +174,41 @@ CONST
 		PFD_DOUBLEBUFFER_DONTCARE* = {30};
 		PFD_STEREO_DONTCARE* = {31};
 
+
+
 		(* HDC Types *)
 		OBJ_BITMAP* = 7 (* {0..2} *);
 		OBJ_MEMDC* = 10;
 		OBJ_ENHMETADC* = 12;
 		OBJ_METADC* = 4;
-		
+
 		DIB_RGB_COLORS* = 0 (* {} *);
 		DIB_PAL_COLORS* = 1 (* {0} *);
 
 		BIRGB* = GDI32.BIRGB;
-		
+
+		PM_NOREMOVE* = 0 (* {} *);
+		PM_REMOVE* = 1 (* {0} *);
+		PM_NOYIELD* = 2 (* {1} *);
+
+		GWL_WNDPROC* = -4 (* {2..31} *);
+		GWL_HINSTANCE* = -6 (* {1, 3..31} *);
+		GWL_HWNDPARENT* = -8 (* {3..31} *);
+		GWL_STYLE* = -16 (* {4..31} *);
+		GWL_EXSTYLE* = -20 (* {2, 3, 5..31} *);
+		GWL_USERDATA* = -21 (* {0, 1, 3, 5..31} *);
+		GWL_ID* = -12 (* {2, 4..31} *);
+
+		(* Messages *)
+		WM_ERASEBKGND* = 20 (* {2, 4} *);
+		WM_SIZING* = 532 (* {2, 4, 9} *);
+
   TYPE
-	
-		ADDRESS* = LONGINT;
+
+		ADDRESS* = Kernel32.ADDRESS;
 		HANDLE* = Kernel32.HANDLE;
+		HINSTANCE* = Kernel32.HINSTANCE;
+		HMENU* = User32.HMenu;
 		HDC* = HANDLE;
 		HGLRC* = HANDLE;
 		HPALETTE* = HANDLE;
@@ -121,10 +218,10 @@ CONST
 		HBITMAP* = HANDLE;
 		WORD* = INTEGER;
 		DWORD* = LONGINT;
-		
+
 		RGBQUAD* = RECORD
 			rgbBlur*, rgbGreen*, rgbRed*, rgbReserved*: CHAR;
-		END;	
+		END;
 
 		PALETTEENTRY* = RECORD
 			peRed*: CHAR;
@@ -133,15 +230,15 @@ CONST
 			peFlags*: CHAR;
 		END;
 		PtrPALETTEENTRY* = POINTER TO PALETTEENTRY;
-		
-		LOGPALETTE* = RECORD 
+
+		LOGPALETTE* = RECORD
 			palVersion*: INTEGER;
 			palNumEntries*: INTEGER;
 			palPalEntry*: ARRAY 1 OF PALETTEENTRY;
 		END;
 		PtrLOGPALETTE* = POINTER TO LOGPALETTE;
 
-		BITMAP* = RECORD 
+		BITMAP* = RECORD
 			bmType*: LONGINT;
 			bmWidth*: LONGINT;
 			bmHeight*: LONGINT;
@@ -150,7 +247,7 @@ CONST
 			bmBitsPixel*: INTEGER;
 			bmBits*: LONGINT;
 		END;
-		
+
 		BITMAPINFOHEADER* = RECORD
 			biSize*: LONGINT;
 			biWidth*: LONGINT;
@@ -164,8 +261,8 @@ CONST
 			biClrUsed*: LONGINT;
 			biClrImportant*: LONGINT;
 		END;
-			
-		BITMAPINFO* = RECORD 
+
+		BITMAPINFO* = RECORD
 			bmiHeader*: BITMAPINFOHEADER;
 			bmiColors*: ARRAY 1 OF RGBQUAD;
 		END;
@@ -199,28 +296,64 @@ CONST
 		dwVisibleMask*: SET;
 		dwDamageMask*: SET;
 	END;
-		
+
+
+		CREATESTRUCTA* = RECORD
+			lpCreateParams*: LONGINT;
+			hInstance*: HINSTANCE;
+			hMenu*: HMENU;
+			hwndParent*: HWND;
+			cy*: LONGINT;
+			cx*: LONGINT;
+			y*: LONGINT;
+			x*: LONGINT;
+			style*: SET;
+			lpszName*: LONGINT;
+			lpszClass*:LONGINT;
+			dwExStyle*: SET;
+		END;
+		CREATESTRUCTW* = RECORD
+			lpCreateParams*: LONGINT;
+			hInstance*: HINSTANCE;
+			hMenu*: HMENU;
+			hwndParent*: HWND;
+			cy*: LONGINT;
+			cx*: LONGINT;
+			y*: LONGINT;
+			x*: LONGINT;
+			style*: SET;
+			lpszName*: LONGINT;
+			lpszClass*: LONGINT;
+			dwExStyle*: SET;
+		END;
+		CREATESTRUCT* = CREATESTRUCTA;
+
 
 VAR
 
 	(* GDI32.dll *)
-	CreateDIBSection- : PROCEDURE { WINAPI }  (p0: HDC;   p1: ADDRESS (*BITMAPINFO*); p2: LONGINT;  p3: ADDRESS; p4: HANDLE; p5: LONGINT): HBITMAP;
-	CreatePalette-: PROCEDURE { WINAPI } ( p0: ADDRESS (*LOGPALETTE*)): HPALETTE;
-	GetCurrentObject-: PROCEDURE { WINAPI } (p0: HDC; p1: LONGINT): HGDIOBJ;
-	GetObject-: PROCEDURE { WINAPI }  (p0: HGDIOBJ; p1: LONGINT; p2: ADDRESS): LONGINT;
-	GetObjectType-: PROCEDURE  { WINAPI } (h: HGDIOBJ): LONGINT;
-	RealizePalette- : PROCEDURE  { WINAPI } (p0: HDC): LONGINT;
-	SelectPalette-: PROCEDURE { WINAPI } (p0: HDC; p1: HPALETTE; p2: BOOL): HPALETTE;
-	ChoosePixelFormat- :PROCEDURE  { WINAPI } (p0: HDC;   p1: ADDRESS (*PIXELFORMATDESCRIPTOR*)): LONGINT;
- 	DescribePixelFormat-: PROCEDURE { WINAPI } (p0: HDC; p1: LONGINT; p2: LONGINT;  p3: ADDRESS(*PIXELFORMATDESCRIPTOR*)): LONGINT;
-	GetPixelFormat-: PROCEDURE { WINAPI } (p0: HDC): LONGINT;
-	SetPixelFormat- : PROCEDURE { WINAPI }  (p0: HDC; p1: LONGINT;  p2: ADDRESS (*PIXELFORMATDESCRIPTOR*)): BOOL;
-	SwapBuffers- : PROCEDURE { WINAPI }  (p0: HDC): BOOL;
+	CreateDIBSection- : PROCEDURE {WINAPI}  (p0: HDC;   p1: ADDRESS (*BITMAPINFO*); p2: LONGINT;  p3: ADDRESS; p4: HANDLE; p5: LONGINT): HBITMAP;
+	CreatePalette-: PROCEDURE {WINAPI} ( p0: ADDRESS (*LOGPALETTE*)): HPALETTE;
+	GetCurrentObject-: PROCEDURE {WINAPI} (p0: HDC; p1: LONGINT): HGDIOBJ;
+	GetObject-: PROCEDURE {WINAPI}  (p0: HGDIOBJ; p1: LONGINT; p2: ADDRESS): LONGINT;
+	GetObjectType-: PROCEDURE  {WINAPI} (h: HGDIOBJ): LONGINT;
+	PeekMessage-: PROCEDURE {WINAPI} (VAR  lpMsg: User32.Msg; hWnd: HWND; wMsgFilterMin: LONGINT; wMsgFilterMax: LONGINT; wRemoveMsg: LONGINT): BOOL;
+	RealizePalette- : PROCEDURE  {WINAPI} (p0: HDC): LONGINT;
+	SelectPalette-: PROCEDURE {WINAPI} (p0: HDC; p1: HPALETTE; p2: BOOL): HPALETTE;
+	ChoosePixelFormat- :PROCEDURE  {WINAPI} (p0: HDC;   p1: ADDRESS (*PIXELFORMATDESCRIPTOR*)): LONGINT;
+ 	DescribePixelFormat-: PROCEDURE {WINAPI} (p0: HDC; p1: LONGINT; p2: LONGINT;  p3: ADDRESS(*PIXELFORMATDESCRIPTOR*)): LONGINT;
+	GetPixelFormat-: PROCEDURE {WINAPI} (p0: HDC): LONGINT;
+	SetPixelFormat- : PROCEDURE {WINAPI}  (p0: HDC; p1: LONGINT;  p2: ADDRESS (*PIXELFORMATDESCRIPTOR*)): BOOL;
+	SwapBuffers- : PROCEDURE {WINAPI}  (p0: HDC): BOOL;
 
 	(* USER32.dll *)
-	GetDesktopWindow-: PROCEDURE { WINAPI } (): HWND;
-	GetWindowDC- : PROCEDURE  { WINAPI } (hwin: HWND): HDC;
-	
+	AdjustWindowRectEx-: PROCEDURE {WINAPI} (VAR lpRect: User32.Rect (* ADDRESS *); dwStyle: SET; bMenu: BOOL; dwExStyle: SET): BOOL;
+	ClientToScreen- : PROCEDURE {WINAPI} (hWnd: HWND; VAR lpPoint: User32.Point): BOOL;
+	FindWindow- : PROCEDURE {WINAPI} (CONST lpClassName: ARRAY OF CHAR; CONST lpWindowName: ARRAY OF CHAR): HWND;
+	GetDesktopWindow-: PROCEDURE {WINAPI} (): HWND;
+	GetWindowDC- : PROCEDURE {WINAPI} (hwin: HWND): HDC;
+
+
 	PROCEDURE GetDC*(hwn: HANDLE): HDC;
 	BEGIN
 		RETURN User32.GetDC(hwn);
@@ -251,33 +384,40 @@ VAR
 	BEGIN
 		RETURN GDI32.CreateCompatibleDC(hdc);
 	END CreateCompatibleDC;
-				
+
 PROCEDURE InitWinApiLibs;
 VAR
-	lib: Kernel32.HMODULE; str: ARRAY 32 OF CHAR;
+	lib: Kernel32.HMODULE;
 BEGIN
-	str := "GDI32.DLL";
-	lib := Kernel32.LoadLibrary(str);
-	
-	Kernel32.GetProcAddress(lib, "CreateDIBSection", S.VAL(LONGINT,CreateDIBSection ));
-	Kernel32.GetProcAddress(lib, "CreatePalette", S.VAL(LONGINT,CreatePalette ));
-	Kernel32.GetProcAddress(lib, "GetCurrentObject", S.VAL(LONGINT,GetCurrentObject ));
 
-	Kernel32.GetProcAddress(lib, "GetObjectA", S.VAL(LONGINT,GetObject ));
-	Kernel32.GetProcAddress(lib, "GetObjectType", S.VAL(LONGINT,GetObjectType ));
-	Kernel32.GetProcAddress(lib, "RealizePalette", S.VAL(LONGINT,RealizePalette ));
-	Kernel32.GetProcAddress(lib, "SelectPalette", S.VAL(LONGINT,SelectPalette ));	 
+	lib := Kernel32.LoadLibrary("GDI32.DLL");
 
-	Kernel32.GetProcAddress(lib, "ChoosePixelFormat", S.VAL(LONGINT,ChoosePixelFormat ));
-	Kernel32.GetProcAddress(lib, "DescribePixelFormat", S.VAL(LONGINT,DescribePixelFormat ));
-	Kernel32.GetProcAddress(lib, "GetPixelFormat", S.VAL(LONGINT,GetPixelFormat ));	
-	Kernel32.GetProcAddress(lib, "SetPixelFormat", S.VAL(LONGINT,SetPixelFormat ));
-	Kernel32.GetProcAddress(lib, "SwapBuffers", S.VAL(LONGINT,SwapBuffers ));
-	
-	str := "USER32.DLL";
-	lib := Kernel32.LoadLibrary(str);	
-	Kernel32.GetProcAddress(lib, "GetDesktopWindow", S.VAL(LONGINT,GetDesktopWindow ));
-	Kernel32.GetProcAddress(lib, "GetWindowDC", S.VAL(LONGINT,GetWindowDC ));		
+	Kernel32.GetProcAddress(lib, "CreateDIBSection", S.VAL(ADDRESS, CreateDIBSection ));
+	Kernel32.GetProcAddress(lib, "CreatePalette", S.VAL(ADDRESS, CreatePalette ));
+	Kernel32.GetProcAddress(lib, "GetCurrentObject", S.VAL(ADDRESS, GetCurrentObject ));
+
+	Kernel32.GetProcAddress(lib, "GetObjectA", S.VAL(ADDRESS, GetObject ));
+	Kernel32.GetProcAddress(lib, "GetObjectType", S.VAL(ADDRESS,GetObjectType ));
+
+	Kernel32.GetProcAddress(lib, "RealizePalette", S.VAL(ADDRESS, RealizePalette ));
+	Kernel32.GetProcAddress(lib, "SelectPalette", S.VAL(ADDRESS, SelectPalette ));
+
+	Kernel32.GetProcAddress(lib, "ChoosePixelFormat", S.VAL(ADDRESS, ChoosePixelFormat ));
+	Kernel32.GetProcAddress(lib, "DescribePixelFormat", S.VAL(ADDRESS, DescribePixelFormat ));
+	Kernel32.GetProcAddress(lib, "GetPixelFormat", S.VAL(ADDRESS, GetPixelFormat ));
+	Kernel32.GetProcAddress(lib, "SetPixelFormat", S.VAL(ADDRESS, SetPixelFormat ));
+	Kernel32.GetProcAddress(lib, "SwapBuffers", S.VAL(ADDRESS, SwapBuffers ));
+
+
+	lib := Kernel32.LoadLibrary("USER32.DLL");
+	Kernel32.GetProcAddress(lib, "AdjustWindowRectEx", S.VAL(ADDRESS, AdjustWindowRectEx ));
+	Kernel32.GetProcAddress(lib, "ClientToScreen", S.VAL(ADDRESS, ClientToScreen));
+	Kernel32.GetProcAddress(lib, "FindWindowA", S.VAL(ADDRESS, FindWindow));
+	Kernel32.GetProcAddress(lib, "GetDesktopWindow", S.VAL(ADDRESS,GetDesktopWindow ));
+	Kernel32.GetProcAddress(lib, "GetWindowDC", S.VAL(ADDRESS, GetWindowDC ));
+	Kernel32.GetProcAddress(lib, "PeekMessageA", S.VAL(ADDRESS, PeekMessage ));
+
+
 END InitWinApiLibs;
 
 BEGIN

@@ -1,4 +1,4 @@
-MODULE  GLinfo; (** AUTHOR "fnecati"; PURPOSE "Print GL and GLU  version, vendor and extension info"; *)
+MODULE  GLXinfo; (** AUTHOR "fnecati"; PURPOSE "Print GLX, GL and GLU  version, vendor and extension info"; *)
 IMPORT
 	GL := OpenGL, GLC:= OpenGLConst, KernelLog, GLContext, Strings;
 
@@ -12,12 +12,24 @@ BEGIN
 	context.Init(100, 100);
 	context.MakeCurrent;
 
+	(* GLX server and client info *)
+	s := GL.GLXQueryServerString(context.glWin.display, 0, GLC.GLX_VENDOR); KernelLog.String("Server GLX_VENDOR: "); KernelLog.String(s^); KernelLog.Ln;
+	s := GL.GLXQueryServerString(context.glWin.display, 0, GLC.GLX_VERSION); KernelLog.String("Server GLX_VERSION: "); KernelLog.String(s^); KernelLog.Ln;
+	s := GL.GLXQueryServerString(context.glWin.display, 0, GLC.GLX_EXTENSIONS); KernelLog.String("Server GLX_EXTENSIONS: "); KernelLog.String(s^); KernelLog.Ln;
+	KernelLog.Ln;
+
+	s := GL.GLXGetClientString(context.glWin.display, GLC.GLX_VENDOR); KernelLog.String("Client GLX_VENDOR: "); KernelLog.String(s^); KernelLog.Ln;
+	s := GL.GLXGetClientString(context.glWin.display, GLC.GLX_VERSION); KernelLog.String("Client GLX_VERSION: "); KernelLog.String(s^); KernelLog.Ln;
+	s := GL.GLXGetClientString(context.glWin.display, GLC.GLX_EXTENSIONS); KernelLog.String("Client GLX_EXTENSIONS: "); KernelLog.String(s^); KernelLog.Ln;
+	KernelLog.Ln;
+
 	(* OpenGL info *)
 	s := GL.GLGetString(GLC.GL_VENDOR);  KernelLog.String("OpenGL GL_VENDOR: ");  KernelLog.String(s^); KernelLog.Ln;
 	s := GL.GLGetString(GLC.GL_RENDERER); KernelLog.String("OpenGL GL_RENDERER: "); KernelLog.String(s^); KernelLog.Ln;
 	s := GL.GLGetString(GLC.GL_VERSION); KernelLog.String("OpenGL GL_VERSION: "); KernelLog.String(s^); KernelLog.Ln;
 	s := GL.GLGetString(GLC.GL_SHADING_LANGUAGE_VERSION); KernelLog.String("OpenGL GL_SHADING_LANGUAGE_VERSION: "); KernelLog.String(s^); KernelLog.Ln;
 	s := GL.GLGetString(GLC.GL_EXTENSIONS); KernelLog.String("OpenGL GL_EXTENSIONS: "); KernelLog.String(s^); KernelLog.Ln;
+
 	KernelLog.Ln;
 
 	(* GLU info *)
@@ -31,11 +43,11 @@ BEGIN
 END Do;
 
 BEGIN
-END  GLinfo.
+END GLXinfo.
 
-GLinfo.Do ~
+GLXinfo.Do ~
 
-SystemTools.Free GLinfo GLContext ~
+SystemTools.Free GLXinfo GLContext ~
 
 
 

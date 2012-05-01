@@ -4,22 +4,22 @@ IMPORT  GL := OpenGL, GLC := OpenGLConst, KernelLog,
 			S:=SYSTEM, Math, GLContext, WMGraphics, Raster ;
 
 (* Note:
-	Since GL is state machine, drawing with different commands may leave 
-	artifacts of previous commands.  
-	
+	Since GL is state machine, drawing with different commands may leave
+	artifacts of previous commands.
+
 	Rendered images are saved as *.bmp file to the disk
 	Examples from OpenGL-redbook.
 *)
-CONST 
+CONST
 
 	pi = Math.pi;
 	degToRad = pi / 180.0;
-	
-TYPE 
-	
+
+TYPE
+
 	Point = ARRAY 3 OF GL.GLfloat;
 
-VAR 
+VAR
 	 w, h: LONGINT; (* size of window *)
 	 ctx : GLContext.Context;  (* GL context *)
 	 image: Raster.Image; (* for saving the rendered image *)
@@ -34,7 +34,7 @@ PROCEDURE SaveToImage(fname: ARRAY OF CHAR);
 VAR imres: LONGINT;
 BEGIN
 	ctx.RenderInto(image);
-	 WMGraphics.StoreImage(image, fname, imres); 
+	 WMGraphics.StoreImage(image, fname, imres);
 	KernelLog.String(fname); KernelLog.String(" saved."); KernelLog.Ln;
 END SaveToImage;
 
@@ -53,12 +53,12 @@ END Points;
 
 PROCEDURE Line;
 BEGIN
-GL.glBegin(GLC.GL_LINE_LOOP); 
+GL.glBegin(GLC.GL_LINE_LOOP);
 GL.SetFCR();
    GL.glVertex3f( 0.0, 1.0,-1.0);(* a *)
    GL.glVertex3f(-1.0,-1.0, 0.0);(* b *)
    GL.glVertex3f( 1.0,-1.0, 0.0);(* c *)
-GL.DelFCR();  
+GL.DelFCR();
   GL.glEnd();
 END Line;
 
@@ -111,7 +111,7 @@ GL.glEnd();
 	GL.glVertex3f(1.0,1.0,-1.0);(* c1 *)
 	GL.glVertex3f(0.0,1.0,-1.0);(* d1 *)
   GL.glEnd();
-GL.DelFCR();  
+GL.DelFCR();
 END Esquare;
 
 PROCEDURE Park;
@@ -120,7 +120,7 @@ VAR i: LONGINT;
     x, y: REAL;
 BEGIN
  GL.glBegin(GLC.GL_TRIANGLE_FAN);
-   GL.glVertex3f(0,0,0.0 );   
+   GL.glVertex3f(0,0,0.0 );
    FOR i:=0 TO 390 BY 30 DO
    	p := i*3.14/180;
    	x := Math.sin(p); y := Math.cos(p);
@@ -150,20 +150,20 @@ END Pillar;
 
 PROCEDURE Primitives*;
 
-BEGIN 
+BEGIN
 IF ctx = NIL THEN Error; RETURN END;
-GL.SetFCR();	
+GL.SetFCR();
 	(* Resize *)
 	ctx.MakeCurrent();
 	GL.glViewport(0, 0, w, h);
-	
+
 	(* Restore *)
 	GL.glClearColor (0, 0, 0, 0);
 	GL.glMatrixMode(GLC.GL_PROJECTION);
 	GL.glLoadIdentity;
 
 	GL.glOrtho(-2.0, 2.0, -2.0 , 2.0, -4.0, 4.0);
-	
+
 	GL.glClear (GLC.GL_COLOR_BUFFER_BIT+ GLC.GL_DEPTH_BUFFER_BIT);
 
 GL.DelFCR();
@@ -172,51 +172,51 @@ GL.DelFCR();
 	GL.glScalef(0.4, 0.4, 0.5);
 	Points();
 	GL.glPopMatrix();
-	
+
 	GL.glPushMatrix();
-	GL.glColor3f (0.0, 1.0, 1.0);	
+	GL.glColor3f (0.0, 1.0, 1.0);
 	GL.glTranslatef(0.3, 0.3, 0);
 	GL.glScalef(0.4, 0.4, 0.5);
 	Line();
 	GL.glPopMatrix();
-	
-	GL.glPushMatrix();	
+
+	GL.glPushMatrix();
 	GL.glColor3f (1.0, 0.0, 1.0);
 	GL.glRotatef(45, 0, 0, 1);
 	GL.glTranslatef(0.3, 0.5, 0);
-	GL.glScalef(0.4, 0.4, 0.5);	
+	GL.glScalef(0.4, 0.4, 0.5);
 	Triangle();
-	GL.glPopMatrix();	
-	
-	GL.glPushMatrix();	
+	GL.glPopMatrix();
+
+	GL.glPushMatrix();
 	GL.glColor3f (0.0, 1.0, 1.0);
 	GL.glTranslatef(-0.3, -0.3, 0);
-	GL.glScalef(0.4, 0.4, 0.5);	
+	GL.glScalef(0.4, 0.4, 0.5);
 	Square();
-	GL.glPopMatrix();	
-	
-	GL.glPushMatrix();	
+	GL.glPopMatrix();
+
+	GL.glPushMatrix();
 	GL.glTranslatef(-0.3, 0.3, 0);
-	GL.glScalef(0.4, 0.4, 0.5);	
+	GL.glScalef(0.4, 0.4, 0.5);
 	Esquare();
-	GL.glPopMatrix();	
-	
-	GL.glPushMatrix();	
+	GL.glPopMatrix();
+
+	GL.glPushMatrix();
 	GL.glTranslatef(0.6, 0.6, 0);
-	GL.glScalef(0.4, 0.4, 0.5);	
+	GL.glScalef(0.4, 0.4, 0.5);
 	Park();
-	GL.glPopMatrix();	
-	
-	GL.glPushMatrix();		
+	GL.glPopMatrix();
+
+	GL.glPushMatrix();
 	GL.glColor3f (1.0, 1.0, 1.0);
 	GL.glTranslatef(0.6, -0.6, 0);
 	GL.glScalef(0.4, 0.4, 0.5);
 	Pillar();
-	GL.glPopMatrix();	
+	GL.glPopMatrix();
 
-	
+
 (* ctx.SwapBuffers *);
-SaveToImage("glprimitives.bmp");	
+SaveToImage("glprimitives.bmp");
 ctx.DeActivate;
 END Primitives;
 
@@ -225,7 +225,7 @@ PROCEDURE  MakeGear (innerRadius, outerRadius, width: REAL; teeth: LONGINT;  too
 VAR  r0, r1, r2 , angle, da, u, v, len: REAL;
 		i: LONGINT;
 BEGIN
-	
+
 	r0 := innerRadius;
 	r1 := outerRadius - toothDepth / 2.0;
 	r2 := outerRadius + toothDepth / 2.0;
@@ -240,7 +240,7 @@ GL.SetFCR();
 	(* draw front face *)
 	GL.glBegin(GLC.GL_QUAD_STRIP);
 
-		FOR  i := 0 TO teeth DO 
+		FOR  i := 0 TO teeth DO
 			angle := i * 2.0 * Math.pi / teeth;
 			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
 			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
@@ -252,7 +252,7 @@ GL.SetFCR();
 	(* draw front sides of teeth *)
 	GL.glBegin(GLC.GL_QUADS);
 		da := 2.0 * Math.pi / teeth / 4.0;
-		FOR  i := 0 TO teeth - 1 DO 
+		FOR  i := 0 TO teeth - 1 DO
 			angle := i * 2.0 * Math.pi / teeth;
 			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
 			GL.glVertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), width * 0.5);
@@ -265,7 +265,7 @@ GL.SetFCR();
 
 	(* draw back face *)
 	GL.glBegin(GLC.GL_QUAD_STRIP);
-	 FOR i := 0 TO teeth DO 
+	 FOR i := 0 TO teeth DO
 			angle := i * 2.0 * Math.pi / teeth;
 			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
 			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
@@ -324,9 +324,9 @@ GL.SetFCR();
 			GL.glNormal3f(-Math.cos(angle), -Math.sin(angle), 0.0);
 			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
 			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
-	END;	
+	END;
 	GL.glEnd;
-GL.DelFCR();	
+GL.DelFCR();
 END MakeGear;
 
 
@@ -334,13 +334,13 @@ PROCEDURE  Do*;
 VAR
 	i: LONGINT;
 	r, g, b: ARRAY 3 OF GL.GLfloat;
-BEGIN 
+BEGIN
 	IF ctx = NIL THEN Error; RETURN END;
 
 	r[0] := 1;  g[0] := 0;  b[0] := 0;
 	r[1] := 0;  g[1] := 1;  b[1] := 0;
 	r[2] := 0;  g[2] := 0;  b[2] := 1;
-	
+
 
 GL.SetFCR();
 	(* Resize *)
@@ -349,22 +349,22 @@ GL.SetFCR();
 
 	GL.glMatrixMode(GLC.GL_PROJECTION);
 	GL.glLoadIdentity;
-	
+
 	GL.glOrtho(0, 1, 0, 1, -1, 1);
-	
+
 	(* Restore, Draw *)
 	GL.glClearColor (0.6, 0.6, 0.6, 0);
 	GL.glClear (GLC.GL_COLOR_BUFFER_BIT);
-	
+
 	GL.glBegin(GLC.GL_TRIANGLES);
 		i := 0;
 		GL.glColor3f (r[i], g[i], b[i]);
 		GL.glVertex3f (0.25, 0.25, 0.0);
-		
+
 		i := (i + 1) MOD 3;
 		GL.glColor3f (r[i], g[i], b[i]);
 		GL.glVertex3f (0.75, 0.25, 0.0);
-		
+
 		i := (i + 1) MOD 3;
 		GL.glColor3f (r[i], g[i], b[i]);
 		GL.glVertex3f (0.5, 0.75, 0.0);
@@ -372,24 +372,24 @@ GL.SetFCR();
 GL.DelFCR();
 
 (* ctx.SwapBuffers *);
-SaveToImage("gldo.bmp");	 
+SaveToImage("gldo.bmp");
 ctx.DeActivate;
 END Do;
 
 PROCEDURE  Do1*;
-BEGIN 
+BEGIN
 IF ctx = NIL THEN Error; RETURN END;
 
-GL.SetFCR();	
+GL.SetFCR();
 	(* intialize *)
 ctx.MakeCurrent();
 	GL.glViewport(0, 0, w, h);
-	
+
 	GL.glClearColor (0, 0, 0, 0);
 	GL.glMatrixMode(GLC.GL_PROJECTION);
 	GL.glLoadIdentity;
 	GL.glOrtho(0, 1, 0, 1, -1, 1);
-	
+
 	(* draw *)
 	GL.glClear (GLC.GL_COLOR_BUFFER_BIT);
 	GL.glColor3d (1.0, 1.0, 1.0);
@@ -404,9 +404,9 @@ ctx.MakeCurrent();
 		GL.glVertex3d (0.25, 0.75, 0.0);
 	GL.glEnd;
 
-GL.DelFCR();	
+GL.DelFCR();
 (* ctx.SwapBuffers *);
-	
+
 SaveToImage("gldo1.bmp");
 ctx.DeActivate;
 END Do1;
@@ -416,34 +416,34 @@ VAR
 
 	gear1, gear2, gear3: GL.GLuint;
 	rotx, roty, rotz, angle, angle1, angle2: GL.GLfloat;
-	red, green, blue, lightPos: ARRAY 4 OF GL.GLfloat; 
-	
-BEGIN 
+	red, green, blue, lightPos: ARRAY 4 OF GL.GLfloat;
+
+BEGIN
 	IF ctx = NIL THEN Error; RETURN END;
 
 	rotx := 20;  roty := 30;  rotz := 0;  angle := 20;
-			
+
 	(* Init view *)
-		
+
 (*	lightPos := [ 5.0, 5.0, 10.0, 0.0];
-	red := [ 0.8, 0.1, 0.0, 1.0];  
-	green := [ 0.0, 0.8, 0.2, 1.0];  
+	red := [ 0.8, 0.1, 0.0, 1.0];
+	green := [ 0.0, 0.8, 0.2, 1.0];
 	blue := [ 0.2, 0.2, 1.0, 1.0];
 *)
 	lightPos[0] := 1.0;  	lightPos[1] := 1.0;	lightPos[2] := 1.0;	lightPos[3] := 0.0; (* directional *)
-	
+
 	red[0] := 0.8; 		red[1] := 0.1;		red[2] := 0.0;		red[3] := 1.0;
 	green[0] := 0.0;	green[1] := 0.8;	green[2] := 0.2;	green[3] := 1.0;
 	blue[0] := 0.2;		blue[1] := 0.2;		blue[2] := 1.0;		blue[3] := 1.0;
-	
+
 GL.SetFCR();
-ctx.MakeCurrent1();
+ctx.MakeCurrent();
 	GL.glEnable(GLC.GL_LIGHTING);
 	GL.glLightfv(GLC.GL_LIGHT0, GLC.GL_POSITION, S.ADR(lightPos[0]));
 	GL.glEnable(GLC.GL_LIGHT0);
-	GL.glEnable(GLC.GL_CULL_FACE);	
+	GL.glEnable(GLC.GL_CULL_FACE);
 	GL.glEnable(GLC.GL_DEPTH_TEST);
-	
+
 	(* make the gears *)
 	gear1 := GL.glGenLists(1);
 	GL.glNewList(gear1, GLC.GL_COMPILE);
@@ -457,7 +457,7 @@ ctx.MakeCurrent1();
 	MakeGear( 0.5, 2.0, 2.0, 10, 0.7);
 	GL.glEndList;
 
-	gear3 := GL.glGenLists(1);	
+	gear3 := GL.glGenLists(1);
 	GL.glNewList(gear3, GLC.GL_COMPILE);
 	GL.glMaterialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, S.ADR(blue[0]));
 	MakeGear(1.3, 2.0, 0.5, 10, 0.7);
@@ -469,11 +469,11 @@ ctx.MakeCurrent1();
 	GL.glViewport(0, 0, w, h);
 	GL.glMatrixMode (GLC.GL_PROJECTION);
 	GL.glLoadIdentity;
-	GL.glFrustum(-1.0, 1.0, -1, 1, 5.0, 60.0); 
+	GL.glFrustum(-1.0, 1.0, -1, 1, 5.0, 60.0);
 
 	GL.glMatrixMode (GLC.GL_MODELVIEW);
 	GL.glLoadIdentity;
-	
+
 	GL.glTranslatef(0.0, 0.0, -40.0);
 GL.DelFCR();
 
@@ -485,7 +485,7 @@ GL.SetFCR();
 	GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
 
 	GL.glPushMatrix;
-	
+
 	GL.glRotatef(rotx, 1.0, 0.0, 0.0);
 	GL.glRotatef(roty, 0.0, 1.0, 0.0);
 	GL.glRotatef(rotz, 0.0, 0.0, 1.0);
@@ -508,8 +508,8 @@ GL.SetFCR();
 	GL.glCallList(gear3);
 	GL.glPopMatrix;
 
-	GL.glPopMatrix;	
-GL.DelFCR();	
+	GL.glPopMatrix;
+GL.DelFCR();
 (* ctx.SwapBuffers *);
 SaveToImage("glgears.bmp");
 
@@ -532,33 +532,33 @@ BEGIN
 	SetP(ctrlPoints[0, 1], -0.5, -1.5, 2.0);
 	SetP(ctrlPoints[0, 2], 0.5, -1.5, -1.0);
 	SetP(ctrlPoints[0, 3], 1.5, -1.5, 2.0);
-	
+
 	SetP(ctrlPoints[1, 0], -1.5, -0.5, 1.0);
 	SetP(ctrlPoints[1, 1], -0.5, -0.5, 3.0);
 	SetP(ctrlPoints[1, 2], 0.5, -0.5, 0.0);
 	SetP(ctrlPoints[1, 3], 1.5, -0.5, -1.0);
-	
+
 	SetP(ctrlPoints[2, 0], -1.5, 0.5, 4.0);
 	SetP(ctrlPoints[2, 1], -0.5, 0.5, 0.0);
 	SetP(ctrlPoints[2, 2], 0.5, 0.5, 3.0);
 	SetP(ctrlPoints[2, 3], 1.5, 0.5, 4.0);
-	
+
 	SetP(ctrlPoints[2, 0], -1.5, 1.5, -2.0);
 	SetP(ctrlPoints[2, 1], -0.5, 1.5, -2.0);
 	SetP(ctrlPoints[2, 2], 0.5, 1.5, 0.0);
 	SetP(ctrlPoints[2, 3], 1.5, 1.5, -1.0);
-	
 
 
-GL.SetFCR();	
+
+GL.SetFCR();
 	(* Init View *)
-	ctx.MakeCurrent();	
-	
+	ctx.MakeCurrent();
+
 	GL.glMap2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, S.ADR(ctrlPoints[0, 0, 0]));
 	GL.glEnable(GLC.GL_MAP2_VERTEX_3);
 	GL.glMapGrid2f(20, 0, 1, 20, 0, 1);
 	GL.glEnable(GLC.GL_DEPTH_TEST);
-	GL.glShadeModel(GLC.GL_FLAT);	
+	GL.glShadeModel(GLC.GL_FLAT);
 
 	(* intialize *)
 	GL.glMatrixMode(GLC.GL_PROJECTION);
@@ -568,7 +568,7 @@ GL.SetFCR();
 	GL.glLoadIdentity;
 
 
-	(*  draw *)	
+	(*  draw *)
 	GL.glClearColor (0.0, 0, 0, 0);
 	GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
 	GL.glColor3d(1.0, 1.0, 0.0);
@@ -588,8 +588,8 @@ GL.SetFCR();
 	END;
 	GL.glPopMatrix ();
 	GL.glFinish();
-	
-GL.DelFCR();	
+
+GL.DelFCR();
 (* ctx.SwapBuffers *);
 SaveToImage("glpbeziersurf.bmp");
 
@@ -600,7 +600,7 @@ END BezSurf;
 PROCEDURE  Accum*;
 VAR
 	thing1, thing2: GL.GLint;
-BEGIN 
+BEGIN
 IF ctx = NIL THEN Error; RETURN END;
 
 ctx.MakeCurrent();
@@ -616,7 +616,7 @@ ctx.MakeCurrent();
 	GL.glColor3f(0.0, 1.0, 0.0);
 	GL.glRectf(0.0, -1.0, 1.0, 1.0);
 	GL.glEndList;
-	
+
 
 	(* initialize *)
 	GL.glClearColor(0.6, 0.6, 0.6, 0);
@@ -641,7 +641,7 @@ ctx.MakeCurrent();
 	GL.glFinish();
 
 	(* ctx.SwapBuffers *);
-SaveToImage("glaccumulation.bmp");	
+SaveToImage("glaccumulation.bmp");
 ctx.DeActivate;
 END Accum;
 
@@ -650,7 +650,7 @@ END Accum;
 PROCEDURE  MakeBall ():GL.GLuint;
 CONST  da = 18;  db = 18;  r = 1.0;
 VAR  list: GL.GLuint;  color: BOOLEAN;
-		a, b: LONGINT;  
+		a, b: LONGINT;
 		x, y, z: LONGREAL;
 BEGIN
 ctx.MakeCurrent();
@@ -665,56 +665,56 @@ ctx.MakeCurrent();
 				y := Math.sin(b * degToRad) * Math.cos(a * degToRad);
 				z := Math.sin(a * degToRad);
 				GL.SetFCR(); GL.glVertex3d(x, y, z); GL.DelFCR();
-				
+
 				x := r * Math.cos(b * degToRad) * Math.cos((a + da) * degToRad);
 				y := Math.sin(b * degToRad) * Math.cos((a + da) * degToRad);
 				z := Math.sin((a + da) * degToRad);
-				
+
 				GL.SetFCR();	GL.glVertex3d(x, y, z); GL.DelFCR();
 				color := ~color
 			END;
 		GL.glEnd
 	END;
-	
+
 	GL.glEndList;
-	
+
 ctx.DeActivate();
-KernelLog.String("MakeBall. Ok"); KernelLog.Ln;	
+KernelLog.String("MakeBall. Ok"); KernelLog.Ln;
 	RETURN list;
-	
+
 END MakeBall;
 
 PROCEDURE  MakeLines ():GL.GLuint;
 	VAR  list: GL.GLuint;  i: LONGINT;
-		  x: REAL;	
+		  x: REAL;
 BEGIN
 ctx.MakeCurrent();
 	list := GL.glGenLists(1);
 	GL.glNewList(list, GLC.GL_COMPILE);
-	
+
 	GL.glBegin(GLC.GL_LINES);
 		GL.glColor3f(0.0, 1.0, 1.0);
 		FOR  i := -5 TO 5 DO
-			GL.SetFCR();	GL.glVertex2i(i, -5);  GL.glVertex2i(i, 5); GL.DelFCR();	
+			GL.SetFCR();	GL.glVertex2i(i, -5);  GL.glVertex2i(i, 5); GL.DelFCR();
 		END;
 		FOR  i := -5 TO 5 DO
-			GL.SetFCR();	GL.glVertex2i(-5, i);  GL.glVertex2i(5, i); GL.DelFCR();	
+			GL.SetFCR();	GL.glVertex2i(-5, i);  GL.glVertex2i(5, i); GL.DelFCR();
 		END;
 		FOR  i := -5 TO 5 DO
 			x := i*1.15;
-			GL.SetFCR();	GL.glVertex2i(i, -5);  GL.glVertex2f(x, -5.9); GL.DelFCR();	
+			GL.SetFCR();	GL.glVertex2i(i, -5);  GL.glVertex2f(x, -5.9); GL.DelFCR();
 		END;
 GL.SetFCR();
 		GL.glVertex2f(-5.3, -5.35);
 		GL.glVertex2f(5.3, -5.35);
 		GL.glVertex2f(-5.75, -5.9);
 		GL.glVertex2f(5.75, -5.9);
-GL.DelFCR();		
+GL.DelFCR();
 	GL.glEnd;
-	
+
 	GL.glEndList;
 ctx.DeActivate();
-	KernelLog.String("MakeLines. Ok"); KernelLog.Ln;	
+	KernelLog.String("MakeLines. Ok"); KernelLog.Ln;
 	RETURN list
 END MakeLines;
 
@@ -725,13 +725,13 @@ VAR
 	x, y: REAL;
 	vx, vy: REAL;
 	zRot, dRot: LONGINT;
-		
+
 BEGIN
 IF ctx = NIL THEN Error; RETURN END;
 
 	x := 0.0;  y := 1.0;  zRot := 0;  dRot := 6;
 	vx := 0.2;  vy := 0.0;
-	
+
 (* Initview *)
 
   	lines := MakeLines();
@@ -742,7 +742,7 @@ ctx.MakeCurrent();
   	GL.glClearColor(0, 0.0, 0.0, 0);
 	GL.glShadeModel (GLC.GL_FLAT);
 	GL.glEnable(GLC.GL_CULL_FACE);
-	GL.glCullFace(GLC.GL_BACK);	
+	GL.glCullFace(GLC.GL_BACK);
   (****************)
 
 	GL.glMatrixMode (GLC.GL_PROJECTION);
@@ -751,7 +751,7 @@ ctx.MakeCurrent();
 
 	GL.glMatrixMode(GLC.GL_MODELVIEW);
 	GL.glLoadIdentity;
-	
+
 	GL.glClear (GLC.GL_COLOR_BUFFER_BIT);
 
 	GL.glCallList(lines);
@@ -770,20 +770,20 @@ ctx.MakeCurrent();
 GL.DelFCR();
 (* ctx.SwapBuffers *);
 SaveToImage("glbounce.bmp");
-ctx.DeActivate;	
+ctx.DeActivate;
 END Bounce;
 
 PROCEDURE  Cube*;
-BEGIN 
+BEGIN
 IF ctx = NIL THEN Error; RETURN END;
 ctx.MakeCurrent();
 GL.SetFCR();
 	GL.glClearColor(0.0, 0.0, 0.0, 0.0);
-	
+
 	GL.glMatrixMode(GLC.GL_PROJECTION);
 	GL.glLoadIdentity;
 	GL.gluPerspective(45, 1, 1, 100);
-	
+
 	GL.glMatrixMode(GLC.GL_MODELVIEW);
 	GL.glLoadIdentity;
 	GL.glTranslatef(0.0, 0.0, -10.0);
@@ -854,15 +854,15 @@ VAR
 	matAmbient, matSpecular, lightPosition, modelAmbient: ARRAY 4 OF GL.GLfloat;
 	matShininess: GL.GLfloat;
 	qObj: GL.TGLUQuadricObj;
-	startList: GL.GLuint;		
-BEGIN 
+	startList: GL.GLuint;
+BEGIN
 IF ctx = NIL THEN Error; RETURN END;
 (*	matAmbient := [ 0.5, 0.5, 0.5, 1.0];
 	matSpecular := [ 1.0, 1.0, 1.0, 1.0];
 	matShininess := 50.0;
 	lightPosition := [ 1.0, 1.0, 1.0, 0.0];
 	modelAmbient := [ 0.5, 0.5, 0.5, 1.0];
-*)	
+*)
 matAmbient[0] := 0.5;	matAmbient[1] :=  0.5;	matAmbient[2] := 0.5; 	matAmbient[3] := 1.0;
 matSpecular[0] := 1.0;	matSpecular[1] := 1.0;	matSpecular[2] := 1.0;	matSpecular[3] := 1.0;
 matShininess := 50.0;
@@ -921,7 +921,7 @@ ctx.MakeCurrent();
 	GL.glMatrixMode (GLC.GL_PROJECTION);
 	GL.glLoadIdentity;
 	GL.glOrtho(-2.5, 2.5, -2.5 , 2.5 , -10.0, 10.0);
-		
+
 	GL.glMatrixMode (GLC.GL_MODELVIEW);
 	GL.glLoadIdentity;
 
@@ -929,7 +929,7 @@ ctx.MakeCurrent();
 GL.SetFCR();
 	GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
 	GL.glPushMatrix;
-	
+
 	GL.glEnable(GLC.GL_LIGHTING);
 	GL.glShadeModel (GLC.GL_SMOOTH);
 	GL.glTranslated(-1.0, -1.0, 0.0);
@@ -949,40 +949,40 @@ GL.SetFCR();
 
 	GL.glColor3d(1.0, 1.0, 0.0);
 	GL.glTranslated(0.0, 2.0, 0.0);
-	GL.glCallList(startList+3);	
-	
+	GL.glCallList(startList+3);
+
 	GL.glPopMatrix;
 	GL.glFinish();
-	
-GL.DelFCR();	
+
+GL.DelFCR();
 
 SaveToImage("glquadric.bmp");
 ctx.DeActivate;
 END Quadric;
 
-PROCEDURE OpenDisplay*;
-BEGIN 
+PROCEDURE OpenContext*;
+BEGIN
 w := 512; h := 512;
 IF ctx = NIL THEN
 	 NEW(ctx);
-	ctx.Init(w , h, "GL-Test Display", FALSE);
+	ctx.Init(w , h);
 	NEW(image);
 	Raster.Create(image, w, h, Raster.BGRA8888);
-END;	
-END OpenDisplay;
+END;
+END OpenContext;
 
 (** *)
-PROCEDURE CloseDisplay*;
-BEGIN 
-IF ctx # NIL THEN ctx.Close; ctx := NIL; END;	
-END CloseDisplay;
+PROCEDURE CloseContext*;
+BEGIN
+IF ctx # NIL THEN ctx.Close; ctx := NIL; END;
+END CloseContext;
 
 BEGIN
 
 END  GLTest.
 
 
-GLTest.OpenDisplay~ 			GLTest.CloseDisplay~ 
+GLTest.OpenContext ~ 			GLTest.CloseContext ~
 
 
 GLTest.Primitives ~     GLTest.Do ~     GLTest.Do1 ~   GLTest.Gears ~
@@ -991,6 +991,6 @@ GLTest.BezSurf ~         GLTest.Accum ~    GLTest.Bounce ~ GLTest.Cube ~
 
 GLTest.Quadric ~
 
-SystemTools.Free GLTest  GLContext  ~ 
+SystemTools.Free GLTest  GLContext  ~
 
 

@@ -1,22 +1,20 @@
-MODULE MyWMGLSLBricks; (** AUTHOR "fnecati"; PURPOSE "GLSL bricks shading example from OrangeBook"; *)
- 
+MODULE WMGLSLBricks; (** AUTHOR "fnecati"; PURPOSE "opengl GLSL bricks shading example from OrangeBook"; *)
+
 IMPORT
 	SYSTEM, WMRectangles, WMGraphics, Strings,  Inputs,
-	WM := WMWindowManager,  WMMessages, WMDialogs, KernelLog, 
-	GL := OpenGL, GLC := OpenGLConst, GLContext, GLLib, GLSUtil := GLShaderUtils;
+	WM := WMWindowManager,  WMMessages, WMDialogs, KernelLog,
+	GL := OpenGL, GLC := OpenGLConst, WMGL := WMGLWindow, GLLib, GLSUtil := GLShaderUtils;
 
-TYPE 
-	PChar = GLSUtil.PChar; 
-			
+TYPE
+	PChar = GLSUtil.PChar;
+
 	KillerMsg = OBJECT
 	END KillerMsg;
 
-	GLWindow* =  OBJECT(WM.BufferWindow)
+	GLWindow* =  OBJECT(WMGL.Window)
 	VAR
-		context : GLContext.Context;
-		width, height: LONGINT;
-		color: LONGINT;	 
-		
+		color: LONGINT;
+
 		(* Movement variables *)
 		fXDiff,  fYDiff, fZDiff: REAL;
 		xLastIncr, yLastIncr: LONGINT;
@@ -24,18 +22,16 @@ TYPE
 		xLast, yLast : LONGINT;
 		rotate: BOOLEAN;
 		RotL : REAL;
-	
+
 		brickProg: GL.GLuint;  (* shader program *)
-				
+
 		PROCEDURE &New(w, h: LONGINT);
 		VAR res: BOOLEAN;
 		BEGIN
-			width := w; height := h;
-			Init(w, h, TRUE); (* use alpha, for 32bpp img *)
-			manager := WM.GetDefaultManager();
-			manager.Add(100, 100, SELF, {WM.FlagFrame, WM.FlagClose, WM.FlagNoResizing});
+			Init(w, h, FALSE); (* use alpha, for 32bpp img *)
+			WM.AddWindow(SELF, 100, 100);
 
-			SetTitle(Strings.NewString("MyGLSLWindow Bricks"));
+			SetTitle(Strings.NewString("WMGLSLBricks: Bricks"));
 			color := 0;
 
 			fXDiff := 206;  fYDiff := 16; fZDiff := 10;
@@ -45,46 +41,44 @@ TYPE
 			xLast := -1; yLast := -1;
 
 			rotate := TRUE;
-			RotL := 1 * 3.14 / 180; 
+			RotL := 1 * 3.14 / 180;
 
 
-			NEW(context);
-			context.Init(w, h, "MyGLWindow", FALSE);
 			context.MakeCurrent();
 				GL.ReadExtensions();
-				GL.ReadImplementationProperties;			
-				
+				GL.ReadImplementationProperties;
+
 				GL.glDepthFunc(GLC.GL_LESS);
 				GL.glEnable(GLC.GL_DEPTH_TEST);
-				
+
  				IF (GL.GL_ARB_vertex_shader & GL.GL_ARB_fragment_shader) THEN
-					KernelLog.String("Ready for GLSL"); KernelLog.Ln; 
+					KernelLog.String("Ready for GLSL"); KernelLog.Ln;
 				ELSE
-					KernelLog.String("No GLSL support"); KernelLog.Ln; 
+					KernelLog.String("No GLSL support"); KernelLog.Ln;
 					Close;
 				END;
 				res := InstallBrickShaders();
-				IF res THEN 
-					KernelLog.String("GLSLBrick installed"); KernelLog.Ln; 
+				IF res THEN
+					KernelLog.String("GLSLBrick installed"); KernelLog.Ln;
 				ELSE
-					KernelLog.String("GLSLBrick NOT installed"); KernelLog.Ln; 
-				END;	
-			context.DeActivate();	
-			
-			Reshape(w, h);	
-			UpdateImage;
-		END New; 
+					KernelLog.String("GLSLBrick NOT installed"); KernelLog.Ln;
+				END;
+			context.DeActivate();
 
-		PROCEDURE KeyEvent (ucs: LONGINT; flags: SET; keysym: LONGINT);	     
+			Reshape(w, h);
+			UpdateImage;
+		END New;
+
+		PROCEDURE KeyEvent (ucs: LONGINT; flags: SET; keysym: LONGINT);
 		BEGIN
 		CASE CHR(ucs) OF
 			| "b": NextClearColor(); UpdateImage;
 			| "-" : fScale := fScale - 0.5; UpdateImage;
 			| "+" :  fScale := fScale + 0.5; UpdateImage;
 			| "s": SaveImage;
-			| "q" : Close;			
-		ELSE	
-			CASE keysym OF 
+			| "q" : Close;
+		ELSE
+			CASE keysym OF
 				Inputs.KsHome:  fXDiff := 0; fYDiff := 35; fZDiff := 0;
 			            xLastIncr := 0; yLastIncr := 0; fXInertia := -0.5; fYInertia := 0;
 			            fScale := 1.0; UpdateImage;
@@ -92,15 +86,15 @@ TYPE
 			|	Inputs.KsRight: fXDiff := fXDiff + 1.0; UpdateImage;
 			|	Inputs.KsUp: fYDiff := fYDiff - 1.0; UpdateImage;
 			|	Inputs.KsDown: fYDiff := fYDiff + 1.0; UpdateImage;
-			
+
 			ELSE
-			END;			
-		END;	
+			END;
+		END;
 		END KeyEvent;
 
 		PROCEDURE WheelMove*(dz : LONGINT);
 		BEGIN
-			fScale := fScale + dz*0.5*0.2;			
+			fScale := fScale + dz*0.5*0.2;
 			UpdateImage;
 		END WheelMove;
 
@@ -113,34 +107,32 @@ TYPE
 		END Handle;
 
 		PROCEDURE Close*;
-		BEGIN
-			Close^;			
-			 context.Close;
-			 context := NIL;				
+		BEGIN {EXCLUSIVE}
+			Close^;
 		END Close;
 
 		PROCEDURE UpdateImage;
 		VAR	rect: WMRectangles.Rectangle;
-		BEGIN 
+		BEGIN
 			context.MakeCurrent();
-				Display(); 
-			context.RenderInto(img); 
+				Display();
+			context.RenderInto(backImg);
 			context.DeActivate();
-			
+			Swap();
 			rect := WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight());
 			WMRectangles.MoveRel(rect, bounds.l, bounds.t);
 			WMRectangles.ClipRect(rect, bounds);
-			manager.AddDirty(rect);			
+			manager.AddDirty(rect);
 		END UpdateImage;
 
 		PROCEDURE SaveImage;
 		VAR res: LONGINT;
 			fname: ARRAY 128 OF CHAR;
-		BEGIN		
+		BEGIN
 			fname:="mywmglsltest.bmp";
 			IF WMDialogs.QueryString(" Save File name: ",fname)=WMDialogs.ResOk THEN
 					WMGraphics.StoreImage(img, fname,res);
-			END;		
+			END;
 		END SaveImage;
 
 		PROCEDURE DrawCube();
@@ -176,9 +168,9 @@ TYPE
 				GL.glVertex3fv(SYSTEM.ADR(B[0]));
 				GL.glTexCoord2f(1,0);
 				GL.glVertex3fv(SYSTEM.ADR(A[0]));
-	
+
 				GL.glNormal3fv(SYSTEM.ADR(K[0]));
-	
+
 				GL.glTexCoord2f(1,1);
  				GL.glVertex3fv(SYSTEM.ADR(G[0]));
 				GL.glTexCoord2f(0,1);
@@ -187,9 +179,9 @@ TYPE
 				GL.glVertex3fv(SYSTEM.ADR(E[0]));
 				GL.glTexCoord2f(1,0);
 				GL.glVertex3fv(SYSTEM.ADR(F[0]));
-	
+
 				GL.glNormal3fv(SYSTEM.ADR(L[0]));
-	
+
 				GL.glTexCoord2f(1,1);
 				GL.glVertex3fv(SYSTEM.ADR(C[0]));
 				GL.glTexCoord2f(0,1);
@@ -198,9 +190,9 @@ TYPE
 				GL.glVertex3fv(SYSTEM.ADR(F[0]));
 				GL.glTexCoord2f(1,0);
 				GL.glVertex3fv(SYSTEM.ADR(B[0]));
-	
+
 				GL.glNormal3fv(SYSTEM.ADR(M[0]));
-	
+
 				GL.glTexCoord2f(1,1);
 				GL.glVertex3fv(SYSTEM.ADR(H[0]));
 				GL.glTexCoord2f(0,1);
@@ -209,9 +201,9 @@ TYPE
 				GL.glVertex3fv(SYSTEM.ADR(A[0]));
 				GL.glTexCoord2f(1,0);
 				GL.glVertex3fv(SYSTEM.ADR(E[0]));
-	
+
 				GL.glNormal3fv(SYSTEM.ADR(N[0]));
-	
+
 				GL.glTexCoord2f(1,1);
 				GL.glVertex3fv(SYSTEM.ADR(E[0]));
 				GL.glTexCoord2f(0,1);
@@ -220,9 +212,9 @@ TYPE
 				GL.glVertex3fv(SYSTEM.ADR(B[0]));
 				GL.glTexCoord2f(1,0);
 				GL.glVertex3fv(SYSTEM.ADR(F[0]));
-	
+
 				GL.glNormal3fv(SYSTEM.ADR(O[0]));
-    
+
 				GL.glTexCoord2f(1,1);
 				GL.glVertex3fv(SYSTEM.ADR(G[0]));
 				GL.glTexCoord2f(0,1);
@@ -231,7 +223,7 @@ TYPE
 				GL.glVertex3fv(SYSTEM.ADR(D[0]));
 				GL.glTexCoord2f(1,0);
 				GL.glVertex3fv(SYSTEM.ADR(H[0]));
-    
+
 			GL.glEnd();
 			GL.DelFCR();
 		END DrawCube;
@@ -239,33 +231,33 @@ TYPE
 		PROCEDURE Display();
 		VAR x: REAL;
 		BEGIN
-		
+
 			GL.glLoadIdentity();
-			GL.SetFCR();  
+			GL.SetFCR();
 				GL.glTranslatef(0.0, 0.0, -5.0);
 				GL.glRotatef(fYDiff, 1,0,0);
 				GL.glRotatef(fXDiff, 0,1,0);
 				GL.glRotatef(fZDiff, 0,0,1);
 				GL.glScalef(fScale, fScale, fScale);
 			GL.DelFCR();
-			
+
 			GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
 
 			GL.glUniform3f(getUniLoc(brickProg, "MortarColor"), 0.85, 0.86, 0.84);
 			GL.glUniform3f(getUniLoc(brickProg, "LightPosition"), 0.0, 0.0, 4.0);
 			DrawCube();
-			
+
 
 			GL.glLoadIdentity();
 			x := fXDiff + 90.0;
-			GL.SetFCR();  
+			GL.SetFCR();
 				GL.glTranslatef(0.0, 0.0, -5.0);
 				GL.glRotatef(fYDiff, 1,0,0);
 				GL.glRotatef(x, 0,1,0);
 				GL.glRotatef(fZDiff, 0,0,1);
 				GL.glScalef(fScale, fScale, fScale);
-			GL.DelFCR(); 
-			
+			GL.DelFCR();
+
 
 			GL.glUniform3f(getUniLoc(brickProg, "MortarColor"), 0.1, 1.0, 0.2);
 			GL.glUniform3f(getUniLoc(brickProg, "LightPosition"), 2.0, 0.0, 2.0);
@@ -277,17 +269,17 @@ TYPE
 		END Display;
 
 		PROCEDURE NextClearColor ();
-		BEGIN 
+		BEGIN
 			context.MakeCurrent();
-			INC(color);    	
-			CASE color OF    
+			INC(color);
+			CASE color OF
 			0:  GL.glClearColor(0.0, 0.0, 0.0, 1.0);
 			|1:  GL.glClearColor(0.2, 0.2, 0.3, 1.0);
-			ELSE 
+			ELSE
 				GL.glClearColor(0.7, 0.7, 0.7, 1.0);
 				color := 0;
 			END;
-			context.DeActivate();		        
+			context.DeActivate();
 		END NextClearColor;
 
 		PROCEDURE Reshape(w,  h: LONGINT);
@@ -303,7 +295,7 @@ TYPE
 			GL.glViewport(0, 0, w, h);
 			GL.glMatrixMode(GLC.GL_PROJECTION);
 			GL.glLoadIdentity();
-    
+
 			GL.SetFCR();
 				GL.gluPerspective(45, 1, 0.1, 100);
 			 GL.DelFCR();
@@ -313,8 +305,8 @@ TYPE
 
 			GL.SetFCR();
 				GL.glTranslatef(0.0, 0.0, -5.0);
-			GL.DelFCR();   
-		
+			GL.DelFCR();
+
 			context.DeActivate();
 		END Reshape;
 
@@ -324,8 +316,8 @@ TYPE
 		BEGIN
 			loc := GL.glGetUniformLocation(program, name);
 			IF loc = -1 THEN
-				KernelLog.String("No such uniform named "); KernelLog.String(name); KernelLog.Ln; 
-    			END;    
+				KernelLog.String("No such uniform named "); KernelLog.String(name); KernelLog.Ln;
+    			END;
     			GLSUtil.PrintOpenGLError("getUniloc: ");  (* Check for OpenGL errors *)
 			RETURN loc;
 		END getUniLoc;
@@ -335,16 +327,16 @@ TYPE
 			vss, fss: PChar;
 		BEGIN
 		    (* Create a vertex shader object and a fragment shader object *)
-		    
+
 			vss := GLSUtil.TextFileRead("brick.vert");
 			fss := GLSUtil.TextFileRead("brick.frag");
 		    (* Install program object as part of current state *)
 
 			IF ~ GLSUtil.LoadShaders(vss, fss, brickProg) THEN
-				KernelLog.String("LoadShader Error"); KernelLog.Ln;  
+				KernelLog.String("LoadShader Error"); KernelLog.Ln;
 				RETURN FALSE;
 			END;
-	
+
 			GL.glUseProgram(brickProg);
 
     			(* Set up initial uniform values *)
@@ -360,17 +352,19 @@ TYPE
 END GLWindow;
 
 PROCEDURE Open*;
-VAR 
+VAR
 	window: GLWindow;
 BEGIN
-	NEW(window, 300, 300);
+	NEW(window, 256, 256);
 END Open;
 
 BEGIN
 
-END MyWMGLSLBricks.
+END WMGLSLBricks.
 
-SystemTools.Free  MyWMGLSLBricks GLShaderUtils GLLib GLContext~ ~
+SystemTools.Free  WMGLSLBricks GLShaderUtils GLLib WMGLWindow~ ~
 
-MyWMGLSLBricks.Open ~
+WMGLSLBricks.Open ~
+
+SystemTools.FreeDownTo OpenGL ~
 

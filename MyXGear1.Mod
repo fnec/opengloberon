@@ -1,51 +1,48 @@
 MODULE MyXGear1; (** AUTHOR "fnecati"; PURPOSE "Adjusted for commandline run"; *)
 
 IMPORT
-	X11, Api := X11Api, GL:=OpenGL, GLC := OpenGLConst, Kernel, Inputs, 
+	X11, Api := X11Api, GL:=OpenGL, GLC := OpenGLConst, Kernel, Inputs,
 	Trace,  Math , Raster, WMGraphics,  SYSTEM ;
 
-(* 
-Opens a native X11 window and renders. 
-From command line, linux terminal, run with : aos  -x  MyXGear.Test 
-or 
+(*
+Opens a native X11 window and renders.
+From command line, linux terminal, run with : aos  -x  MyXGear.Open
+or
  from oberon window:   MyXGear.Open ~
 *)
 
 
-CONST 
+CONST
 	debug = FALSE; (* for window creation/closing *)
 	debugevents = TRUE; (* for testing events *)
 	pi = Math.pi;
-	
+
 VAR
-	
-	timer : Kernel.MilliTimer; 
-	
+
+	timer : Kernel.MilliTimer;
+
 	(* window variables *)
 	display : X11.DisplayPtr;
 	win : X11.Window ;
 	visinfoptr : Api.VisualInfoPtr; (* pointer to X11 VisualInfo *)
 	glctx : GL.GLXContext;  (* GL context *)
-	
+
 	(*	gc : X11.GC; (* graphics context, may be useful for X11 drawing operations *)	*)
-	
-	gwa : Api.XWindowAttributes; (* get window attributes *) 	
+
+	gwa : Api.XWindowAttributes; (* get window attributes *)
 	swa : Api.XSetWindowAttributes; (* set window attributes*)
 	cmap : X11.Colormap; (* colormap for window *)
-	
+
 	width, height : LONGINT; (* size of window *)
-	alive : BOOLEAN; (* for main loop control *)	
+	alive : BOOLEAN; (* for main loop control *)
 
 CONST
 	ML = 0;  MM = 1;  MR = 2;
 
-	Button1Bit = 8; Button2Bit = 9; Button3Bit =10;
-	ShiftKeyBit = 0;  ShiftLockBit = 1;  ControlKeyBit = 2;  Mod1KeyBit = 3;
-	Mod2KeyBit = 4;  Mod3KeyBit = 5;  Mod4KeyBit = 6;  Mod5KeyBit = 7;
-	
+
 VAR
 	event: Api.XEvent;  xbuttons: SET;
-	compstatus: X11.ComposeStatus;
+	compstatus: Api.ComposeStatus;
 
 	MMseen, MRseen: BOOLEAN;
 	noEventCount: LONGINT;
@@ -54,23 +51,23 @@ VAR
 VAR
 	keySymbol: ARRAY 256 OF LONGINT;
 	currX, currY: LONGINT;
-	
-	  
+
+
   (*  gear variables *)
   	gear1, gear2, gear3: GL.GLuint;
-  	rotx, roty, rotz, angle: GL.GLfloat;	
+  	rotx, roty, rotz, angle: GL.GLfloat;
 
 PROCEDURE  MakeGear (innerRadius, outerRadius, width: GL.GLfloat; teeth: LONGINT;  toothDepth: GL.GLfloat);
 VAR  r0, r1, r2 , angle, da, u, v, len: GL.GLfloat;
 	  i: LONGINT;
-BEGIN 
-	
+BEGIN
+
 	r0 := innerRadius;
 	r1 := outerRadius - toothDepth / 2.0;
 	r2 := outerRadius + toothDepth / 2.0;
-	
+
 	da := 2.0 * pi / teeth / 4.0;
-	
+
 	GL.glShadeModel(GLC.GL_FLAT);
 
 	GL.glNormal3f(0.0, 0.0, 1.0);
@@ -78,7 +75,7 @@ BEGIN
 	(* draw front face *)
 	GL.glBegin(GLC.GL_QUAD_STRIP);
 
-	FOR  i := 0 TO teeth DO 
+	FOR  i := 0 TO teeth DO
 			angle := i * 2.0 * Math.pi / teeth;
 			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
 			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
@@ -90,7 +87,7 @@ BEGIN
 	(* draw front sides of teeth *)
 	GL.glBegin(GLC.GL_QUADS);
 		da := 2.0 * Math.pi / teeth / 4.0;
-		FOR  i := 0 TO teeth - 1 DO 
+		FOR  i := 0 TO teeth - 1 DO
 			angle := i * 2.0 * Math.pi / teeth;
 			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
 			GL.glVertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), width * 0.5);
@@ -104,7 +101,7 @@ BEGIN
 	(* draw back face *)
 	GL.glBegin(GLC.GL_QUAD_STRIP);
 
-	 FOR i := 0 TO teeth DO 
+	 FOR i := 0 TO teeth DO
 			angle := i * 2.0 * Math.pi / teeth;
 			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
 			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
@@ -128,7 +125,7 @@ BEGIN
 	(* draw outward faces of teeth *)
 	GL.glBegin(GLC.GL_QUAD_STRIP);
 
-	FOR i := 0 TO teeth - 1 DO 
+	FOR i := 0 TO teeth - 1 DO
 			angle := i * 2.0 * Math.pi / teeth;
 			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
 			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
@@ -164,21 +161,21 @@ BEGIN
 			GL.glNormal3f(-Math.cos(angle), -Math.sin(angle), 0.0);
 			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
 			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
-	END;	
+	END;
 	GL.glEnd;
 END MakeGear;
 
 PROCEDURE  InitGears;
 VAR
-	red, green, blue, lightPos: ARRAY [4] OF GL.GLfloat; 
-	
-BEGIN 
+	red, green, blue, lightPos: ARRAY [4] OF GL.GLfloat;
+
+BEGIN
 	rotx := 20;  roty := 30;  rotz := 0;  angle := 20;
 
 (*	(* lightPos := [ 5.0, 5.0, 10.0, 1.0];*)
 	lightPos := [ 1.0, 1.0, 1.0, 0.0];  (* directional *)
-	red := [ 0.8, 0.1, 0.0, 1.0];  
-	green := [ 0.0, 0.8, 0.2, 1.0];  
+	red := [ 0.8, 0.1, 0.0, 1.0];
+	green := [ 0.0, 0.8, 0.2, 1.0];
 	blue := [ 0.2, 0.2, 1.0, 1.0];
 *)
 
@@ -189,10 +186,10 @@ BEGIN
 
 	GL.glLightfv(GLC.GL_LIGHT0, GLC.GL_POSITION, SYSTEM.ADR(lightPos[0]));
 	GL.glEnable(GLC.GL_CULL_FACE);
-	GL.glEnable(GLC.GL_LIGHTING);			
+	GL.glEnable(GLC.GL_LIGHTING);
 	GL.glEnable(GLC.GL_LIGHT0);
 	GL.glEnable(GLC.GL_DEPTH_TEST);
-	
+
 	(* make the gears *)
 	gear1 := GL.glGenLists(1);
 	GL.glNewList(gear1, GLC.GL_COMPILE);
@@ -200,21 +197,21 @@ BEGIN
 	MakeGear( 1.0, 4.0, 1.0, 20, 0.7);
 	GL.glEndList;
 
-	
+
 	gear2 := GL.glGenLists(1);
 	GL.glNewList(gear2, GLC.GL_COMPILE);
 	GL.glMaterialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, SYSTEM.ADR(green[0]));
 	MakeGear( 0.5, 2.0, 2.0, 10, 0.7);
 	GL.glEndList;
 
-	
-	gear3 := GL.glGenLists(1);	
+
+	gear3 := GL.glGenLists(1);
 	GL.glNewList(gear3, GLC.GL_COMPILE);
 	GL.glMaterialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, SYSTEM.ADR(blue[0]));
 	MakeGear(1.3, 2.0, 0.5, 10, 0.7);
 	GL.glEndList;
 
-	 GL.glEnable(GLC.GL_NORMALIZE); 		
+	 GL.glEnable(GLC.GL_NORMALIZE);
 END InitGears;
 
 
@@ -225,51 +222,51 @@ BEGIN
 angle1 := -2.0 * angle - 9.0;
 angle2 := -2.0 * angle - 25.0;
 
-GL.SetFCR(); 
+GL.SetFCR();
 	GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
 
 	GL.glPushMatrix;
-	
+
 	GL.glRotatef(rotx, 1.0, 0.0, 0.0);
 	GL.glRotatef(roty, 0.0, 1.0, 0.0);
 	GL.glRotatef(rotz, 0.0, 0.0, 1.0);
-	
-	
+
+
 	GL.glPushMatrix;
 	GL.glTranslatef(-3.0, -2.0, 0.0);
 	GL.glRotatef(angle, 0.0, 0.0, 1.0);
 	GL.glCallList(gear1);
 	GL.glPopMatrix;
-	
+
 	GL.glPushMatrix;
 	GL.glTranslatef(3.1, -2.0, 0.0);
 	GL.glRotatef(angle1, 0.0, 0.0, 1.0);
 	GL.glCallList(gear2);
 	GL.glPopMatrix;
-	
+
 	GL.glPushMatrix;
 	GL.glTranslatef(-3.1, 4.2, 0.0);
 	GL.glRotatef(angle2, 0.0, 0.0, 1.0);
 	GL.glCallList(gear3);
 	GL.glPopMatrix;
 
-	GL.glPopMatrix;	
+	GL.glPopMatrix;
 
  GL.DelFCR();
- 
+
      GL.glXSwapBuffers(display, win);
 END DrawGears;
 
 PROCEDURE Reshape(w, h: LONGINT);
-BEGIN	
+BEGIN
 GL.SetFCR();
 	GL.glViewport(0, 0, w, h);
 	GL.glClearColor(0.0, 0.0, 0.0, 0.0);
 	GL.glMatrixMode(GLC.GL_PROJECTION);
 	GL.glLoadIdentity();
-	GL.glFrustum(-1,1,-1,1, 5, 60); 
+	GL.glFrustum(-1,1,-1,1, 5, 60);
 	GL.glMatrixMode(GLC.GL_MODELVIEW);
-	GL.glLoadIdentity(); 
+	GL.glLoadIdentity();
 	GL.glTranslatef(0.0, 0.0, -40.0);
 GL.DelFCR();
 END Reshape;
@@ -277,7 +274,7 @@ END Reshape;
 (* close the window and its resources *)
  PROCEDURE Close;
   VAR res: LONGINT;
- BEGIN    	
+ BEGIN
 	(* do we have a rendering context *)
 	IF glctx # 0 THEN
 		(* Release the context *)
@@ -287,7 +284,7 @@ END Reshape;
 		glctx := 0;
 		IF debug THEN Trace.String("context deleted"); Trace.Ln; END;
 	END;
-	
+
 	(* do we have a window *)
 	IF win # 0 THEN
 		(* Unmap the window*)
@@ -297,35 +294,35 @@ END Reshape;
 		win := 0;
 		IF debug THEN Trace.String("window deleted"); Trace.Ln; END;
 	END;
-	
+
 	(* do we have a display *)
-	IF display # 0 THEN	
+	IF display # 0 THEN
 		res := Api.CloseDisplay(display);
 		display := 0;
 		IF debug THEN Trace.String("display deleted"); Trace.Ln; END;
 	END;
-	
+
  END Close;
- 
+
 PROCEDURE  InitWindow(w, h: LONGINT; CONST title: ARRAY OF CHAR);
-VAR 
+VAR
 	res: LONGINT;
-	masks: SET;
+	masks: LONGINT;
 	buf: X11.Buffer;
-	attrib : ARRAY [*] OF GL.GLint;  (* attributes of GL window *) 
+	attrib : ARRAY [*] OF GL.GLint;  (* attributes of GL window *)
 
 BEGIN
  display := X11.OpenDisplay(0);
  IF display =0 THEN
- 	Trace.String(" cannot connect to X server"); Trace.Ln; 
+ 	Trace.String(" cannot connect to X server"); Trace.Ln;
 	Close;
      RETURN;
-END;  
-  	   
+END;
+
 (*  NEW(attrib, 7);
-  attrib[0] := GLC.GLX_RGBA; 
-  attrib[1] := GLC.GLX_DEPTH_SIZE; attrib[2] := 24; 
-  attrib[3] := GLC.GLX_STENCIL_SIZE; attrib[4] := 8; 
+  attrib[0] := GLC.GLX_RGBA;
+  attrib[1] := GLC.GLX_DEPTH_SIZE; attrib[2] := 24;
+  attrib[3] := GLC.GLX_STENCIL_SIZE; attrib[4] := 8;
   attrib[5] := GLC.GLX_DOUBLEBUFFER; attrib[6] := 0 ;
 *)
 (*
@@ -334,74 +331,76 @@ END;
   NEW(attrib, 13);
   attrib[0] := GLC.GLX_RGBA;
   attrib[1] := GLC.GLX_DOUBLEBUFFER;
-  attrib[2] := GLC.GLX_DEPTH_SIZE;	attrib[3] := 24; 
-  attrib[4] := GLC.GLX_STENCIL_SIZE;	attrib[5] := 8; 
+  attrib[2] := GLC.GLX_DEPTH_SIZE;	attrib[3] := 24;
+  attrib[4] := GLC.GLX_STENCIL_SIZE;	attrib[5] := 8;
   attrib[6] := GLC.GLX_RED_SIZE;  	attrib[7] := 8;
   attrib[8] := GLC.GLX_GREEN_SIZE;	attrib[9] := 8;
   attrib[10] := GLC.GLX_RED_SIZE;	attrib[11] := 8;
   attrib[12] := 0 ;
 
- (* try to find a visual with this attribs *)	
+ (* try to find a visual with this attribs *)
  visinfoptr := GL.glXChooseVisual(display, 0 , SYSTEM.ADR(attrib[0]));
- 
+
  IF visinfoptr = NIL THEN
   	IF debug THEN Trace.String(" NO appropriate visual found"); Trace.Ln; END;
   	Close;
      RETURN;
- ELSE 
-	 IF debug THEN 
+ ELSE
+	 IF debug THEN
 		 Trace.String("visinfoptr.depth= "); Trace.Int(visinfoptr.depth,0); Trace.Ln;
-	 	Trace.String("visinfoptr.visual ");  Trace.Int(visinfoptr.visualID, 0); Trace.Ln; 
+	 	Trace.String("visinfoptr.visual ");  Trace.Int(visinfoptr.visualID, 0); Trace.Ln;
 	END;
 END;
 
  cmap := X11.CreateColormap(display, X11.DefaultRootWindow(display), visinfoptr.visual, X11.AllocNone);
  IF cmap = 0 THEN
- 	IF debug THEN 
-	 	Trace.String(" cannot create colormap"); Trace.Ln; 
+ 	IF debug THEN
+	 	Trace.String(" cannot create colormap"); Trace.Ln;
 	 	X11.GetErrorText(display, cmap, buf, LEN(buf));
 	 	Trace.String("ERROR: CreateColormap = "); Trace.String(buf); Trace.Ln;
  	END;
  END;
 
- (* window event masks *)	
- masks :=  {Api.KeyPressMask, Api.KeyReleaseMask, Api.ButtonPressMask, Api.ButtonReleaseMask, Api.PointerMotionMask,
- Api.ButtonMotionMask ,Api.ExposureMask ,Api.StructureNotifyMask, Api.FocusChangeMask};
+ (* window event masks *)
+ masks :=  Api.KeyPressMask + Api.KeyReleaseMask + Api.ButtonPressMask + Api.ButtonReleaseMask + Api.PointerMotionMask +
+ Api.ButtonMotionMask + Api.ExposureMask + Api.StructureNotifyMask + Api.FocusChangeMask;
 
   (* window attributes *)
  swa.backgroundPixel := 0;
  swa.borderPixel := 0;
  swa.colormap := cmap;
  swa.eventMask := masks;
- 
- masks := { Api.CWBackPixel, Api.CWBorderPixel, Api.CWColormap, Api.CWEventMask};
- 
- win := Api.CreateWindow(display, X11.DefaultRootWindow(display), 0, 0, w, h,
-		        0, visinfoptr.depth, Api.InputOutput,  visinfoptr.visual, masks, SYSTEM.ADR(swa));
 
-(* 
+ masks := Api.CWBackPixel + Api.CWBorderPixel + Api.CWColormap + Api.CWEventMask;
+
+ win := Api.CreateWindow(display, X11.DefaultRootWindow(display), 0, 0, w, h,
+		        0, visinfoptr.depth, Api.InputOutput,  visinfoptr.visual, masks, swa);
+
+(*
 gc := X11.CreateGC( display, win, 0, 0 );
-IF gc = 0 THEN  
-  	IF debug THEN Trace.String(' could not create X11 graphics context '); Trace.Ln; END;	
+IF gc = 0 THEN
+  	IF debug THEN Trace.String(' could not create X11 graphics context '); Trace.Ln; END;
 END;
 	X11.SetPlaneMask( display, gc, ASH( 1, 24 ) - 1);
 	X11.SetGraphicsExposures( display, gc, X11.True );
 	X11.SetBackground( display, gc, 0FFH );
 *)
 
- (* show window *)	
+ (* show window *)
   Api.MapWindow(display, win);
 
- (* set title of window *)	 
- res := Api.StoreName(display, win, title); 
+ (* set title of window *)
+ res := Api.StoreName(display, win, title);
 
 (* create GL context *)
  (* GL_TRUE: Use direct rendering, GL_FLASE: use X server for rendering *)
- glctx := GL.glXCreateContext(display, visinfoptr, 0, GLC.GL_TRUE); 
+ glctx := GL.glXCreateContext(display, visinfoptr, 0, GLC.GL_TRUE);
 	 IF debug THEN Trace.String("glXCreateContext glctx= "); Trace.Int(glctx, 0); Trace.Ln; END;
-  
+
  res := GL.glXMakeCurrent(display, win, glctx);
 	IF debug THEN  Trace.String("glXMakeCurrent res= "); Trace.Int(res, 0); Trace.Ln; END;
+
+	GL.ReadOpenGLCore();
 
 END InitWindow;
 
@@ -420,11 +419,11 @@ BEGIN
 
 (* needs to be flipped in y *)
 	FOR i:=0 TO height-1 DO
-		GL.glReadPixels(0, height-1-i, width, 1, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, image.adr + i*width*4); 
-	END; 
+		GL.glReadPixels(0, height-1-i, width, 1, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, image.adr + i*width*4);
+	END;
 
 (* GL.glReadPixels(0, 0, width, height, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, image.adr); *)
-(* and  flip using Raster module  *)	
+(* and  flip using Raster module  *)
 	WMGraphics.StoreImage(image, fname,res);
 	IF res = 0 THEN
 	  Trace.String(fname); Trace.String(" saved"); Trace.Ln;
@@ -434,8 +433,8 @@ END SaveImage;
 
 	PROCEDURE CheckAlternateKeys( VAR mb: SET );
 	BEGIN
-		IF ~MMseen & (ControlKeyBit IN xbuttons) THEN INCL( mb, MM ) END;
-		IF ~MRseen & (Mod1KeyBit IN xbuttons) THEN INCL( mb, MR ) END
+		IF ~MMseen & (Api.ControlMask IN xbuttons) THEN INCL( mb, MM ) END;
+		IF ~MRseen & (Api.Mod1Mask IN xbuttons) THEN INCL( mb, MR ) END
 	END CheckAlternateKeys;
 
 	(* mouse handler *)
@@ -444,9 +443,9 @@ END SaveImage;
 	BEGIN
 		mm.keys := {};
 		mm.x := x;  mm.y := y;  mm.dz := dz;
-		IF Button1Bit IN xbuttons THEN  INCL( mm.keys, ML )  END;
-		IF Button2Bit IN xbuttons THEN  INCL( mm.keys, MM );  MMseen := TRUE  END;
-		IF Button3Bit IN xbuttons THEN  INCL( mm.keys, MR );  MRseen := TRUE  END;
+		IF Api.Button1Mask  IN xbuttons THEN  INCL( mm.keys, ML )  END;
+		IF Api.Button2Mask IN xbuttons THEN  INCL( mm.keys, MM );  MMseen := TRUE  END;
+		IF Api.Button3Mask IN xbuttons THEN  INCL( mm.keys, MR );  MRseen := TRUE  END;
 		IF ~(MMseen & MRseen) THEN  CheckAlternateKeys( mm.keys )  END;
 (*		Inputs.mouse.Handle( mm );*)
 		currX := x; currY := y;
@@ -466,14 +465,14 @@ END SaveImage;
 	VAR keys: SET;
 	BEGIN
 		keys := {};
-		IF ShiftKeyBit IN xbuttons THEN  INCL( keys, Inputs.LeftShift )  END;
-		IF ControlKeyBit IN xbuttons THEN  INCL( keys, Inputs.LeftCtrl )  END;
-		IF Mod1KeyBit IN xbuttons THEN  INCL( keys, Inputs.LeftAlt )  END;
-		IF Mod4KeyBit IN xbuttons THEN  INCL( keys, Inputs.LeftMeta )  END;
-		IF Mod5KeyBit IN xbuttons THEN  INCL( keys, Inputs.RightAlt )  END;
+		IF Api.ShiftMask IN xbuttons THEN  INCL( keys, Inputs.LeftShift )  END;
+		IF Api.ControlMask IN xbuttons THEN  INCL( keys, Inputs.LeftCtrl )  END;
+		IF Api.Mod1Mask IN xbuttons THEN  INCL( keys, Inputs.LeftAlt )  END;
+		IF Api.Mod4Mask IN xbuttons THEN  INCL( keys, Inputs.LeftMeta )  END;
+		IF Api.Mod5Mask IN xbuttons THEN  INCL( keys, Inputs.RightAlt )  END;
 		RETURN keys
 	END KeyState;
-	
+
 (* process pending X11 events, from Unix.KbdMouse.Mod *)
 	PROCEDURE PollXQueue;
 	VAR eventcount, keycount, xr, yr, x, y, dz, i, res: LONGINT;
@@ -495,11 +494,11 @@ END SaveImage;
 						IF keycount = 0 THEN
 							bdiff := newxbuttons / xbuttons;  xbuttons := newxbuttons;
 							km.ch := 0X;
-							IF ShiftKeyBit IN bdiff THEN km.keysym := Inputs.KsShiftL
-							ELSIF ControlKeyBit IN bdiff THEN km.keysym := Inputs.KsControlL
-							ELSIF Mod1KeyBit IN bdiff THEN km.keysym := Inputs.KsAltL
-							ELSIF Mod4KeyBit IN bdiff THEN km.keysym := Inputs.KsMetaL
-							ELSIF Mod5KeyBit IN bdiff THEN km.keysym := Inputs.KsAltR
+							IF Api.ShiftMask IN bdiff THEN km.keysym := Inputs.KsShiftL
+							ELSIF Api.ControlMask IN bdiff THEN km.keysym := Inputs.KsControlL
+							ELSIF Api.Mod1Mask IN bdiff THEN km.keysym := Inputs.KsAltL
+							ELSIF Api.Mod4Mask IN bdiff THEN km.keysym := Inputs.KsMetaL
+							ELSIF Api.Mod5Mask IN bdiff THEN km.keysym := Inputs.KsAltR
 							END;
 							km.flags := KeyState( );
 							SendKeyboardMsg( km )
@@ -520,11 +519,11 @@ END SaveImage;
 						bdiff := newxbuttons / xbuttons;  xbuttons := newxbuttons;
 						IF bdiff # {} THEN
 							km.ch := 0X;
-							IF ShiftKeyBit IN bdiff THEN km.keysym := Inputs.KsShiftL
-							ELSIF ControlKeyBit IN bdiff THEN km.keysym := Inputs.KsControlL
-							ELSIF Mod1KeyBit IN bdiff THEN km.keysym := Inputs.KsAltL
-							ELSIF Mod4KeyBit IN bdiff THEN km.keysym := Inputs.KsMetaL
-							ELSIF Mod5KeyBit IN bdiff THEN km.keysym := Inputs.KsAltR
+							IF Api.ShiftMask IN bdiff THEN km.keysym := Inputs.KsShiftL
+							ELSIF Api.ControlMask IN bdiff THEN km.keysym := Inputs.KsControlL
+							ELSIF Api.Mod1Mask IN bdiff THEN km.keysym := Inputs.KsAltL
+							ELSIF Api.Mod4Mask IN bdiff THEN km.keysym := Inputs.KsMetaL
+							ELSIF Api.Mod5Mask IN bdiff THEN km.keysym := Inputs.KsAltR
 							END;
 							km.flags := KeyState( )+ {Inputs.Release};
 							SendKeyboardMsg( km )
@@ -532,9 +531,9 @@ END SaveImage;
 				| Api.ButtonPress: be := SYSTEM.VAL(Api.XButtonEvent, event);
 						dz := 0;
 						CASE be.button OF
-						| Api.Button1:  INCL( xbuttons, Button1Bit )
-						| Api.Button2:  INCL( xbuttons, Button2Bit )
-						| Api.Button3:  INCL( xbuttons, Button3Bit )
+						| Api.Button1:  INCL( xbuttons, Api.Button1Mask )
+						| Api.Button2:  INCL( xbuttons, Api.Button2Mask )
+						| Api.Button3:  INCL( xbuttons, Api.Button3Mask )
 						| Api.Button4: dz := -1
 						| Api.Button5: dz := +1
 						ELSE  (* ignore *)
@@ -542,9 +541,9 @@ END SaveImage;
 						SendMouseMsg( be.x, be.y, dz, xbuttons )
 				| Api.ButtonRelease: be := SYSTEM.VAL(Api.XButtonEvent, event);
 						CASE be.button OF
-						| Api.Button1:  EXCL( xbuttons, Button1Bit )
-						| Api.Button2:  EXCL( xbuttons, Button2Bit )
-						| Api.Button3:  EXCL( xbuttons, Button3Bit )
+						| Api.Button1:  EXCL( xbuttons, Api.Button1Mask )
+						| Api.Button2:  EXCL( xbuttons, Api.Button2Mask )
+						| Api.Button3:  EXCL( xbuttons, Api.Button3Mask )
 						ELSE  (* ignore *)
 						END;
 						SendMouseMsg( be.x, be.y, 0, xbuttons )
@@ -552,11 +551,11 @@ END SaveImage;
 						X11.QueryPointer( display, event.window, rw, cw, xr, yr, x, y, xbuttons );
 						SendMouseMsg( x, y, 0, xbuttons )
 				| Api.Expose, Api.GraphicsExpose:
-							res := Api.GetWindowAttributes(display, win, SYSTEM.ADR(gwa));
+							res := Api.GetWindowAttributes(display, win, gwa);
 							width := gwa.width; height := gwa.height;
 							Reshape(width, height);
 							Wr("Expose");
-					
+
 				| Api.NoExpose:
 				| Api.MappingNotify:
 						X11.RefreshKeyboardMapping( SYSTEM.ADR( event ) )
@@ -579,13 +578,13 @@ END SaveImage;
 
 (* windows main loop *)
 PROCEDURE MainLoop;
-VAR	frames : LONGINT; 	
+VAR	frames : LONGINT;
 BEGIN
 frames := 0;
 Kernel.SetTimer(timer, 5000);
 alive := TRUE;
 
-WHILE  alive  DO 
+WHILE  alive  DO
 		(* process X11 events *)
 		PollXQueue;
 
@@ -595,8 +594,8 @@ WHILE  alive  DO
 		 (* measure timing info *)
 		INC(frames);
 		IF Kernel.Expired(timer) THEN
-			Trace.Int(frames,0); Trace.String(" frames in 5 secs."); 
-			Trace.String(" FPS = "); Trace.Int(frames DIV 5,0); 
+			Trace.Int(frames,0); Trace.String(" frames in 5 secs.");
+			Trace.String(" FPS = "); Trace.Int(frames DIV 5,0);
 			Trace.Ln;
 			Kernel.SetTimer(timer,5000);
 			frames := 0;
@@ -609,10 +608,10 @@ PROCEDURE Open*;
 BEGIN
 	width := 300; height := 300;
 	InitWindow(width, height, 'Oberon GL Gears' );
-    	
-	InitGears(); 
-	Reshape(width, height ); 
-	
+
+	InitGears();
+	Reshape(width, height );
+
 	(* enter to main loop *)
 	MainLoop;
 
@@ -621,8 +620,8 @@ BEGIN
 END Open;
 
 
-BEGIN	
-GL.InitOpenGL;
+BEGIN
+
 END MyXGear1.
 
 MyXGear1.Open~
