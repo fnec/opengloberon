@@ -1,4 +1,4 @@
-MODULE GLContextSized; (** AUTHOR "fnecati"; PURPOSE "OpenGL Win32 Context for WinAos; *)
+MODULE GLContext; (** AUTHOR "fnecati"; PURPOSE "OpenGL Win32 Context for WinAos; *)
 
 IMPORT SYSTEM, Kernel32, User32, KernelLog, WinApi,
 	Strings, GL := OpenGL, GLC := OpenGLConst, Raster ;
@@ -358,8 +358,8 @@ END WindowProc;
 
 BEGIN
 	ctxtcounter := 0;
-END GLContextSized.
+END GLContext.
 
 
-SystemTools.Free GLContextSized WinApi OpenGL OpenGLConst~
+SystemTools.Free GLContext WinApi OpenGL OpenGLConst~
 
