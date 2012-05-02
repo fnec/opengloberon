@@ -68,8 +68,6 @@ TYPE
 				| "s": SaveImage;
 				| "q" : Close;
 				| " ": ChangeAngle();
-				(*| "w": context.WinInfo();*)
-
 			ELSE
 				IF keysym = Inputs.KsUp THEN angleY := angleY - 10.0; GL.DelFCR(); UpdateImage;
 				ELSIF keysym = Inputs.KsDown THEN angleY := angleY + 10.0; GL.DelFCR(); UpdateImage;
@@ -114,12 +112,12 @@ TYPE
 
 			Swap;
 
-			(*rect := WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight());
+			rect := WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight());
 			WMRectangles.MoveRel(rect, bounds.l, bounds.t);
 			WMRectangles.ClipRect(rect, bounds);
 			manager.AddDirty(rect);
-*)
-			Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));
+
+			(* Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));*)
 
 		END UpdateImage;
 

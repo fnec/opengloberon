@@ -37,17 +37,12 @@ TYPE
 		wigglecount := 0; wigglecount2 := 0;
 		animated := FALSE;
 		alive := TRUE;
-		InitContext;
-	  END New;
-
-	  PROCEDURE InitContext;
-	  BEGIN
 		context.MakeCurrent();
-			initGL;
+		initGL;
 		context.DeActivate();
 		Reshape(GetWidth(), GetHeight());
-		UpdateImage;
-	END InitContext;
+		UpdateImage;		
+	  END New;
 
 	PROCEDURE KeyEvent (ucs: LONGINT; flags: SET; keysym: LONGINT);
 	BEGIN

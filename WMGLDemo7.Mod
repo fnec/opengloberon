@@ -85,18 +85,19 @@ TYPE
 			Display;
 			context.RenderInto(backImg);
 		context.DeActivate();
-		Swap();
-
+		
+		canvas.SetColor(WMGraphics.Green);
 		font.GetStringSize(fpsstr, textWidth, textHeight);
 		canvas.DrawString(4, textHeight, fpsstr);
-
-	(*
+		Swap();
+		
+	
 		rect := WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight());
 		WMRectangles.MoveRel(rect, bounds.l, bounds.t);
 		WMRectangles.ClipRect(rect, bounds);
 		manager.AddDirty(rect);
-	*)
-		Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));
+	
+	(*	Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));*)
 	END UpdateImage;
 
 	PROCEDURE SaveImage;

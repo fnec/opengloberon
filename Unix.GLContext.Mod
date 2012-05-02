@@ -1,12 +1,14 @@
-MODULE GLContext; (** AUTHOR "fnecati"; PURPOSE "OpenGL Context for LinuxAos"; *)
+MODULE GLContext; (** AUTHOR "fnecati"; PURPOSE "OpenGL Context for LinuxAos using hiddend X11Window"; *)
 IMPORT
 	Machine, X11, Api:=X11Api, GL:=OpenGL, GLC := OpenGLConst, Raster,
 	KernelLog,  SYSTEM;
 
+(*! not resizeble *)
+
 CONST debug = FALSE;
 
 TYPE
-	GLWindowContext *= RECORD
+	WindowStruct *= RECORD
 		display* : X11.DisplayPtr;
 		win*  : X11.Window ;
 		glctx* : GL.GLXContext;
@@ -19,7 +21,7 @@ TYPE
 TYPE Context* = OBJECT
 	VAR
 		width*, height*: LONGINT; (* size of GL window *)
-		glWin* {UNTRACED}  : GLWindowContext;
+		glWin* {UNTRACED}  : WindowStruct;
 		doublebuffered*: BOOLEAN; (* is context doublebuffered *)
 	 	buffer: Buffer; (* for speedup flip image in y*)
 	 	rastermode: Raster.Mode;

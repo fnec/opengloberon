@@ -6,7 +6,7 @@ IMPORT
 
 (*
 Opens a native X11 window and renders.
-From command line, linux terminal, run with : aos  -x  MyXGear.Test
+From command line, linux terminal, run with : aos  -x  MyXGear.Open
 or
  from oberon window:   MyXGear.Open ~
 *)

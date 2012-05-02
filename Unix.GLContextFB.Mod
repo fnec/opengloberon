@@ -4,10 +4,12 @@ IMPORT
 	Machine, X11, Api:=X11Api, GL:=OpenGL, GLC := OpenGLConst, Raster,
 	KernelLog,  SYSTEM;
 
+(*! resizeble context *)
+
 CONST debug = FALSE;
 
 TYPE
-	GLWindowContext *= RECORD
+	WindowStruct *= RECORD
 		display- : X11.DisplayPtr;
 		glctx- : GL.GLXContext;
 		visualInfoPtr- : Api.VisualInfoPtr;
@@ -19,11 +21,10 @@ TYPE
 
 TYPE Context* = OBJECT
 	VAR
-		glWin- {UNTRACED}  : GLWindowContext;
+		glWin- {UNTRACED}  : WindowStruct;
 		doublebuffered-: BOOLEAN; (* is context doublebuffered *)
 	 	buffer: Buffer; (* for speedup flip image in y*)
 	 	rastermode: Raster.Mode;
-
 
 	PROCEDURE Init*(w, h: LONGINT);
 	VAR

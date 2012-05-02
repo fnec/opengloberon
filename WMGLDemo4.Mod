@@ -96,9 +96,8 @@ TYPE
 		PROCEDURE Close*;
 		BEGIN {EXCLUSIVE}
 			alive := FALSE;
-			Close^;
 			DeleteBuffers;
-
+			Close^;
 			window := NIL;
 		END Close;
 

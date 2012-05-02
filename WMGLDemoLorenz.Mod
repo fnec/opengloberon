@@ -89,7 +89,7 @@ TYPE
 
 		animated := FALSE;
 		waittime := 60;
-		canvas.SetColor(WMGraphics.White);
+
 		canvas.SetFont(canvas.GetFont());
 		array_index:= 0;
 		initGL;
@@ -201,8 +201,9 @@ TYPE
 			 TimerCB;
 		context.RenderInto(backImg);
 		context.DeActivate();
-		canvas.DrawString(10,15, distancestr);
 
+		canvas.SetColor(WMGraphics.White);
+		canvas.DrawString(10,15, distancestr);
 		Swap();
 		Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));
 	END UpdateImage;
