@@ -119,9 +119,12 @@ TYPE
 		BEGIN {EXCLUSIVE} AWAIT (initialized); END;
 		wincreated := CreateHWND( winGL);
 		IF ~wincreated THEN CloseWindow(winGL); RETURN; END;
-
-	(*	GL.ReadOpenGLCore();*)
-
+		
+		(* load opengl core funcs. *)
+		MakeCurrent();
+		GL.ReadOpenGLCore();
+		DeActivate();
+		
 		BEGIN {EXCLUSIVE} AWAIT (wincreated);   END;
 		IF debug THEN  KernelLog.String("entering messageLoop"); KernelLog.Ln; END;
 		LOOP

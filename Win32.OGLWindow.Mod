@@ -247,9 +247,9 @@ TYPE
 		END;
 
 		hGLRC := GL.wglCreateContext(hDC);
+		
 		MakeCurrent();
-		(* GL.ReadOpenGLCore();*)
-
+		GL.ReadOpenGLCore();
 		GL.ReadExtensions(); (* needed for swap interval *)
 		SetSwapInterval(0);
 		DeActivate();

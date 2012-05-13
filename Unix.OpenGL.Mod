@@ -9966,7 +9966,7 @@ BEGIN
 	RETURN GetStringFromAddr(sadr);
 END GLUErrorString;
 
-PROCEDURE ReadCoreVersion;
+PROCEDURE ReadCoreVersion*;
 VAR
   Buffer: Strings.String;
   MajorVersion, MinorVersion: LONGINT;
