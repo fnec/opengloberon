@@ -32,7 +32,7 @@ MODULE WMGLDemoLorenz; (** AUTHOR "fnecati"; PURPOSE "opengl Lorenz Strange Attr
 IMPORT
 	WMRectangles, WMGraphics, Strings, Kernel, Random, MathL,
 	WM := WMWindowManager,  WMDialogs, Inputs, WMMessages,
-	GL := OpenGL, GLC := OpenGLConst, WMGL := WMGLWindow, SYSTEM;
+	GL := OpenGL, GLC := OpenGLConst, WMGL := WMGLWindow;
 
 
 CONST
@@ -47,8 +47,8 @@ CONST
 	SCALE_FACTOR = 0.8;
 
 TYPE
-	Vector3 = ARRAY 3 OF LONGREAL;
-	Positions = POINTER TO ARRAY NUM_POINTS OF Vector3;
+	Vector3d = ARRAY [3] OF GL.Double;
+	Positions = ARRAY [NUM_POINTS] OF Vector3d;
 
 
 TYPE
@@ -83,7 +83,7 @@ TYPE
 	PROCEDURE &New(w, h: LONGINT);
 	BEGIN
 		Init(w, h, FALSE); (* use alpha, for 32bpp img *)
-		WM.AddWindow(SELF, 100, 100);
+		WM.DefaultAddWindow(SELF);
 
 		SetTitle(Strings.NewString("WMGLDemoLorenz: Lorenz Attractor "));
 
@@ -123,61 +123,61 @@ TYPE
 	BEGIN
 		CASE CHR(ucs) OF
 			"a" :	animated := ~ animated;  IF animated THEN animate := 1; ELSE animate := 0 END;
-					GL.DelFCR();  UpdateImage;
+					   UpdateImage;
 			| "-" :	DEC(waittime,5); IF waittime < 10 THEN waittime := 10; END;
 			| "+" :	INC(waittime,5); IF waittime>1000 THEN waittime := 1000; END;
 			| "r" :	ResetPositions; UpdateImage;
-			| " " : 	animate := 2; GL.DelFCR(); UpdateImage;
+			| " " : 	animate := 2;  UpdateImage;
 			| "s":	SaveImage;
 			| "q" :	Close;
-		ELSE
 
+		ELSE
+          END;
 			IF  keysym = Inputs.KsLeft  THEN
-				context.MakeCurrent();
-				GL.SetFCR();
-				GL.glRotated ( ROTATION_ANGLE, 0.0, 0.0, 1.0 );
-				GL.DelFCR();
-				context.DeActivate();
+				MakeCurrent();
+
+				GL.Rotated ( ROTATION_ANGLE, 0.0, 0.0, 1.0 );
+
+				DeActivate();
 				UpdateImage;
 			ELSIF keysym = Inputs.KsRight THEN
-				context.MakeCurrent();
-				GL.SetFCR();
-				GL.glRotated ( -ROTATION_ANGLE, 0.0, 0.0, 1.0 );
-				GL.DelFCR();
-				context.DeActivate();
+				MakeCurrent();
+
+				GL.Rotated ( -ROTATION_ANGLE, 0.0, 0.0, 1.0 );
+
+				DeActivate();
 				UpdateImage;
 			ELSIF keysym = Inputs.KsDown THEN
-				context.MakeCurrent();
-				GL.SetFCR();
-				GL.glRotated ( -ROTATION_ANGLE, 0.0, 1.0, 0.0 );
-				GL.DelFCR();
-				context.DeActivate();
+				MakeCurrent();
+
+				GL.Rotated ( -ROTATION_ANGLE, 0.0, 1.0, 0.0 );
+
+				DeActivate();
 				UpdateImage;
 			ELSIF keysym = Inputs.KsUp THEN
-				context.MakeCurrent();
-				GL.SetFCR();
-				GL.glRotated ( ROTATION_ANGLE, 0.0, 1.0, 0.0 );
-				GL.DelFCR();
-				context.DeActivate();
+				MakeCurrent();
+
+				GL.Rotated ( ROTATION_ANGLE, 0.0, 1.0, 0.0 );
+
+				DeActivate();
 				UpdateImage;
 			ELSIF keysym = Inputs.KsPageDown THEN
-				context.MakeCurrent();
-				GL.SetFCR();
-				GL.glScaled ( SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR );
-				GL.DelFCR();
-				context.DeActivate();
+				MakeCurrent();
+
+				GL.Scaled ( SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR );
+
+				DeActivate();
 				UpdateImage;
 			ELSIF keysym = Inputs.KsPageUp THEN
-				context.MakeCurrent();
-				GL.SetFCR();
-				GL.glScaled ( 1.0 / SCALE_FACTOR, 1.0 / SCALE_FACTOR, 1.0 / SCALE_FACTOR );
-				GL.DelFCR();
-				context.DeActivate();
+				MakeCurrent();
+
+				GL.Scaled ( 1.0 / SCALE_FACTOR, 1.0 / SCALE_FACTOR, 1.0 / SCALE_FACTOR );
+
+				DeActivate();
 				UpdateImage;
 			ELSE
 			END;
 
-		END;
 	END KeyEvent;
 
 	PROCEDURE Close*;
@@ -196,11 +196,11 @@ TYPE
 
 	PROCEDURE UpdateImage;
 	BEGIN
-		context.MakeCurrent();
+		MakeCurrent();
 			Display;
 			 TimerCB;
-		context.RenderInto(backImg);
-		context.DeActivate();
+		SwapGLBuffer();
+		DeActivate();
 
 		canvas.SetColor(WMGraphics.White);
 		canvas.DrawString(10,15, distancestr);
@@ -230,81 +230,80 @@ TYPE
 		xcen := 0.0; ycen := 0.0; zcen := 0.0 ;
 
 		animate := 1 ;
-		NEW(red_position); NEW(grn_position);
+
 		ResetPositions;
 
-		context.MakeCurrent;
+		MakeCurrent;
 		(* Set up the OpenGL parameters *)
-		GL.glEnable ( GLC.GL_DEPTH_TEST ) ;
-		GL.glClearColor ( 0.0, 0.0, 0.0, 0.0 ) ;
-		GL.glClearDepth ( 1.0 ) ;
-		context.DeActivate;
+		GL.Enable ( GLC.GL_DEPTH_TEST ) ;
+		GL.ClearColor ( 0.0, 0.0, 0.0, 0.0 ) ;
+		GL.ClearDepth ( 1.0 ) ;
+		DeActivate;
 	END initGL;
 
 	PROCEDURE DrawCurve (index: LONGINT; CONST position: Positions);
 	VAR i: LONGINT;
 	BEGIN
 		i := index;
-		GL.glBegin (GLC.GL_LINE_STRIP) ;
+		GL.Begin (GLC.GL_LINE_STRIP) ;
 
 		REPEAT
 			IF i = NUM_POINTS-1 THEN i := 0 ELSE i := i + 1 END;
-			 GL.glVertex3dv ( SYSTEM.ADR(position[i]) ) ;
+			 GL.Vertex3dv ( position[i] ) ;
 		 UNTIL ( i = index ) ;
 
-		GL.glEnd () ;
+		GL.End () ;
 	END DrawCurve;
 
 	PROCEDURE Display;
 	BEGIN
-		GL.glClear ( GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT );
+		GL.Clear ( GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT );
 
 		(* Draw some axes *)
-		GL.glBegin ( GLC.GL_LINES ) ;
-		GL.glColor3f ( 0.0, 0.0, 1.0 ) ;  (* blue *)
-		GL.glVertex3d ( 0.0, 0.0, 0.0 ) ;
-		GL.glVertex3d ( 2.0, 0.0, 0.0 ) ; (* x- axis *)
+		GL.Begin ( GLC.GL_LINES ) ;
+		GL.Color3f ( 0.0, 0.0, 1.0 ) ;  (* blue *)
+		GL.Vertex3d ( 0.0, 0.0, 0.0 ) ;
+		GL.Vertex3d ( 2.0, 0.0, 0.0 ) ; (* x- axis *)
 
-		GL.glColor3f ( 1.0, 1.0, 0.0 ) ;  (* yellow *)
-		GL.glVertex3d ( 0.0, 0.0, 0.0 ) ;
-		GL.glVertex3d ( 0.0, 1.0, 0.0 ) ; (* y- axis *)
+		GL.Color3f ( 1.0, 1.0, 0.0 ) ;  (* yellow *)
+		GL.Vertex3d ( 0.0, 0.0, 0.0 ) ;
+		GL.Vertex3d ( 0.0, 1.0, 0.0 ) ; (* y- axis *)
 
-		GL.glColor3f (0.0, 1.0, 1.0 ) ;  (* cyan *)
-		GL.glVertex3d ( 0.0, 0.0, 0.0 ) ;
-		GL.glVertex3d ( 0.0, 0.0, 1.0 ) ; (* z- axis *)
-	 	GL.glEnd ();
+		GL.Color3f (0.0, 1.0, 1.0 ) ;  (* cyan *)
+		GL.Vertex3d ( 0.0, 0.0, 0.0 ) ;
+		GL.Vertex3d ( 0.0, 0.0, 1.0 ) ; (* z- axis *)
+	 	GL.End ();
 
-	 	GL.glColor3d ( 1.0, 0.0, 0.0 ) ;  (* Red *)
+	 	GL.Color3d ( 1.0, 0.0, 0.0 ) ;  (* Red *)
 	 	DrawCurve ( array_index, red_position ) ;
 
-	 	GL.glColor3d ( 0.0, 1.0, 0.0 ) ;  (* Green *)
+	 	GL.Color3d ( 0.0, 1.0, 0.0 ) ;  (* Green *)
 	 	DrawCurve ( array_index, grn_position ) ;
 	END Display;
 
 	PROCEDURE Reshape(w, h: LONGINT);
 	BEGIN
-		context.MakeCurrent();
-		GL.glViewport(0, 0, w, h);
+		MakeCurrent();
+		GL.Viewport(0, 0, w, h);
 		(* Set up the OpenGL parameters *)
-		GL.glEnable ( GLC.GL_DEPTH_TEST ) ;
-		GL.glClearColor ( 0.0, 0.0, 0.0, 0.0 ) ;
-		GL.glClearDepth ( 1.0 ) ;
+		GL.Enable ( GLC.GL_DEPTH_TEST ) ;
+		GL.ClearColor ( 0.0, 0.0, 0.0, 0.0 ) ;
+		GL.ClearDepth ( 1.0 ) ;
 
-		GL.glMatrixMode ( GLC.GL_PROJECTION ) ;
-		GL.glLoadIdentity ();
-		GL.SetFCR();
-			GL.glFrustum ( -1.0, 1.0, -1.0, 1.0, 10.0, 100.0 ) ;
-		GL.DelFCR();
+		GL.MatrixMode ( GLC.GL_PROJECTION ) ;
+		GL.LoadIdentity ();
+
+			GL.Frustum ( -1.0, 1.0, -1.0, 1.0, 10.0, 100.0 ) ;
 
 		xcen := 0.0; ycen := 0.0; zcen := 0.0;
 
-		GL.glMatrixMode ( GLC.GL_MODELVIEW ) ;
-		GL.glLoadIdentity () ;
-		GL.SetFCR();
-			GL.glTranslated ( 0.0, 0.0, zcen-40.0 ) ;
-		GL.DelFCR();
+		GL.MatrixMode ( GLC.GL_MODELVIEW ) ;
+		GL.LoadIdentity () ;
 
-	context.DeActivate;
+			GL.Translated ( 0.0, 0.0, zcen-40.0 ) ;
+
+
+		DeActivate;
 	END Reshape;
 
 	PROCEDURE TimerCB;
@@ -341,7 +340,7 @@ TYPE
 	(* ********** Functions ***************** *)
 
 	(* The Lorenz Attractor *)
-	PROCEDURE CalcDeriv ( VAR  position: Vector3; VAR deriv: Vector3);
+	PROCEDURE CalcDeriv ( VAR  position: Vector3d; VAR deriv: Vector3d);
 	BEGIN
 		(* Calculate the Lorenz attractor derivatives *)
 	 	deriv[0] := sigma * ( position[1] - position[0] ) ;
@@ -349,33 +348,30 @@ TYPE
 	 	deriv[2] := -position[0] * position[1] - b * position[2] ;
 	END CalcDeriv;
 
-	PROCEDURE AdvanceInTime (time_step: LONGREAL; VAR position: Vector3; VAR new_position: Vector3 );
-	VAR i: LONGINT;
-	       deriv0, deriv1, deriv2, deriv3: Vector3;
+	PROCEDURE AdvanceInTime (time_step: LONGREAL; VAR position: Vector3d; VAR new_position: Vector3d );
+	VAR
+	       deriv0, deriv1, deriv2, deriv3: Vector3d;
 	BEGIN
 		(* Move a point along the Lorenz attractor *)
 		(* Save the present values *)
 		new_position := position;
 		(* First pass in a Fourth-Order Runge-Kutta integration method *)
 		CalcDeriv ( position, deriv0 ) ;
-		FOR i := 0 TO 2 DO
-			new_position[i] := position[i] + 0.5 * time_step * deriv0[i] ;
-		END;
+
+		new_position := position + 0.5 * time_step * deriv0 ;
+
 		(* Second pass *)
 		CalcDeriv ( new_position, deriv1 ) ;
-		FOR i := 0 TO 2 DO
-			new_position[i] := position[i] + 0.5 * time_step * deriv1[i] ;
-		END;
+		new_position := position + 0.5 * time_step * deriv1 ;
+
 		(* Third pass *)
 		CalcDeriv ( position, deriv2 ) ;
-		FOR i := 0 TO 2 DO
-			new_position[i] := position[i] + time_step * deriv2[i] ;
-		END;
+		new_position := position + time_step * deriv2 ;
+
 		(* Second pass *)
 		CalcDeriv ( new_position, deriv3 ) ;
-		FOR i := 0 TO 2 DO
-			new_position[i] := position[i] + 0.1666666666666666667 * time_step * ( deriv0[i] + 2.0 * ( deriv1[i] + deriv2[i] ) + deriv3[i] ) ;
-		END;
+		new_position := position + 0.1666666666666666667 * time_step * ( deriv0 + 2.0 * ( deriv1 + deriv2 ) + deriv3 ) ;
+
 	END AdvanceInTime;
 
 BEGIN {ACTIVE}

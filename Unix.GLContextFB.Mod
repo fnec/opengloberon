@@ -29,7 +29,7 @@ TYPE Context* = OBJECT
 	PROCEDURE Init*(w, h: LONGINT);
 	VAR
 		res: LONGINT;
-		att: POINTER TO  ARRAY OF GL.GLint;
+		att: POINTER TO  ARRAY OF GL.Int;
 	  	dumy1, dumy2: LONGINT;
 	BEGIN
 		Machine.Acquire( Machine.X11 );
@@ -196,7 +196,7 @@ TYPE Context* = OBJECT
 		IF doublebuffered THEN
 			GL.glXSwapBuffers(glWin.display, glWin.glxpixmap);
 		ELSE
-	 		GL.glFlush();
+	 		GL.Flush();
 		END;
  		Machine.Release( Machine.X11 );
 	END SwapBuffers;
@@ -275,7 +275,7 @@ TYPE Context* = OBJECT
 		h := image.height;
 		Machine.Acquire( Machine.X11 );
 		GL.glXWaitGL();
-		GL.glReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, SYSTEM.ADR(buffer^[0]));
+		GL.ReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, SYSTEM.ADR(buffer^[0]));
 		Machine.Release( Machine.X11 );
 
 		(* flip vertical, y *)

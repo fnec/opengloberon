@@ -17,26 +17,23 @@ TYPE
 		alive,  animated: BOOLEAN;
 		angle : REAL;
 
-		plane: GL.GLuint; (* radar plane list *)
-		circle: GL.GLuint;
+		plane: GL.Uint; (* radar plane list *)
+		circle: GL.Uint;
 		drawMode: LONGINT;
 
 		PROCEDURE &New(w, h: LONGINT);
 		BEGIN
 			Init(w, h, FALSE); (* use alpha, for 32bpp img *)
-			WM.AddWindow(SELF, 100, 100);
-
+			WM.DefaultAddWindow(SELF);
 			SetTitle(Strings.NewString("WMGLDemo6-RadarSweep"));
 
-			Reshape(w, h);
-			context.MakeCurrent();
-			initGL;
-			context.DeActivate();
 			angle := 00.0;
 			drawMode:= 0;
 			animated := FALSE;
 			alive := TRUE;
+			initGL;
 			DrawMode(0);
+			Reshape(w, h);
 			UpdateImage;
 		END New;
 
@@ -66,15 +63,14 @@ TYPE
 		BEGIN {EXCLUSIVE}
 			alive := FALSE;
 			Close^;
-			window := NIL;
 		END Close;
 
 		PROCEDURE UpdateImage;
 		BEGIN
-			context.MakeCurrent();
+			MakeCurrent();
 				DrawPlane;
-				context.RenderInto(backImg);
-			context.DeActivate();
+				SwapGLBuffer();
+			DeActivate();
 				Swap();
 			Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));
 		END UpdateImage;
@@ -93,102 +89,103 @@ TYPE
 	VAR drawMode: LONGINT;
 	BEGIN
 		drawMode := dm;
-		context.MakeCurrent();
+		MakeCurrent();
 
 		IF drawMode = 0 THEN       (* fill mode*)
-			GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);
-			GL.glEnable(GLC.GL_DEPTH_TEST);
-			GL.glEnable(GLC.GL_CULL_FACE);
+			GL.PolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);
+			GL.Enable(GLC.GL_DEPTH_TEST);
+			GL.Enable(GLC.GL_CULL_FACE);
 		ELSIF drawMode = 1 THEN  (* wireframe mode *)
-			GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_LINE);
-			GL.glDisable(GLC.GL_DEPTH_TEST);
-			GL.glDisable(GLC.GL_CULL_FACE);
+			GL.PolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_LINE);
+			GL.Disable(GLC.GL_DEPTH_TEST);
+			GL.Disable(GLC.GL_CULL_FACE);
 		ELSE                    (* point mode *)
-			GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_POINT);
-			GL.glDisable(GLC.GL_DEPTH_TEST);
-			GL.glDisable(GLC.GL_CULL_FACE);
+			GL.PolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_POINT);
+			GL.Disable(GLC.GL_DEPTH_TEST);
+			GL.Disable(GLC.GL_CULL_FACE);
 		END;
 
-		 context.DeActivate();
+		 DeActivate();
 	END DrawMode;
 
 	PROCEDURE initGL;
 	VAR i, n: LONGINT;
-		  da,  a, b: GL.GLfloat;
-		  ga, gb: GL.GLfloat;
+		  da,  a, b: GL.Float;
+		  ga, gb: GL.Float;
 		  twopi: REAL;
 
 	BEGIN
-		GL.glClearColor (0, 0, 0, 0);
 		n := 120;
 		twopi := 2.0*Math.pi;
 		da := twopi / n;
 
-		(* make the plane list *)
-		plane := GL.glGenLists(1);
-		GL.glNewList(plane, GLC.GL_COMPILE);
+	MakeCurrent();
+		GL.ClearColor (0, 0, 0, 0);
 
-		GL.glBegin (GLC.GL_QUADS);
+		(* make the plane list *)
+		plane := GL.GenLists(1);
+		GL.NewList(plane, GLC.GL_COMPILE);
+
+		GL.Begin (GLC.GL_QUADS);
 			FOR i := 0 TO n-1 DO
 				a := i*da;
 				b := a + da;
 				ga := 0.90 * (i / n);
 				gb := 0.90 * ((i + 1) / n);
-				GL.glColor3f  (0.0, ga, 0.0);
-				GL.glVertex2i (0, 0);
-				GL.glVertex2f (Math.cos(a),  Math.sin(a));
-				GL.glColor3f(0.0, gb, 0.0);
-		          	GL.glVertex2f (Math.cos(b), Math.sin(b));
-		          	GL.glVertex2i (0, 0);
+				GL.Color3f  (0.0, ga, 0.0);
+				GL.Vertex2i (0, 0);
+				GL.Vertex2f (Math.cos(a),  Math.sin(a));
+				GL.Color3f(0.0, gb, 0.0);
+		          	GL.Vertex2f (Math.cos(b), Math.sin(b));
+		          	GL.Vertex2i (0, 0);
 			END;
-		GL.glEnd ();
-		GL.glEndList;
+		GL.End ();
+		GL.EndList;
 
 		(* create circle list *)
-		circle := GL.glGenLists(1);
-		GL.glNewList(circle, GLC.GL_COMPILE);
-		GL.glColor3f  (1.0, 0.0, 0.0);
-		GL.glLineWidth(8.0);
+		circle := GL.GenLists(1);
+		GL.NewList(circle, GLC.GL_COMPILE);
+		GL.Color3f  (1.0, 0.0, 0.0);
+		GL.LineWidth(8.0);
 
 		a := 0.0;
-		GL.glBegin (GLC.GL_LINES);
+		GL.Begin (GLC.GL_LINES);
 		FOR i := 0 TO n-1 DO
 			a := i*da;
 			b := a + da;
-			GL.glVertex2f( 1.1*Math.cos(a), 1.1*Math.sin(a));
-			GL.glVertex2f( 1.1*Math.cos(b),  1.1*Math.sin(b));
+			GL.Vertex2f( 1.1*Math.cos(a), 1.1*Math.sin(a));
+			GL.Vertex2f( 1.1*Math.cos(b),  1.1*Math.sin(b));
 		END;
-		GL.glEnd ();
-		GL.glEndList;
+		GL.End ();
+		GL.EndList;
+		DeActivate();
 	 END initGL;
 
 	PROCEDURE DrawPlane();
 	BEGIN
-		GL.glClear(GLC.GL_COLOR_BUFFER_BIT+ GLC.GL_DEPTH_BUFFER_BIT);
+		GL.Clear(GLC.GL_COLOR_BUFFER_BIT+ GLC.GL_DEPTH_BUFFER_BIT);
 		(* draw circle *)
-		GL.glCallList(circle);
-		GL.glPushMatrix();
-			GL.SetFCR();
-				GL.glRotatef(angle, 0, 0, 1);
-			GL.DelFCR();
+		GL.CallList(circle);
+		GL.PushMatrix();
+
+				GL.Rotatef(angle, 0, 0, 1);
+
 	    (* draw radar plane *)
-		GL.glCallList(plane);
-		GL.glPopMatrix();
+		GL.CallList(plane);
+		GL.PopMatrix();
 	END DrawPlane;
 
 
 	PROCEDURE Reshape(w, h: LONGINT);
 	BEGIN
-		context.MakeCurrent();
-		GL.glViewport(0,0, w, h);
-		GL.glMatrixMode(GLC.GL_PROJECTION);
-		GL.glLoadIdentity ();
-		GL.SetFCR();
-			GL.glOrtho(-1.5 ,1.5, -1.5, 1.5, -1.0, 1.0);
-		GL.DelFCR();
-		GL. glMatrixMode (GLC.GL_MODELVIEW);
-		GL.glLoadIdentity ();
-	context.DeActivate();
+		MakeCurrent();
+		GL.Viewport(0,0, w, h);
+		GL.MatrixMode(GLC.GL_PROJECTION);
+		GL.LoadIdentity ();
+			GL.Ortho(-1.5 ,1.5, -1.5, 1.5, -1.0, 1.0);
+		GL.MatrixMode (GLC.GL_MODELVIEW);
+		GL.LoadIdentity ();
+		DeActivate();
 	END Reshape;
 
 BEGIN {ACTIVE}
@@ -204,14 +201,11 @@ BEGIN {ACTIVE}
 	END;
 END GLWindow;
 
+PROCEDURE Open*;
 VAR
 	window: GLWindow;
-
-PROCEDURE Open*;
 BEGIN
-  IF window = NIL THEN
 	NEW(window, 256, 256);
- END;
 END Open;
 
 BEGIN

@@ -1,9 +1,9 @@
 MODULE WMGLDemo4; (** AUTHOR "fnecati"; PURPOSE "opengl triangle using vertex arrays"; *)
 
 IMPORT
-	WMRectangles, WMGraphics, Strings, Kernel, SYSTEM,
+	WMRectangles, WMGraphics, Strings, Kernel, SYSTEM, KernelLog,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
-	GL := OpenGL, GLC := OpenGLConst, WMGL := WMGLWindow;
+	GL := OpenGL, GLC := OpenGLConst, GLU, WMGL := WMGLWindow;
 
 CONST waittime=20;
 
@@ -26,7 +26,7 @@ TYPE
 
 		angle: REAL;
 		drawMode: LONGINT;
-		vertexVBOID, indexVBOID, vaoID: GL.GLuint;
+		vertexVBOID, indexVBOID, vaoID: GL.Uint;
 		pindices : ARRAY [3] OF INTEGER;
 		pvertex : MyVertex;
 	 	lookatz: LONGREAL;
@@ -36,20 +36,15 @@ TYPE
 
 			Init(w, h, FALSE); (* use alpha, for 32bpp img *)
 			manager := WM.GetDefaultManager();
-			WM.AddWindow(SELF, 100, 100);
-
+			WM.DefaultAddWindow(SELF);
 			SetTitle(Strings.NewString("WMGLDemo4: VertexArrays"));
 
-			context.MakeCurrent();
-				GL.ReadExtensions;
-				(* IF IsExtension .. not available THEN Close END; *)
-				initGL;
-			context.DeActivate();
 			lookatz := 3.0;
 			angle := 0.0;
 			drawMode:= 0;
 			animated := FALSE;
 			alive := TRUE;
+			IF ~ initGL() THEN Close; END;
 			DrawMode(0);
 			UpdateImage;
 		END New;
@@ -86,11 +81,11 @@ TYPE
 		(** *)
 		PROCEDURE DeleteBuffers*;
 		BEGIN
-			context.MakeCurrent();
-				GL.glDeleteBuffersARB(1, SYSTEM.ADR(vertexVBOID));
-				GL.glDeleteBuffersARB(1, SYSTEM.ADR(indexVBOID));
-				GL.glDeleteBuffersARB(1, SYSTEM.ADR(vaoID));
-			context.DeActivate();
+			MakeCurrent();
+				GL.DeleteBuffersARB(1, SYSTEM.ADR(vertexVBOID));
+				GL.DeleteBuffersARB(1, SYSTEM.ADR(indexVBOID));
+				GL.DeleteBuffersARB(1, SYSTEM.ADR(vaoID));
+			DeActivate();
 		END DeleteBuffers;
 
 		PROCEDURE Close*;
@@ -98,16 +93,15 @@ TYPE
 			alive := FALSE;
 			DeleteBuffers;
 			Close^;
-			window := NIL;
 		END Close;
 
 
 		PROCEDURE UpdateImage;
 		BEGIN
-			context.MakeCurrent();
+			MakeCurrent();
 				displayCB;
-				context.RenderInto(backImg);
-			context.DeActivate();
+				SwapGLBuffer();
+			DeActivate();
 			Swap();
 			Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));
 		END UpdateImage;
@@ -126,27 +120,39 @@ TYPE
 	VAR drawMode: LONGINT;
 	BEGIN
 		drawMode := dm;
-		context.MakeCurrent();
+		MakeCurrent();
 		IF drawMode = 0 THEN       (* fill mode*)
-			GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);
-			GL.glEnable(GLC.GL_DEPTH_TEST);
-			GL.glEnable(GLC.GL_CULL_FACE);
+			GL.PolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);
+			GL.Enable(GLC.GL_DEPTH_TEST);
+			GL.Enable(GLC.GL_CULL_FACE);
 		ELSIF drawMode = 1 THEN  (* wireframe mode *)
-			GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_LINE);
-			GL.glDisable(GLC.GL_DEPTH_TEST);
-			GL.glDisable(GLC.GL_CULL_FACE);
+			GL.PolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_LINE);
+			GL.Disable(GLC.GL_DEPTH_TEST);
+			GL.Disable(GLC.GL_CULL_FACE);
 		ELSE                    (* point mode *)
-			GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_POINT);
-			GL.glDisable(GLC.GL_DEPTH_TEST);
-			GL.glDisable(GLC.GL_CULL_FACE);
+			GL.PolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_POINT);
+			GL.Disable(GLC.GL_DEPTH_TEST);
+			GL.Disable(GLC.GL_CULL_FACE);
 		END;
 
-		context.DeActivate();
+		DeActivate();
 	END DrawMode;
 
-	PROCEDURE initGL();
+	PROCEDURE initGL(): BOOLEAN;
 	VAR offset: LONGINT;
 	BEGIN
+			MakeCurrent();
+
+			GL.ReadImplementationProperties;
+
+		IF ~ (GL.GL_ARB_vertex_buffer_object & GL.GL_ARB_vertex_array_object) THEN
+			KernelLog.String("GL_ARB_vertex_buffer_object and GL_ARB_vertex_array_object extesions are not supported" ); KernelLog.Ln;
+			RETURN FALSE;
+		END;
+
+		GL.Read_GL_ARB_vertex_buffer_object(); (* read these extensions *)
+		GL.Read_GL_ARB_vertex_array_object();
+
 		NEW(pvertex,3);
 		(* VERTEX 0 *)
 		pvertex[0].x := 0.0;
@@ -178,56 +184,59 @@ TYPE
 
 		pindices[0] := 0;  pindices[1] := 1; pindices[2] := 2;
 
-		GL.glClearColor(0.9, 0.9, 0.9, 1.0);
-		GL.glColor3f(0.2, 0.8, 0.5);
 
-		GL.glGenVertexArrays(1, SYSTEM.ADR(vaoID));
-		GL.glBindVertexArray(vaoID);
-		GL.glGenBuffers(1, SYSTEM.ADR(vertexVBOID));
-		GL.glBindBuffer(GLC.GL_ARRAY_BUFFER, vertexVBOID);
-		GL.glBufferData(GLC.GL_ARRAY_BUFFER, LEN(pvertex,0)*8*4, SYSTEM.ADR(pvertex[0].x), GLC.GL_STATIC_DRAW);
+		GL.ClearColor(0.9, 0.9, 0.9, 1.0);
+		GL.Color3f(0.2, 0.8, 0.5);
 
-		GL.glEnableVertexAttribArray(0);
+		GL.GenVertexArrays(1, SYSTEM.ADR(vaoID));
+		GL.BindVertexArray(vaoID);
+		GL.GenBuffers(1, SYSTEM.ADR(vertexVBOID));
+		GL.BindBuffer(GLC.GL_ARRAY_BUFFER, vertexVBOID);
+		GL.BufferData(GLC.GL_ARRAY_BUFFER, LEN(pvertex,0)*8*4, SYSTEM.ADR(pvertex[0].x), GLC.GL_STATIC_DRAW);
+
+		GL.EnableVertexAttribArray(0);
 		offset := 0;
-		GL.glVertexAttribPointer(0, 3, GLC.GL_FLOAT, GLC.GL_FALSE, 8*4, offset);
+		GL.VertexAttribPointer(0, 3, GLC.GL_FLOAT, GLC.GL_FALSE, 8*4, offset);
 
-		GL.glEnableVertexAttribArray(1);
+		GL.EnableVertexAttribArray(1);
 		offset := 12;
-		GL.glVertexAttribPointer(1, 3, GLC.GL_FLOAT, GLC.GL_FALSE, 8*4, offset);
+		GL.VertexAttribPointer(1, 3, GLC.GL_FLOAT, GLC.GL_FALSE, 8*4, offset);
 
-		GL.glGenBuffers(1, SYSTEM.ADR(indexVBOID));
-		GL.glBindBuffer(GLC.GL_ELEMENT_ARRAY_BUFFER, indexVBOID);
-		GL.glBufferData(GLC.GL_ELEMENT_ARRAY_BUFFER, 3*2, SYSTEM.ADR(pindices[0]), GLC.GL_STATIC_DRAW);
+		GL.GenBuffers(1, SYSTEM.ADR(indexVBOID));
+		GL.BindBuffer(GLC.GL_ELEMENT_ARRAY_BUFFER, indexVBOID);
+		GL.BufferData(GLC.GL_ELEMENT_ARRAY_BUFFER, 3*2, SYSTEM.ADR(pindices[0]), GLC.GL_STATIC_DRAW);
 
+		DeActivate();
+		RETURN TRUE;
 	END initGL;
 
 	PROCEDURE displayCB();
 	BEGIN
 		(* clear buffer *)
-		GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT );
-		GL.glPushMatrix();
-		 GL.SetFCR();
-			GL.glRotatef(angle, 0.0, 0.0, 1.0);
-		GL.DelFCR();
+		GL.Clear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT );
+		GL.PushMatrix();
+
+			GL.Rotatef(angle, 0.0, 0.0, 1.0);
+
 		(*The starting point of the IBO *)
-		GL.glDrawElements(GLC.GL_TRIANGLES, 3, GLC.GL_UNSIGNED_SHORT, 0);
-		GL.glPopMatrix();
+		GL.DrawElements(GLC.GL_TRIANGLES, 3, GLC.GL_UNSIGNED_SHORT, 0);
+		GL.PopMatrix();
 	END displayCB;
 
 	PROCEDURE Reshape(w, h: LONGINT);
 	BEGIN
-		context.MakeCurrent();
-		GL.glViewport(0 , 0, w, h);
-		GL.SetFCR();
-			GL.glMatrixMode(GLC.GL_PROJECTION);
-			GL.glLoadIdentity();
-			GL.gluPerspective(45.0, 1.0, 0.1, 100.0);
+		MakeCurrent();
+		GL.Viewport(0 , 0, w, h);
 
-			GL.glMatrixMode(GLC.GL_MODELVIEW);
-			GL.glLoadIdentity();
-			GL.gluLookAt(0.0, 0.0, lookatz,   0.0, 0.0, 0.0,   0.0, 1.0, 0.0); (* eye(x,y,z), focal(x,y,z), up(x,y,z) *)
-		GL.DelFCR();
-		context.DeActivate();
+			GL.MatrixMode(GLC.GL_PROJECTION);
+			GL.LoadIdentity();
+			GLU.Perspective(45.0, 1.0, 0.1, 100.0);
+
+			GL.MatrixMode(GLC.GL_MODELVIEW);
+			GL.LoadIdentity();
+			GLU.LookAt(0.0, 0.0, lookatz,   0.0, 0.0, 0.0,   0.0, 1.0, 0.0); (* eye(x,y,z), focal(x,y,z), up(x,y,z) *)
+
+		DeActivate();
 	END Reshape;
 
 BEGIN  {ACTIVE}
@@ -243,14 +252,13 @@ BEGIN  {ACTIVE}
 	END;
 END GLWindow;
 
-VAR
-	window: GLWindow;
+
 
 PROCEDURE Open*;
+VAR
+	window: GLWindow;
 BEGIN
-	IF window = NIL THEN
-		NEW(window, 256, 256);
-	END;
+	NEW(window, 256, 256);
 END Open;
 
 BEGIN

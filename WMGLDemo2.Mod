@@ -4,7 +4,7 @@ MODULE WMGLDemo2; (** AUTHOR "fnecati"; PURPOSE " axolotl-felix opengl implemeta
 IMPORT
 	Raster, WMRectangles, WMGraphics, Strings,
 	WM := WMWindowManager,  WMMessages, KernelLog, WMDialogs,
-	SYSTEM, GL := OpenGL, GLC := OpenGLConst, WMGL:=WMGLWindow;
+	SYSTEM, GL := OpenGL, GLC := OpenGLConst, GLU, WMGL:=WMGLWindow;
 
 TYPE
 	KillerMsg = OBJECT
@@ -13,8 +13,8 @@ TYPE
 	GLWindow* =  OBJECT(WMGL.Window)
 	VAR
 		drawMode:LONGINT; (* fill, lines, points *)
-		texture: ARRAY [3] OF GL.GLuint;  (* Storage For 3 Textures  *)
-		LightAmbient, LightDiffuse, LightPosition: ARRAY [4] OF GL.GLfloat;
+		texture: ARRAY [3] OF GL.Uint;  (* Storage For 3 Textures  *)
+		LightAmbient, LightDiffuse, LightPosition: ARRAY [4] OF GL.Float;
 		xrot, yrot: REAL;  (* X, Y  rotation *)
 		z : REAL; (* depth into the screen *)
 		xspeed, yspeed: REAL;
@@ -24,23 +24,13 @@ TYPE
 		PROCEDURE &New(w, h: LONGINT);
 		BEGIN
 			Init(w, h, FALSE); (* use alpha, for 32bpp img *)
-			WM.AddWindow(SELF, 100, 100);
-
+			WM.DefaultAddWindow(SELF);
 			SetTitle(Strings.NewString("WMGLDemo2: axolotl"));
-			InitContext;
-		  END New;
 
-		  PROCEDURE InitContext;
-		  BEGIN
-			context.MakeCurrent();
-				InitGL;
-				LoadGLTextures;
-			context.DeActivate();
-
+			InitGL;
 		 	Reshape(GetWidth(), GetHeight());
 			UpdateImage;
-
-		END InitContext;
+		  END New;
 
 		PROCEDURE KeyEvent (ucs: LONGINT; flags: SET; keysym: LONGINT);
 		BEGIN
@@ -55,21 +45,21 @@ TYPE
 			| "Y" : yrot := yrot+ 5.0; UpdateImage;
 
 			| "l": light := ~ light;
-					context.MakeCurrent();
-					IF light THEN GL.glEnable(GLC.GL_LIGHTING ); ELSE  GL.glDisable(GLC.GL_LIGHTING ); END;
-					context.DeActivate();
+					MakeCurrent();
+					IF light THEN GL.Enable(GLC.GL_LIGHTING ); ELSE  GL.Disable(GLC.GL_LIGHTING ); END;
+					DeActivate();
 					UpdateImage;
 
 			| "b": blend := ~blend;
-					context.MakeCurrent();
+					MakeCurrent();
 					IF blend THEN
-				          GL.glEnable( GLC.GL_BLEND );
-						GL.glDisable( GLC.GL_DEPTH_TEST );
+				          GL.Enable( GLC.GL_BLEND );
+						GL.Disable( GLC.GL_DEPTH_TEST );
 					ELSE
-						GL.glDisable( GLC.GL_BLEND );
-						GL.glEnable( GLC.GL_DEPTH_TEST );
+						GL.Disable( GLC.GL_BLEND );
+						GL.Enable( GLC.GL_DEPTH_TEST );
 					END;
-					context.DeActivate();
+					DeActivate();
 					UpdateImage;
 
 			| "s": SaveImage;
@@ -93,18 +83,17 @@ TYPE
 			END
 		END Handle;
 
-
 		PROCEDURE Close*;
-		BEGIN {EXCLUSIVE}
+		BEGIN
 			Close^;
 		END Close;
 
 		PROCEDURE UpdateImage;
 		BEGIN
-			context.MakeCurrent();
-			Drawing;
-			context.RenderInto(backImg);
-			context.DeActivate();
+			MakeCurrent();
+				Drawing;
+			SwapGLBuffer();
+			DeActivate();
 			Swap();
 			Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));
 		END UpdateImage;
@@ -122,74 +111,74 @@ TYPE
 		END SaveImage;
 
 (* function to load in bitmap as a GL texture *)
-PROCEDURE LoadGLTextures( );
+PROCEDURE LoadGLTextures(CONST fname: ARRAY OF CHAR ): BOOLEAN;
 VAR teximg: Raster.Image;
-	 res: GL.GLint;
+	 res: GL.Int;
 BEGIN
   (* Create storage space for the texture *)
-  teximg := WMGraphics.LoadImage("axolotl.png", FALSE);
+  teximg := WMGraphics.LoadImage(fname, FALSE);
   IF teximg = NIL THEN
-    KernelLog.String("Can not load texture file"); KernelLog.Ln;
+	KernelLog.String("Can not load texture file: "); KernelLog.String(fname); KernelLog.Ln;
+	RETURN FALSE
   END;
-  ASSERT(teximg # NIL, 333);
 
   (*? image needs to be flipped vertically *)
 
-(* context.MakeCurrent(); *)
 
   (* Create The Texture *)
-    GL.glGenTextures( 3, SYSTEM.ADR(texture[0]) );
+    GL.GenTextures( 3, SYSTEM.ADR(texture[0]) );
 
   (* Typical Texture Generation Using Data From The Bitmap *)
-  GL.glBindTexture( GLC.GL_TEXTURE_2D, texture[0] );
+  GL.BindTexture( GLC.GL_TEXTURE_2D, texture[0] );
 
     (* Generate The Texture *)
-  GL.glTexImage2D( GLC.GL_TEXTURE_2D, 0, 4, teximg.width, teximg.height, 0,GLC. GL_RGBA,
+  GL.TexImage2D( GLC.GL_TEXTURE_2D, 0, 4, teximg.width, teximg.height, 0,GLC. GL_RGBA,
     GLC.GL_UNSIGNED_BYTE, teximg.adr );
 
   (* Linear Filtering *)
-  GL.glTexParameteri( GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MIN_FILTER, GLC.GL_NEAREST);
-    GL.glTexParameteri( GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_NEAREST );
+  GL.TexParameteri( GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MIN_FILTER, GLC.GL_NEAREST);
+    GL.TexParameteri( GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_NEAREST );
 
-  GL.glBindTexture(GLC. GL_TEXTURE_2D, texture[1] );
+  GL.BindTexture(GLC. GL_TEXTURE_2D, texture[1] );
 
   (* Linear Filtering *)
-    GL.glTexParameteri( GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MIN_FILTER, GLC.GL_LINEAR );
-    GL.glTexParameteri( GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_LINEAR );
+    GL.TexParameteri( GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MIN_FILTER, GLC.GL_LINEAR );
+    GL.TexParameteri( GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_LINEAR );
 
     (* Generate The Texture *)
-  GL.glTexImage2D( GLC.GL_TEXTURE_2D, 0, 4, teximg.width,
+  GL.TexImage2D( GLC.GL_TEXTURE_2D, 0, 4, teximg.width,
     teximg.height, 0, GLC.GL_RGBA, GLC.GL_UNSIGNED_BYTE, teximg.adr );
 
-  GL.glBindTexture( GLC.GL_TEXTURE_2D, texture[2] );
+  GL.BindTexture( GLC.GL_TEXTURE_2D, texture[2] );
 
   (* Linear Filtering *)
-    GL.glTexParameteri( GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MIN_FILTER, GLC.GL_LINEAR_MIPMAP_NEAREST );
-    GL.glTexParameteri( GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_LINEAR_MIPMAP_NEAREST );
+    GL.TexParameteri( GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MIN_FILTER, GLC.GL_LINEAR_MIPMAP_NEAREST );
+    GL.TexParameteri( GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_LINEAR_MIPMAP_NEAREST );
 
   (* Generate The MipMapped Texture  *)
-  res := GL.gluBuild2DMipmaps(GLC.GL_TEXTURE_2D, 4, teximg.width, teximg.height,
+  res := GLU.Build2DMipmaps(GLC.GL_TEXTURE_2D, 4, teximg.width, teximg.height,
     GLC.GL_RGBA, GLC.GL_UNSIGNED_BYTE, teximg.adr);
 
   (* Free up any memory we may have used *)
     teximg := NIL;
+    RETURN TRUE;
 END LoadGLTextures;
 
 PROCEDURE Reshape(w, h: LONGINT);
 BEGIN
-context.MakeCurrent();
-	GL.glViewport(0, 0, w, h);
-GL.SetFCR();
-	GL.glMatrixMode(GLC.GL_PROJECTION);
-	GL.glLoadIdentity();
-	GL.gluPerspective(45.0, 1.0, 0.1, 100.0);
+MakeCurrent();
+	GL.Viewport(0, 0, w, h);
 
-	GL.glMatrixMode(GLC.GL_MODELVIEW);
-	GL.glLoadIdentity();
+	GL.MatrixMode(GLC.GL_PROJECTION);
+	GL.LoadIdentity();
+	GLU.Perspective(45.0, 1.0, 0.1, 100.0);
 
-	 GL.gluLookAt(0.0, 0.0, 2.0, 0., 0., 0., 0., 1., 0.);
-GL.DelFCR();
-context.DeActivate();
+	GL.MatrixMode(GLC.GL_MODELVIEW);
+	GL.LoadIdentity();
+
+	 GLU.LookAt(0.0, 0.0, 2.0, 0., 0., 0., 0., 1., 0.);
+
+DeActivate();
 
 END Reshape;
 
@@ -202,159 +191,157 @@ BEGIN
 
 	filter := 0;
 
-(*	LightAmbient :=  [0.5, 0.5, 0.5, 1.0];
+	LightAmbient :=  [0.5, 0.5, 0.5, 1.0];
 	LightDiffuse  := [1.0, 1.0, 1.0, 1.0];
 	LightPosition := [0.0, 0.0, 2.0, 1.0];
-*)
 
+(*
 LightAmbient[0] := 0.5; LightAmbient[1] := 0.5; LightAmbient[2] := 0.5; LightAmbient[3] := 1.0;
 LightDiffuse[0] := 1.0; LightDiffuse[1] := 1.0; LightDiffuse[2] := 1.0; LightDiffuse[3] := 1.0;
 LightPosition[0]:= 0.0; LightPosition[1]:= 0.0; LightPosition[2]:= 0.2; LightPosition[3]:= 1.0;
-
-(* context.MakeCurrent(); *)
-GL.SetFCR();
+*)
+ MakeCurrent();
 
   (* Enable Texture Mapping ( NEW ) *)
-  GL.glEnable( GLC.GL_TEXTURE_2D );
+  GL.Enable( GLC.GL_TEXTURE_2D );
 
   (* Enable smooth shading *)
-  GL.glShadeModel( GLC.GL_SMOOTH );
+  GL.ShadeModel( GLC.GL_SMOOTH );
 
   (* Set the background black *)
-  GL.glClearColor( 0.0, 1.0, 1.0, 0.0 );
+  GL.ClearColor( 0.0, 1.0, 1.0, 0.0 );
 
   (* Depth buffer setup *)
-  GL.glClearDepth( 1.0 );
+  GL.ClearDepth( 1.0 );
 
   (* Enables Depth Testing *)
-  GL.glEnable( GLC.GL_DEPTH_TEST );
+  GL.Enable( GLC.GL_DEPTH_TEST );
 
   (* The Type Of Depth Test To Do *)
-  GL.glDepthFunc( GLC.GL_LEQUAL );
+  GL.DepthFunc( GLC.GL_LEQUAL );
 
   (* Really Nice Perspective Calculations *)
-  GL.glHint( GLC.GL_PERSPECTIVE_CORRECTION_HINT, GLC.GL_NICEST );
+  GL.Hint( GLC.GL_PERSPECTIVE_CORRECTION_HINT, GLC.GL_NICEST );
 
   (* Setup The Ambient Light *)
-  GL.glLightfv( GLC.GL_LIGHT1, GLC.GL_AMBIENT, SYSTEM.ADR(LightAmbient[0]) );
+  GL.Lightfv( GLC.GL_LIGHT1, GLC.GL_AMBIENT, LightAmbient );
 
   (* Setup The Diffuse Light *)
-  GL.glLightfv( GLC.GL_LIGHT1, GLC.GL_DIFFUSE, SYSTEM.ADR(LightDiffuse[0]) );
+  GL.Lightfv( GLC.GL_LIGHT1, GLC.GL_DIFFUSE, LightDiffuse );
 
   (* Position The Light *)
-  GL.glLightfv( GLC.GL_LIGHT1, GLC.GL_POSITION, SYSTEM.ADR(LightPosition[0]) );
+  GL.Lightfv( GLC.GL_LIGHT1, GLC.GL_POSITION, LightPosition );
 
   (* Enable Light One *)
-  GL.glEnable( GLC.GL_LIGHT1 );
+  GL.Enable( GLC.GL_LIGHT1 );
 
   (* Full Brightness, 50% Alpha ( NEW ) *)
-  GL.glColor4f( 1.0, 1.0, 1.0, 0.5);
+  GL.Color4f( 1.0, 1.0, 1.0, 0.5);
 
   (* Blending Function For Translucency Based On Source Alpha Value  *)
-  GL.glBlendFunc( GLC.GL_SRC_ALPHA, GLC.GL_ONE );
-GL.DelFCR();
+  GL.BlendFunc( GLC.GL_SRC_ALPHA, GLC.GL_ONE );
 
+
+  IF ~LoadGLTextures("axolotl.png") THEN Close; END;
+
+ DeActivate();
 END InitGL;
 
 PROCEDURE DrawMode(dm: LONGINT);
 VAR drawMode: LONGINT;
 BEGIN
 	drawMode := dm;
-	context.MakeCurrent();
+	MakeCurrent();
 
         IF drawMode = 0 THEN       (* fill mode*)
-            GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);
-            GL.glEnable(GLC.GL_DEPTH_TEST);
-            GL.glEnable(GLC.GL_CULL_FACE);
+            GL.PolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);
+            GL.Enable(GLC.GL_DEPTH_TEST);
+            GL.Enable(GLC.GL_CULL_FACE);
         ELSIF drawMode = 1 THEN  (* wireframe mode *)
-            GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_LINE);
-            GL.glDisable(GLC.GL_DEPTH_TEST);
-            GL.glDisable(GLC.GL_CULL_FACE);
+            GL.PolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_LINE);
+            GL.Disable(GLC.GL_DEPTH_TEST);
+            GL.Disable(GLC.GL_CULL_FACE);
         ELSE                    (* point mode *)
 
-            GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_POINT);
-            GL.glDisable(GLC.GL_DEPTH_TEST);
-            GL.glDisable(GLC.GL_CULL_FACE);
+            GL.PolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_POINT);
+            GL.Disable(GLC.GL_DEPTH_TEST);
+            GL.Disable(GLC.GL_CULL_FACE);
 	  END;
-	  context.DeActivate();
+	  DeActivate();
 END DrawMode;
 
 PROCEDURE Drawing;
-VAR zz: REAL;
-BEGIN
- zz := z + 2.0;
- (*context.MakeCurrent(); *)
 
- GL.SetFCR();
- GL.glClear( GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT );
-  GL.glLoadIdentity( );
-  GL.glTranslatef( 0.0, 0.0, z );
-  GL.glRotatef( xrot, 1.0, 0.0, 0.0);
-  GL.glRotatef( yrot, 0.0, 1.0, 0.0);
-  GL.glBindTexture( GLC.GL_TEXTURE_2D, texture[filter] );
- GL.DelFCR();
+BEGIN
+ GL.Clear( GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT );
+  GL.LoadIdentity( );
+  GL.Translatef( 0.0, 0.0, z );
+  GL.Rotatef( xrot, 1.0, 0.0, 0.0);
+  GL.Rotatef( yrot, 0.0, 1.0, 0.0);
+  GL.BindTexture( GLC.GL_TEXTURE_2D, texture[filter] );
+
   Cube();
- GL.SetFCR();
-  GL.glLoadIdentity( );
-  GL.glTranslatef( 1.5, -1.5, zz);
-  GL.glRotatef( yrot, 1.0, 0.0, 0.0);
-  GL.glRotatef( xrot, 0.0, 1.0, 0.0);
- GL.DelFCR();
+
+  GL.LoadIdentity( );
+  GL.Translatef( 1.5, -1.5, z + 2.0);
+  GL.Rotatef( yrot, 1.0, 0.0, 0.0);
+  GL.Rotatef( xrot, 0.0, 1.0, 0.0);
+
   Cube();
- GL.SetFCR();
-  GL.glLoadIdentity( );
-  GL.glTranslatef( 1.5, 1.5, z );
-  GL.glRotatef( yrot, 1.0, 1.0, 0.0);
-  GL.glRotatef( xrot, 0.0, 1.0, 0.0);
-  GL.DelFCR();
+
+  GL.LoadIdentity( );
+  GL.Translatef( 1.5, 1.5, z );
+  GL.Rotatef( yrot, 1.0, 1.0, 0.0);
+  GL.Rotatef( xrot, 0.0, 1.0, 0.0);
+
   Cube();
 
 END Drawing;
 
 PROCEDURE Cube();
 BEGIN
-(* context.MakeCurrent(); *)
-GL.SetFCR();
-  GL.glBegin( GLC.GL_QUADS );
-    GL.glNormal3f( 0.0, 0.0, 1.0 );
-    GL.glTexCoord2f( 1.0, 0.0 ); GL.glVertex3f( -1.0, -1.0,  1.0 );
-    GL.glTexCoord2f( 0.0, 0.0 ); GL.glVertex3f(  1.0, -1.0,  1.0 );
-    GL.glTexCoord2f( 0.0, 1.0 ); GL.glVertex3f(  1.0,  1.0,  1.0 );
-    GL.glTexCoord2f( 1.0, 1.0 ); GL.glVertex3f( -1.0,  1.0,  1.0 );
+(* MakeCurrent(); *)
 
-    GL.glNormal3f( 0.0, 0.0, -1.0);
-    GL.glTexCoord2f( 0.0, 0.0 ); GL.glVertex3f( -1.0, -1.0, -1.0 );
-    GL.glTexCoord2f( 0.0, 1.0 ); GL.glVertex3f( -1.0,  1.0, -1.0 );
-    GL.glTexCoord2f( 1.0, 1.0 ); GL.glVertex3f(  1.0,  1.0, -1.0 );
-    GL.glTexCoord2f( 1.0, 0.0 ); GL.glVertex3f(  1.0, -1.0, -1.0 );
+  GL.Begin( GLC.GL_QUADS );
+    GL.Normal3f( 0.0, 0.0, 1.0 );
+    GL.TexCoord2f( 1.0, 0.0 ); GL.Vertex3f( -1.0, -1.0,  1.0 );
+    GL.TexCoord2f( 0.0, 0.0 ); GL.Vertex3f(  1.0, -1.0,  1.0 );
+    GL.TexCoord2f( 0.0, 1.0 ); GL.Vertex3f(  1.0,  1.0,  1.0 );
+    GL.TexCoord2f( 1.0, 1.0 ); GL.Vertex3f( -1.0,  1.0,  1.0 );
 
-    GL.glNormal3f( 0.0, 1.0, 0.0 );
-    GL.glTexCoord2f( 1.0, 1.0 ); GL.glVertex3f( -1.0,  1.0, -1.0 );
-    GL.glTexCoord2f( 1.0, 0.0 ); GL.glVertex3f( -1.0,  1.0,  1.0 );
-    GL.glTexCoord2f( 0.0, 0.0 ); GL.glVertex3f(  1.0,  1.0,  1.0 );
-    GL.glTexCoord2f( 0.0, 1.0 ); GL.glVertex3f(  1.0,  1.0, -1.0 );
+    GL.Normal3f( 0.0, 0.0, -1.0);
+    GL.TexCoord2f( 0.0, 0.0 ); GL.Vertex3f( -1.0, -1.0, -1.0 );
+    GL.TexCoord2f( 0.0, 1.0 ); GL.Vertex3f( -1.0,  1.0, -1.0 );
+    GL.TexCoord2f( 1.0, 1.0 ); GL.Vertex3f(  1.0,  1.0, -1.0 );
+    GL.TexCoord2f( 1.0, 0.0 ); GL.Vertex3f(  1.0, -1.0, -1.0 );
 
-    GL.glNormal3f( 0.0, -1.0, 0.0 );
-    GL.glTexCoord2f( 0.0, 1.0 ); GL.glVertex3f( -1.0, -1.0, -1.0 );
-    GL.glTexCoord2f( 1.0, 1.0 ); GL.glVertex3f(  1.0, -1.0, -1.0 );
-    GL.glTexCoord2f( 1.0, 0.0 ); GL.glVertex3f(  1.0, -1.0,  1.0 );
-    GL.glTexCoord2f( 0.0, 0.0 ); GL.glVertex3f( -1.0, -1.0,  1.0 );
+    GL.Normal3f( 0.0, 1.0, 0.0 );
+    GL.TexCoord2f( 1.0, 1.0 ); GL.Vertex3f( -1.0,  1.0, -1.0 );
+    GL.TexCoord2f( 1.0, 0.0 ); GL.Vertex3f( -1.0,  1.0,  1.0 );
+    GL.TexCoord2f( 0.0, 0.0 ); GL.Vertex3f(  1.0,  1.0,  1.0 );
+    GL.TexCoord2f( 0.0, 1.0 ); GL.Vertex3f(  1.0,  1.0, -1.0 );
 
-    GL.glNormal3f( 1.0, 0.0, 0.0);
+    GL.Normal3f( 0.0, -1.0, 0.0 );
+    GL.TexCoord2f( 0.0, 1.0 ); GL.Vertex3f( -1.0, -1.0, -1.0 );
+    GL.TexCoord2f( 1.0, 1.0 ); GL.Vertex3f(  1.0, -1.0, -1.0 );
+    GL.TexCoord2f( 1.0, 0.0 ); GL.Vertex3f(  1.0, -1.0,  1.0 );
+    GL.TexCoord2f( 0.0, 0.0 ); GL.Vertex3f( -1.0, -1.0,  1.0 );
 
-    GL.glTexCoord2f( 0.0, 0.0 ); GL.glVertex3f( 1.0, -1.0, -1.0 );
-    GL.glTexCoord2f( 0.0, 1.0 ); GL.glVertex3f( 1.0,  1.0, -1.0 );
-    GL.glTexCoord2f( 1.0, 1.0 ); GL.glVertex3f( 1.0,  1.0,  1.0 );
-    GL.glTexCoord2f( 1.0, 0.0 ); GL.glVertex3f( 1.0, -1.0,  1.0 );
+    GL.Normal3f( 1.0, 0.0, 0.0);
 
-    GL.glNormal3f( -1.0, 0.0, 0.0 );
-    GL.glTexCoord2f( 1.0, 0.0 ); GL.glVertex3f( -1.0, -1.0, -1.0 );
-    GL.glTexCoord2f( 0.0, 0.0 ); GL.glVertex3f( -1.0, -1.0,  1.0 );
-    GL.glTexCoord2f( 0.0, 1.0 ); GL.glVertex3f( -1.0,  1.0,  1.0 );
-    GL.glTexCoord2f( 1.0, 1.0 ); GL.glVertex3f( -1.0,  1.0, -1.0 );
-  GL.glEnd();
+    GL.TexCoord2f( 0.0, 0.0 ); GL.Vertex3f( 1.0, -1.0, -1.0 );
+    GL.TexCoord2f( 0.0, 1.0 ); GL.Vertex3f( 1.0,  1.0, -1.0 );
+    GL.TexCoord2f( 1.0, 1.0 ); GL.Vertex3f( 1.0,  1.0,  1.0 );
+    GL.TexCoord2f( 1.0, 0.0 ); GL.Vertex3f( 1.0, -1.0,  1.0 );
 
- GL.DelFCR();
+    GL.Normal3f( -1.0, 0.0, 0.0 );
+    GL.TexCoord2f( 1.0, 0.0 ); GL.Vertex3f( -1.0, -1.0, -1.0 );
+    GL.TexCoord2f( 0.0, 0.0 ); GL.Vertex3f( -1.0, -1.0,  1.0 );
+    GL.TexCoord2f( 0.0, 1.0 ); GL.Vertex3f( -1.0,  1.0,  1.0 );
+    GL.TexCoord2f( 1.0, 1.0 ); GL.Vertex3f( -1.0,  1.0, -1.0 );
+  GL.End();
+
+
 END Cube;
 
 PROCEDURE Testspeed;

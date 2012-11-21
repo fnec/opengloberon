@@ -1,7 +1,7 @@
 MODULE SpaceSim3;
 
 	IMPORT KernelLog := KernelLog, Inputs, Commands,
-	GL:=OpenGL, GLC:=OpenGLConst, OGW := OGLWindow, ML := Decoder3DS;
+	GL:=OpenGL, GLC:=OpenGLConst, OGW := OGLWindow, GLU, ML := Decoder3DS;
 
 TYPE
 	(* our space simulation window object *)
@@ -41,24 +41,24 @@ TYPE
 		ratio: LONGREAL;
 	BEGIN
 		ratio := width / height;
-		GL.glClearColor(0.0, 0.0, 0.0, 0.0);  (* This clear the background color to black *)
-		GL.glShadeModel(GLC.GL_SMOOTH);  (* Type of shading for the polygons *)
+		GL.ClearColor(0.0, 0.0, 0.0, 0.0);  (* This clear the background color to black *)
+		GL.ShadeModel(GLC.GL_SMOOTH);  (* Type of shading for the polygons *)
 
 		(* Viewport transformation *)
-		GL.glViewport(0,0,width, height);
+		GL.Viewport(0,0,width, height);
 
 		(* Projection transformation *)
-		GL.glMatrixMode(GLC.GL_PROJECTION);  (* Specifies which matrix stack is the target for matrix operations  *)
-		GL.glLoadIdentity;  (* We initialize the projection matrix as identity *)
+		GL.MatrixMode(GLC.GL_PROJECTION);  (* Specifies which matrix stack is the target for matrix operations  *)
+		GL.LoadIdentity;  (* We initialize the projection matrix as identity *)
 
-		GL.SetFCR();
-		GL.gluPerspective(45.0, ratio,1.0,10000.0);  (* We define the "viewing volume" *)
-		GL.DelFCR();
 
-		GL.glEnable(GLC.GL_DEPTH_TEST);  (* We enable the depth test (also called z buffer) *)
-		GL.glPolygonMode (GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);  (* Polygon rasterization mode (polygon filled) *)
+		GLU.Perspective(45.0, ratio,1.0,10000.0);  (* We define the "viewing volume" *)
 
-		GL.glEnable(GLC.GL_TEXTURE_2D);  (* This Enable the Texture mapping *)
+
+		GL.Enable(GLC.GL_DEPTH_TEST);  (* We enable the depth test (also called z buffer) *)
+		GL.PolygonMode (GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);  (* Polygon rasterization mode (polygon filled) *)
+
+		GL.Enable(GLC.GL_TEXTURE_2D);  (* This Enable the Texture mapping *)
 
 		loadok := ML.Import3DS(model, fname);
 		IF ~loadok THEN
@@ -81,14 +81,14 @@ TYPE
 	VAR ratio: LONGREAL;
 	BEGIN
 		ratio := w /h;
-		GL.glClear (GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);  (* We clear both the color and the depth buffer so to draw the next frame *)
-		GL.glViewport(0,0,width, height);  (* Viewport transformation *)
+		GL.Clear (GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);  (* We clear both the color and the depth buffer so to draw the next frame *)
+		GL.Viewport(0,0,width, height);  (* Viewport transformation *)
 
-		GL.glMatrixMode(GLC.GL_PROJECTION);  (* Projection transformation *)
-		GL.glLoadIdentity;  (* We initialize the projection matrix as identity *)
-		GL.SetFCR();
-		GL.gluPerspective(45.0, ratio,1.0,10000.0);
-		GL.DelFCR();
+		GL.MatrixMode(GLC.GL_PROJECTION);  (* Projection transformation *)
+		GL.LoadIdentity;  (* We initialize the projection matrix as identity *)
+
+		GLU.Perspective(45.0, ratio,1.0,10000.0);
+
 
 		(*glutPostRedisplay;*)  (* This command redraw the scene (it calls the same routine of glutDisplayFunc) *)
 	END Reshape;
@@ -103,24 +103,24 @@ TYPE
 				deltaXrotation := 0.0;
 				deltaYrotation := 0.0;
 				deltaZrotation := 0.0;
-				GL.DelFCR(); ReDisplay;
+				  ReDisplay;
 			| 'r', 'R':
 
 				IF filling = 0 THEN
-					GL.glPolygonMode (GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);  (* Polygon rasterization mode (polygon filled) *)
+					GL.PolygonMode (GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);  (* Polygon rasterization mode (polygon filled) *)
 					filling:=1;
-					GL.DelFCR(); ReDisplay;
+					  ReDisplay;
 				ELSE
-					GL.glPolygonMode (GLC.GL_FRONT_AND_BACK, GLC.GL_LINE);  (* Polygon rasterization mode (polygon outlined) *)
+					GL.PolygonMode (GLC.GL_FRONT_AND_BACK, GLC.GL_LINE);  (* Polygon rasterization mode (polygon outlined) *)
 					filling:=0;
-					GL.DelFCR(); ReDisplay;
+					  ReDisplay;
 				END;
 		ELSE
 			CASE keysym OF
-				Inputs.KsLeft:       deltaYrotation := deltaYrotation + 0.05; GL.DelFCR(); ReDisplay;
-				| Inputs.KsRight:   deltaYrotation := deltaYrotation - 0.05; GL.DelFCR(); ReDisplay;
-				| Inputs.KsUp:      deltaXrotation := deltaXrotation + 0.05; GL.DelFCR(); ReDisplay;
-				| Inputs.KsDown:  deltaXrotation := deltaXrotation - 0.05; 	GL.DelFCR(); ReDisplay;
+				Inputs.KsLeft:       deltaYrotation := deltaYrotation + 0.05;   ReDisplay;
+				| Inputs.KsRight:   deltaYrotation := deltaYrotation - 0.05;   ReDisplay;
+				| Inputs.KsUp:      deltaXrotation := deltaXrotation + 0.05;   ReDisplay;
+				| Inputs.KsDown:  deltaXrotation := deltaXrotation - 0.05; 	  ReDisplay;
 
 		ELSE
 		END;
@@ -131,57 +131,57 @@ TYPE
 	PROCEDURE DrawObjectVert(object: ML.Object3D );
 		VAR  i: LONGINT;
 	BEGIN
-		GL.glColor3f(1.0, 0.0, 0.0);
-		GL.glBegin(GLC.GL_TRIANGLES);  (* glBegin and glEnd delimit the vertices that define a primitive (in our case triangles) *)
+		GL.Color3f(1.0, 0.0, 0.0);
+		GL.Begin(GLC.GL_TRIANGLES);  (* glBegin and glEnd delimit the vertices that define a primitive (in our case triangles) *)
 
 		IF object.numFaces > 0 THEN
 			FOR i:=0 TO object.numVerts-1 DO
 				(*----------------- FIRST VERTEX ----------------- *)
 				(* Coordinates of the first vertex *)
-				GL.glVertex3f(object.verts[i].x, object.verts[ i ].y, object.verts[ i].z);  (*Vertex definition *)
+				GL.Vertex3f(object.verts[i].x, object.verts[ i ].y, object.verts[ i].z);  (*Vertex definition *)
 
 				(*----------------- SECOND VERTEX ----------------- *)
 				(* Coordinates of the second vertex *)
-				GL.glVertex3f(object.verts[i ].x, object.verts[i].y, object.verts[i].z);
+				GL.Vertex3f(object.verts[i ].x, object.verts[i].y, object.verts[i].z);
 
 				(*----------------- THIRD VERTEX ----------------- *)
 				(* Coordinates of the Third vertex *)
-				GL.glVertex3f(object.verts[i].x, object.verts[i].y, object.verts[i].z);
+				GL.Vertex3f(object.verts[i].x, object.verts[i].y, object.verts[i].z);
 
 			END;
 		END;
 
-		GL.glEnd;
+		GL.End;
 
 	END DrawObjectVert;
 
 	PROCEDURE DrawObjectTextured(object: ML.Object3D );
 	VAR i: LONGINT;
 	BEGIN
-		GL.glBindTexture(GLC.GL_TEXTURE_2D, textureId);  (* We set the active texture  *)
-		GL.glBegin(GLC.GL_TRIANGLES);  (* glBegin and glEnd delimit the vertices that define a primitive (in our case triangles) *)
+		GL.BindTexture(GLC.GL_TEXTURE_2D, textureId);  (* We set the active texture  *)
+		GL.Begin(GLC.GL_TRIANGLES);  (* glBegin and glEnd delimit the vertices that define a primitive (in our case triangles) *)
 
 			FOR i:=0 TO object.numFaces-1 DO
 				(*----------------- FIRST VERTEX ----------------- *)
 				(* Texture coordinates of the first vertex *)
-				GL.glTexCoord2f(object.texVerts[ object.faces[i].a].x, object.texVerts[ object.faces[i].a ].y);
+				GL.TexCoord2f(object.texVerts[ object.faces[i].a].x, object.texVerts[ object.faces[i].a ].y);
 				(* Coordinates of the first vertex *)
-				GL.glVertex3f(object.verts[ object.faces[i].a ].x, object.verts[ object.faces[i].a ].y, object.verts[ object.faces[i].a ].z);  (*Vertex definition *)
+				GL.Vertex3f(object.verts[ object.faces[i].a ].x, object.verts[ object.faces[i].a ].y, object.verts[ object.faces[i].a ].z);  (*Vertex definition *)
 
 				(*----------------- SECOND VERTEX ----------------- *)
 				(* Texture coordinates of the second vertex *)
-				GL.glTexCoord2f(object.texVerts[ object.faces[i].b ].x, object.texVerts[ object.faces[i].b ].y);
+				GL.TexCoord2f(object.texVerts[ object.faces[i].b ].x, object.texVerts[ object.faces[i].b ].y);
 				(* Coordinates of the second vertex *)
-				GL.glVertex3f(object.verts[ object.faces[i].b ].x, object.verts[ object.faces[i].b ].y, object.verts[ object.faces[i].b ].z);
+				GL.Vertex3f(object.verts[ object.faces[i].b ].x, object.verts[ object.faces[i].b ].y, object.verts[ object.faces[i].b ].z);
 
 				(*----------------- THIRD VERTEX ----------------- *)
 				(* Texture coordinates of the third vertex *)
-				GL.glTexCoord2f(object.texVerts[ object.faces[i].c ].x, object.texVerts[ object.faces[i].c ].y);
+				GL.TexCoord2f(object.texVerts[ object.faces[i].c ].x, object.texVerts[ object.faces[i].c ].y);
 				(* Coordinates of the Third vertex *)
-				GL.glVertex3f(object.verts[ object.faces[i].c ].x, object.verts[ object.faces[i].c ].y, object.verts[ object.faces[i].c ].z);
+				GL.Vertex3f(object.verts[ object.faces[i].c ].x, object.verts[ object.faces[i].c ].y, object.verts[ object.faces[i].c ].z);
 		END;
 
-		GL.glEnd;
+		GL.End;
 
 	END DrawObjectTextured;
 
@@ -190,13 +190,13 @@ TYPE
 	VAR i, j: LONGINT;
 
 	BEGIN
-		GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);  (* This clear the background color to dark blue *)
-		GL.glMatrixMode(GLC.GL_MODELVIEW);  (* Modeling transformation *)
-		GL.glLoadIdentity;  (* Initialize the model matrix as identity *)
+		GL.Clear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);  (* This clear the background color to dark blue *)
+		GL.MatrixMode(GLC.GL_MODELVIEW);  (* Modeling transformation *)
+		GL.LoadIdentity;  (* Initialize the model matrix as identity *)
 
-		GL.SetFCR();
-		GL.glTranslatef(0.0,0.0,-300);  (* We move the object forward (the model matrix is multiplied by the translation matrix) *)
-		GL.DelFCR();
+
+		GL.Translatef(0.0,0.0,-300);  (* We move the object forward (the model matrix is multiplied by the translation matrix) *)
+
 		rotationX := rotationX + deltaXrotation;
 		rotationY := rotationY + deltaYrotation;
 		rotationZ := rotationZ + deltaZrotation;
@@ -210,11 +210,11 @@ TYPE
 		IF rotationZ > 359.0 THEN
 			rotationZ := 0.0;
 		END;
-		GL.SetFCR();
-		GL.glRotatef(rotationX, 1.0, 0.0, 0.0);  (* Rotations of the object (the model matrix is multiplied by the rotation matrices) *)
-		GL.glRotatef(rotationY, 0.0,1.0, 0.0);
-		GL.glRotatef(rotationZ, 0.0, 0.0,1.0);
-		GL.DelFCR();
+
+		GL.Rotatef(rotationX, 1.0, 0.0, 0.0);  (* Rotations of the object (the model matrix is multiplied by the rotation matrices) *)
+		GL.Rotatef(rotationY, 0.0,1.0, 0.0);
+		GL.Rotatef(rotationZ, 0.0, 0.0,1.0);
+
 
 
 		FOR j := 0 TO model.objects.GetCount()-1 DO
@@ -226,7 +226,7 @@ TYPE
 			END;
 		END;
 
-		GL.glFlush;  (* This force the execution of OpenGL commands *)
+		GL.Flush;  (* This force the execution of OpenGL commands *)
 		SwapBuffers(); (* In double buffered mode we invert the positions of the visible buffer and the writing buffer *)
 	END Display;
 

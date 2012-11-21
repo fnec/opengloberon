@@ -1,7 +1,7 @@
 MODULE OGLDemo2; (** AUTHOR "fnecati"; PURPOSE "an OGLWindow demo"; *)
 
 IMPORT
-	 GL:=OpenGL, GLC := OpenGLConst, OGW := OGLWindow,
+	 Inputs, GL:=OpenGL, GLC := OpenGLConst, GLU, OGW := OGLWindow,
 	KernelLog ;
 
 TYPE
@@ -9,6 +9,7 @@ TYPE
 	VAR
 		eyeposz: LONGREAL;
 		anglez: REAL;
+		left : BOOLEAN;
 
 	PROCEDURE &New(w, h: LONGINT );
 	BEGIN
@@ -24,6 +25,13 @@ TYPE
 	(** *)
 	PROCEDURE IdleDisplay();
 	BEGIN
+			IF left THEN
+			anglez := anglez - 5.0;
+			IF anglez < 0 THEN anglez := 360 ; END;
+
+		ELSE  anglez := anglez + 5.0;
+			  IF anglez > 360 THEN anglez := 0; END;
+		END;
 		 ReDisplay();
 	END IdleDisplay;
 
@@ -56,7 +64,7 @@ TYPE
 		eyeposz := eyeposz + dz;
 		IF eyeposz < 0.0 THEN eyeposz := 0.0; END;
 		IF eyeposz > 99.0 THEN eyeposz := 99.0; END;
-		GL.DelFCR();
+
 		Reshape(width, height);
 		ReDisplay;
 	END WheelMove;
@@ -64,127 +72,123 @@ TYPE
 	(** *)
 	PROCEDURE KeyEvent* (ucs : LONGINT; flags : SET; keysym : LONGINT);
 	BEGIN
-		CASE CHR(ucs) OF
+		CASE keysym OF
+			Inputs.KsLeft: left := TRUE; ReDisplay;
+			| Inputs.KsRight: left := FALSE; ReDisplay;
+			| Inputs.KsUp:  	SetIdleTime(1+ ENTIER(idletime/1.2)); (* faster *)
+				KernelLog.String("idletime= "); KernelLog.Int(idletime, 0); KernelLog.Ln;
+			| Inputs.KsDown: SetIdleTime(1+ ENTIER(idletime*1.2)); (* slowdown *)
+				KernelLog.String("idletime= "); KernelLog.Int(idletime, 0); KernelLog.Ln;
 
-			 "-" : anglez := anglez - 5.0; ReDisplay;
-			| "+" : anglez := anglez + 5.0; ReDisplay;
-			| "r" : MoveResizeWindow(10,10, 400, 400);
-			| "d": SetDecorations(FALSE);
- 			| "D": SetDecorations(TRUE);
-			| "q" : Close;
+			| ORD("r") : MoveResizeWindow(10,10, 400, 400);
+			| ORD("d"): SetDecorations(FALSE);
+ 			| ORD("D"): SetDecorations(TRUE);
+			| ORD("q") : Close;
 		ELSE
 
 		END;
+
 	END KeyEvent ;
 
 	PROCEDURE DrawAQuad();
 	BEGIN
-		GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
+ 		GL.PushMatrix();
 
- 		GL.glPushMatrix();
+		GL.Rotatef(anglez, 0.0, 0.0, 1.0);
 
- 		GL.SetFCR();
-			GL.glRotatef(anglez, 0.0, 0.0, 1.0);
- 		GL.DelFCR();
+ 		GL.Begin(GLC.GL_QUADS);
+ 		GL.Color3f(1., 0., 0.); GL.Vertex3f(-0.75, -0.75, 1.);
+ 		GL.Color3f(0., 1., 0.); GL.Vertex3f( 0.75, -0.75, 1.);
+ 		GL.Color3f(0., 0., 1.); GL.Vertex3f( 0.75,  0.75, 1.);
+ 		GL.Color3f(1., 1., 0.); GL.Vertex3f(-0.75,  0.75, 1.);
+ 		GL.End();
 
-
- 		GL.glBegin(GLC.GL_QUADS);
- 		GL.glColor3f(1., 0., 0.); GL.glVertex3f(-0.75, -0.75, 1.);
- 		GL.glColor3f(0., 1., 0.); GL.glVertex3f( 0.75, -0.75, 1.);
- 		GL.glColor3f(0., 0., 1.); GL.glVertex3f( 0.75,  0.75, 1.);
- 		GL.glColor3f(1., 1., 0.); GL.glVertex3f(-0.75,  0.75, 1.);
- 		GL.glEnd();
-
- 		GL.glPopMatrix();
+ 		GL.PopMatrix();
 
 	END DrawAQuad;
 
 	PROCEDURE  Cube*;
 	BEGIN
+	GL.PushMatrix();
 
-	GL.glPushMatrix();
-	GL.SetFCR();
-		GL.glRotatef(anglez, 1.0, 1.0, 0.0);
-	GL.DelFCR();
+		GL.Rotatef(anglez, 1.0, 1.0, 0.0);
 
-	GL.glBegin(GLC.GL_POLYGON); (* top face oriented toward y *)
-		GL.glColor3f(0.0,0.0,1.0);
-		GL.glVertex3f(-1.0, 1.0, 1.0);
-		GL.glVertex3f(1.0, 1.0, 1.0);
-		GL.glVertex3f(1.0, 1.0, -1.0);
-		GL.glVertex3f(-1.0, 1.0, -1.0);
-	GL.glEnd();
 
-	GL.glBegin(GLC.GL_POLYGON); (* back face oriented toward -z *)
-		GL.glColor3f(0.0,1.0,0.0);
-		GL.glVertex3f(-1.0, 1.0, -1.0);
-		GL.glVertex3f(1.0, 1.0, -1.0);
-		GL.glVertex3f(1.0, -1.0, -1.0);
-		GL.glVertex3f(-1.0, -1.0, -1.0);
-	GL.glEnd();
+	GL.Begin(GLC.GL_POLYGON); (* top face oriented toward y *)
+		GL.Color3f(0.0,0.0,1.0);
+		GL.Vertex3f(-1.0, 1.0, 1.0);
+		GL.Vertex3f(1.0, 1.0, 1.0);
+		GL.Vertex3f(1.0, 1.0, -1.0);
+		GL.Vertex3f(-1.0, 1.0, -1.0);
+	GL.End();
 
-	GL.glBegin(GLC.GL_POLYGON); (* right face oriented toward x *)
-		GL.glColor3f(1.0,0.0,0.0);
-		GL.glVertex3f(1.0, 1.0, 1.0);
-		GL.glVertex3f(1.0, -1.0, 1.0);
-		GL.glVertex3f(1.0, -1.0, -1.0);
-		GL.glVertex3f(1.0, 1.0, -1.0);
-	GL.glEnd();
+	GL.Begin(GLC.GL_POLYGON); (* back face oriented toward -z *)
+		GL.Color3f(0.0,1.0,0.0);
+		GL.Vertex3f(-1.0, 1.0, -1.0);
+		GL.Vertex3f(1.0, 1.0, -1.0);
+		GL.Vertex3f(1.0, -1.0, -1.0);
+		GL.Vertex3f(-1.0, -1.0, -1.0);
+	GL.End();
 
-	GL.glBegin(GLC.GL_POLYGON); (* left face oriented toward -x *)
-		GL.glColor3f(1.0,0.0,0.0);
-		GL.glVertex3f(-1.0, -1.0, 1.0);
-		GL.glVertex3f(-1.0, 1.0, 1.0);
-		GL.glVertex3f(-1.0, 1.0, -1.0);
-		GL.glVertex3f(-1.0, -1.0, -1.0);
-	GL.glEnd();
+	GL.Begin(GLC.GL_POLYGON); (* right face oriented toward x *)
+		GL.Color3f(1.0,0.0,0.0);
+		GL.Vertex3f(1.0, 1.0, 1.0);
+		GL.Vertex3f(1.0, -1.0, 1.0);
+		GL.Vertex3f(1.0, -1.0, -1.0);
+		GL.Vertex3f(1.0, 1.0, -1.0);
+	GL.End();
 
-	GL.glBegin(GLC.GL_POLYGON); (* bottom face oriented toward -y *)
-		GL.glColor3f(0.0,0.0,1.0);
-		GL.glVertex3f(-1.0, -1.0, 1.0);
-		GL.glVertex3f(-1.0, -1.0, -1.0);
-		GL.glVertex3f(1.0, -1.0, -1.0);
-		GL.glVertex3f(1.0, -1.0, 1.0);
-	GL.glEnd();
+	GL.Begin(GLC.GL_POLYGON); (* left face oriented toward -x *)
+		GL.Color3f(1.0,0.0,0.0);
+		GL.Vertex3f(-1.0, -1.0, 1.0);
+		GL.Vertex3f(-1.0, 1.0, 1.0);
+		GL.Vertex3f(-1.0, 1.0, -1.0);
+		GL.Vertex3f(-1.0, -1.0, -1.0);
+	GL.End();
 
-	GL.glBegin(GLC.GL_POLYGON); (* front face oriented toward z*)
-		GL.glColor3f(0.0,1.0,0.0);
-		GL.glVertex3f(1.0, 1.0, 1.0);
-		GL.glVertex3f(-1.0, 1.0, 1.0);
-		GL.glVertex3f(-1.0, -1.0, 1.0);
-		GL.glVertex3f(1.0, -1.0, 1.0);
-	GL.glEnd();
+	GL.Begin(GLC.GL_POLYGON); (* bottom face oriented toward -y *)
+		GL.Color3f(0.0,0.0,1.0);
+		GL.Vertex3f(-1.0, -1.0, 1.0);
+		GL.Vertex3f(-1.0, -1.0, -1.0);
+		GL.Vertex3f(1.0, -1.0, -1.0);
+		GL.Vertex3f(1.0, -1.0, 1.0);
+	GL.End();
 
-	GL.glPopMatrix;
+	GL.Begin(GLC.GL_POLYGON); (* front face oriented toward z*)
+		GL.Color3f(0.0,1.0,0.0);
+		GL.Vertex3f(1.0, 1.0, 1.0);
+		GL.Vertex3f(-1.0, 1.0, 1.0);
+		GL.Vertex3f(-1.0, -1.0, 1.0);
+		GL.Vertex3f(1.0, -1.0, 1.0);
+	GL.End();
+
+	GL.PopMatrix;
+
 	END Cube;
 
 	PROCEDURE Display;
 	BEGIN
+		GL.Clear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
 		DrawAQuad();
 		Cube();
 		SwapBuffers();
-		 anglez := anglez + 5.0;
-
 	END Display;
 
 
 	PROCEDURE Reshape(w, h: LONGINT);
 	BEGIN
-		GL.glViewport(0, 0, w, h) ;
-		GL.glClearColor(0.0, 0.0 ,0.0, 1.0) ;
+		GL.Viewport(0, 0, w, h) ;
 
-		GL.glEnable(GLC.GL_DEPTH_TEST);
+		GL.ClearColor(0.0, 0.0 ,0.0, 1.0) ;
+		GL.Enable(GLC.GL_DEPTH_TEST);
 
-		GL.glMatrixMode(GLC.GL_PROJECTION);
-		GL.glLoadIdentity();
-		GL.gluPerspective(45.0, 1.0, 0.1, 100.0);
+		GL.MatrixMode(GLC.GL_PROJECTION);
+		GL.LoadIdentity();
+		GLU.Perspective(45.0, 1.0, 0.1, 100.0);
 
-		GL.glMatrixMode(GLC.GL_MODELVIEW);
-		GL.glLoadIdentity();
-
-		GL.SetFCR();
-			GL.gluLookAt(0.0, 0.0, eyeposz, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-		GL.DelFCR();
+		GL.MatrixMode(GLC.GL_MODELVIEW);
+		GL.LoadIdentity();
+		GLU.LookAt(0.0, 0.0, eyeposz, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	END Reshape;
 
 	BEGIN

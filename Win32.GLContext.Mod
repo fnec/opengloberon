@@ -28,7 +28,7 @@ TYPE
 TYPE
 	Context*= OBJECT
 	VAR
-		winGL* : WindowStruct;
+		glWin* : WindowStruct;
 		wincreated*: BOOLEAN;
 		initialized: BOOLEAN;
 		res: BOOLEAN;
@@ -39,11 +39,11 @@ TYPE
     	BEGIN  {EXCLUSIVE}
     		wincreated := FALSE;
 		initialized := FALSE;
-    		NEW(winGL);
-    		winGL.doublebuffer := TRUE;
-    		winGL.width := w; winGL.height := h;
+    		NEW(glWin);
+    		glWin.doublebuffer := TRUE;
+    		glWin.width := w; glWin.height := h;
 
-    		winGL.title:="GLContext.Window";
+    		glWin.title:="GLContext.Window";
 		Resize(w, h);
     		(* NEW(buffer, w*h*3); *)
 		Raster.InitMode(mode, Raster.srcCopy);
@@ -55,7 +55,7 @@ TYPE
 	VAR res: LONGINT;
 	BEGIN {EXCLUSIVE}
 		 wincreated := FALSE;
-		 res := User32.SendMessage(winGL.hWind, User32.WMClose, 0, 0);
+		 res := User32.SendMessage(glWin.hWind, User32.WMClose, 0, 0);
 
 		IF debug THEN KernelLog.String("Close SendMessage res = "); KernelLog.Int(res, 0); KernelLog.Ln; END;
 
@@ -63,7 +63,7 @@ TYPE
 
 	PROCEDURE MakeCurrent*();
 	BEGIN
-		res := GL.wglMakeCurrent(winGL.hDC, winGL.hGLRC);
+		res := GL.wglMakeCurrent(glWin.hDC, glWin.hGLRC);
 		IF debug THEN KernelLog.String("ctx MakeCurrent res= "); KernelLog.Boolean(res); KernelLog.Ln; END;
 	END MakeCurrent;
 
@@ -76,17 +76,17 @@ TYPE
 	PROCEDURE SwapBuffers*;
 	VAR res: WinApi.BOOL;
 	BEGIN {EXCLUSIVE}
-		IF winGL.doublebuffer THEN
-		 	res := WinApi.SwapBuffers(winGL.hDC);
+		IF glWin.doublebuffer THEN
+		 	res := WinApi.SwapBuffers(glWin.hDC);
 		ELSE
-	 	 	GL.glFlush();
+	 	 	GL.Flush();
 		END;
 	END SwapBuffers;
 
 		(** move the window to x,y and  resize width,height *)
 	PROCEDURE MoveResizeWindow*(x, y, w, h: LONGINT);
 	BEGIN
-		User32.MoveWindow(winGL.hWind, x, y, w, h, 1); (* repaint *)
+		User32.MoveWindow(glWin.hWind, x, y, w, h, 1); (* repaint *)
 	END MoveResizeWindow;
 
 	PROCEDURE Resize*(w, h: LONGINT);
@@ -102,7 +102,7 @@ TYPE
 		w, h: LONGINT;
 	BEGIN {EXCLUSIVE}
 			w := image.width; h := image.height;
-			GL.glReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, SYSTEM.ADR(buffer^[0]));
+			GL.ReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, SYSTEM.ADR(buffer^[0]));
 			(* flip vertical, y *)
 			FOR i := 0 TO h - 1 DO
 				Raster.PutPixels(image, 0, h-1-i, w, Raster.BGRA8888, buffer^, i * w * 4, mode)
@@ -115,13 +115,13 @@ TYPE
 		  msg: User32.Msg;
 	BEGIN
 		BEGIN {EXCLUSIVE} AWAIT (initialized); END;
-		wincreated := CreateHWND( winGL);
-		IF ~wincreated THEN CloseWindow(winGL); RETURN; END;
+		wincreated := CreateHWND( glWin);
+		IF ~wincreated THEN CloseWindow(glWin); RETURN; END;
 
 		MakeCurrent();
 		GL.ReadOpenGLCore();
 		DeActivate();
-		
+
 		BEGIN {EXCLUSIVE} AWAIT (wincreated);   END;
 		IF debug THEN  KernelLog.String("entering messageLoop"); KernelLog.Ln; END;
 		LOOP
@@ -144,8 +144,8 @@ TYPE
 			  END;
 		END;
 		BEGIN {EXCLUSIVE} AWAIT(~wincreated) END;
-		CloseWindow(winGL);
-		winGL := NIL;
+		CloseWindow(glWin);
+		glWin := NIL;
 		IF debug THEN KernelLog.String( "Display: closed" ); KernelLog.Ln; END;
 	END MyLoop;
 

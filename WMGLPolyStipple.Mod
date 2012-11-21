@@ -1,7 +1,7 @@
 MODULE WMGLPolyStipple; (** AUTHOR "fnecati"; PURPOSE "a demo using glPolygonStipple"; *)
  (* example from OpenGL redbook pdf *)
 IMPORT
-	WMRectangles, WMGraphics, Strings, Kernel, S := SYSTEM, KernelLog,
+	WMRectangles, WMGraphics, Strings, Kernel, SYSTEM, KernelLog,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
 	GL := OpenGL, GLC := OpenGLConst, WMGL := WMGLWindow;
 
@@ -26,7 +26,7 @@ TYPE
 		BEGIN
 
 			Init(w, h, FALSE); (* use alpha, for 32bpp img *)
-			WM.AddWindow(SELF, 100, 100);
+			WM.DefaultAddWindow(SELF);
 
 			SetTitle(Strings.NewString("WMGLPolyStipple"));
 
@@ -70,10 +70,10 @@ TYPE
 
 		PROCEDURE UpdateImage;
 		BEGIN
-			context.MakeCurrent();
+			MakeCurrent();
 				DrawStripple;
-			context.RenderInto(backImg);
-			context.DeActivate();
+			SwapGLBuffer();
+			DeActivate();
 			Swap();
 			Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));
 		END UpdateImage;
@@ -98,7 +98,7 @@ TYPE
 			KernelLog.String("--------- fly bits----------------");
 			FOR i:=0 TO LEN(fly,0)-1 DO
 				IF (i MOD 8) = 0 THEN KernelLog.Ln; END;
-				KernelLog.Bits(S.VAL(SET, fly[i]),0, 8);
+				KernelLog.Bits(SYSTEM.VAL(SET, fly[i]),0, 8);
 			END;
 			KernelLog.Ln; KernelLog.Ln;
 
@@ -106,7 +106,7 @@ TYPE
 
 			FOR i:=0 TO LEN(fly,0)-1 DO
 				IF (i MOD 8) = 0 THEN KernelLog.Ln; END;
-				KernelLog.Bits(S.VAL(SET, halftone[i]),0, 8);
+				KernelLog.Bits(SYSTEM.VAL(SET, halftone[i]),0, 8);
 			END;
 			KernelLog.Ln;
 			KernelLog.String("----------------------------");	KernelLog.Ln;
@@ -148,80 +148,80 @@ TYPE
 				0AAX,  0AAX,  0AAX,  0AAX,  55X,  55X,  55X,  55X,
 				0AAX,  0AAX,  0AAX,  0AAX,  55X,  55X,  55X,  55X];
 
-			context.MakeCurrent();
-			GL.glClearColor (0.0, 0.0, 0.0, 0.0); (*  clear the background and set it to black *)
-   			GL.glShadeModel (GLC.GL_FLAT);  (* set the shading model to FLAT *)
-			context.DeActivate;
+			MakeCurrent();
+			GL.ClearColor (0.0, 0.0, 0.0, 0.0); (*  clear the background and set it to black *)
+   			GL.ShadeModel (GLC.GL_FLAT);  (* set the shading model to FLAT *)
+			DeActivate;
 		END GLinit;
 
 		PROCEDURE Reshape(w, h: LONGINT);
 		BEGIN
-		context.MakeCurrent();
-			GL.glViewport(0, 0, w, h);
-			GL.glMatrixMode(GLC.GL_PROJECTION);
-			GL.glLoadIdentity();
-			GL.SetFCR();
-				 GL.glOrtho(-2.0, 2.0, -2.0 , 2.0, -2.0, 2.0);
-			GL.DelFCR();
-		context.DeActivate;
+		MakeCurrent();
+			GL.Viewport(0, 0, w, h);
+			GL.MatrixMode(GLC.GL_PROJECTION);
+			GL.LoadIdentity();
+
+				 GL.Ortho(-2.0, 2.0, -2.0 , 2.0, -2.0, 2.0);
+
+		DeActivate;
 		END Reshape;
 
 		(* create unit size square object *)
 		PROCEDURE Square;
 		BEGIN
-		GL.SetFCR();
-			GL.glBegin(GLC.GL_POLYGON);
-			GL.glVertex3f(0.0,0.0 ,0.0);(* a *)
-			GL.glVertex3f(1.0,0.0, 0.0);(* b *)
-			GL.glVertex3f(1.0,1.0,0.0);(* c *)
-			GL.glVertex3f(0.0,1.0,0.0);(* d *)
-			GL.glEnd();
-		GL.DelFCR();
+
+			GL.Begin(GLC.GL_POLYGON);
+			GL.Vertex3f(0.0,0.0 ,0.0);(* a *)
+			GL.Vertex3f(1.0,0.0, 0.0);(* b *)
+			GL.Vertex3f(1.0,1.0,0.0);(* c *)
+			GL.Vertex3f(0.0,1.0,0.0);(* d *)
+			GL.End();
+
 		END Square;
 
 		PROCEDURE DrawStripple;
 		VAR ianglez : REAL;
 		BEGIN
 			ianglez := -anglez;
-			GL.glClear (GLC.GL_COLOR_BUFFER_BIT);
+			GL.Clear (GLC.GL_COLOR_BUFFER_BIT);
 			(* draw a solid unstippled red square *)
-			GL.glColor3f (1.0, 0.0, 0.0);
+			GL.Color3f (1.0, 0.0, 0.0);
 			Square();
 
 
 			(* draw a stippled with fly, green square *)
-			GL.glEnable (GLC.GL_POLYGON_STIPPLE);	(* enable POLYGON_STIPPLE *)
-			GL.glPushMatrix();
-				GL.glColor3f (0.0, 1.0, 0.0);
-				GL.glTranslatef(0.5, 0.0, 0);
-				GL.glPolygonStipple (S.ADR(fly[0])); (* pass the fly stipple array *)
+			GL.Enable (GLC.GL_POLYGON_STIPPLE);	(* enable POLYGON_STIPPLE *)
+			GL.PushMatrix();
+				GL.Color3f (0.0, 1.0, 0.0);
+				GL.Translatef(0.5, 0.0, 0);
+				GL.PolygonStipple (SYSTEM.ADR(fly[0])); (* pass the fly stipple array *)
 				Square();
-			GL.glPopMatrix();
+			GL.PopMatrix();
 
 			(* draw a stippled with halftone, blue square *)
-			GL.glPushMatrix();
-				GL.glColor3f (0.0, 0.0, 1.0);
-				GL.glTranslatef(1.0, 0.0, 0.0);
-					GL.glPushMatrix();
-						 GL.SetFCR();
-							GL.glRotatef(ianglez, 0.0, 0.0, 1.0);
-						 GL.DelFCR();
-						GL.glPolygonStipple (S.ADR(halftone[0]));
+			GL.PushMatrix();
+				GL.Color3f (0.0, 0.0, 1.0);
+				GL.Translatef(1.0, 0.0, 0.0);
+					GL.PushMatrix();
+
+							GL.Rotatef(ianglez, 0.0, 0.0, 1.0);
+
+						GL.PolygonStipple (SYSTEM.ADR(halftone[0]));
 						Square();
-					GL.glPopMatrix();
-			GL.glPopMatrix();
+					GL.PopMatrix();
+			GL.PopMatrix();
 
 			(* draw a stippled with fly, rotating cyan square *)
-			GL.glColor3f (0.0, 1.0, 1.0);
-			GL.glPushMatrix();
-				 GL.SetFCR();
-					GL.glRotatef(anglez, 0.0, 0.0, 1.0);
-				 GL.DelFCR();
-				GL.glPolygonStipple (S.ADR(fly[0]));
-			    	GL.glRectd (-1.9, 1.9, -0.1, 0.1);
-			GL.glPopMatrix();
+			GL.Color3f (0.0, 1.0, 1.0);
+			GL.PushMatrix();
 
-			GL.glDisable (GLC.GL_POLYGON_STIPPLE);    (* disable POLYGON STIPPLE *)
+					GL.Rotatef(anglez, 0.0, 0.0, 1.0);
+
+				GL.PolygonStipple (SYSTEM.ADR(fly[0]));
+			    	GL.Rectd (-1.9, 1.9, -0.1, 0.1);
+			GL.PopMatrix();
+
+			GL.Disable (GLC.GL_POLYGON_STIPPLE);    (* disable POLYGON STIPPLE *)
 		END DrawStripple;
 
 BEGIN {ACTIVE}
@@ -231,7 +231,7 @@ BEGIN {ACTIVE}
 			 IF Kernel.Expired(timer) THEN
 			 	 UpdateImage();
  			 	 anglez := anglez + 5;
- 			 	 GL.DelFCR();
+
 				Kernel.SetTimer(timer, waittime);
 			END;
 			END;

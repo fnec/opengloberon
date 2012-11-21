@@ -189,7 +189,7 @@ TYPE
 	PROCEDURE SwapBuffers*();
 	VAR res: WinApi.BOOL;
 	BEGIN
-		GL.glFinish();
+		GL.Finish();
 		res := WinApi.SwapBuffers(hDC);
 		(*IF debug THEN KernelLog.String("SwapBuffers res= "); KernelLog.Int(res,0); KernelLog.Ln; END;*)
 	END SwapBuffers;
@@ -247,10 +247,10 @@ TYPE
 		END;
 
 		hGLRC := GL.wglCreateContext(hDC);
-		
+
 		MakeCurrent();
 		GL.ReadOpenGLCore();
-		GL.ReadExtensions(); (* needed for swap interval *)
+		GL.Read_WGL_EXT_swap_control; (* needed for swap interval *)
 		SetSwapInterval(0);
 		DeActivate();
 		RETURN (hGLRC # 0)

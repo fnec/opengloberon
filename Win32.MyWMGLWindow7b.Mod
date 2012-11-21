@@ -1,6 +1,6 @@
 MODULE MyWMGLWindow7b;  (** AUTHOR "fnecati"; PURPOSE ""; *)
  (* mirroring effect *)
- 
+
 IMPORT
 	WMRectangles, WMGraphics, Strings, Raster, Objects, SYSTEM, Kernel32,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
@@ -14,7 +14,7 @@ TYPE
 	VAR
 		nCount, nMaxMeasuresCount: LONGINT;
 		fTimeAverage, fTimeAverageOld, fFPSAverage: REAL;
-		
+
 	PROCEDURE &New(nMaxMeasuresCount: LONGINT);
 	BEGIN
 		SELF.nMaxMeasuresCount := nMaxMeasuresCount;
@@ -22,7 +22,7 @@ TYPE
 		fTimeAverage := 0.0;
 		fTimeAverageOld := 0.0;
 	END New;
-	
+
 	PROCEDURE AddTimeMeasure(fTime: REAL);
 	BEGIN
 		INC(nCount);
@@ -32,14 +32,14 @@ TYPE
 		fFPSAverage := 1 / fTimeAverage;
 		fFPSAverage := ENTIER(fFPSAverage * 10 + 0.5) / 10;
 	END AddTimeMeasure;
-	
+
 	PROCEDURE GetAverageFPS(): REAL;
 	BEGIN
 		RETURN fFPSAverage
 	END GetAverageFPS;
-	
+
 	END FPSCounter;
-	
+
 	GLWindow* =  OBJECT(WM.BufferWindow)
 	VAR
 		alive,  animated: BOOLEAN;
@@ -48,17 +48,17 @@ TYPE
 		xrot : REAL;
  		quad: GL.TGLUQuadricObj;
 		drawMode: LONGINT;
-		
+
 		PROCEDURE &New(w, h: LONGINT);
 		BEGIN
-		
+
 			width := w; height := h;
 			Init(w, h, FALSE);
 			WM.ExtAddWindow(SELF, 100, 100, {WM.FlagFrame, WM.FlagClose, WM.FlagNoResizing});
 			manager.SetFocus(SELF);
 
 			SetTitle(Strings.NewString("MyGLWindow-Mirror"));
-						
+
 			NEW(context);
 			context.Init(w, h, "MyGLWindow", FALSE);
 
@@ -69,31 +69,31 @@ TYPE
 			xrot := 0.0;
 			drawMode:= 0;
 
-			
+
 			DrawMode(0);
-			UpdateImage;	
+			UpdateImage;
 			animated := FALSE;
 			alive := TRUE;
 		END New;
 
-		PROCEDURE KeyEvent (ucs: LONGINT; flags: SET; keysym: LONGINT);	     
+		PROCEDURE KeyEvent (ucs: LONGINT; flags: SET; keysym: LONGINT);
 		BEGIN
 
 		CASE CHR(ucs) OF
-			"a", "A": animated := ~ animated;   
-	
-			| "d": drawMode := (drawMode+1) MOD 3; DrawMode(drawMode); UpdateImage;					
+			"a", "A": animated := ~ animated;
+
+			| "d": drawMode := (drawMode+1) MOD 3; DrawMode(drawMode); UpdateImage;
 
 			| "-" : xrot := xrot - 1.0; UpdateImage;
 			| "+" : xrot := xrot + 1.0; UpdateImage;
-		
+
 			| "s": SaveImage;
 			| "q" : Close;
-		ELSE	
+		ELSE
 
-		END;	
+		END;
 		END KeyEvent;
-		
+
 		PROCEDURE Handle(VAR m: WMMessages.Message);
 		BEGIN
 			IF (m.msgType = WMMessages.MsgExt) & (m.ext # NIL) & (m.ext IS KillerMsg) THEN
@@ -101,15 +101,15 @@ TYPE
 			ELSE Handle^(m)
 			END
 		END Handle;
-		
+
 		PROCEDURE Close*;
 		BEGIN
-			alive := FALSE;	
+			alive := FALSE;
 			Close^;
 			 context.Close;
 			 context := NIL;
 		END Close;
-		
+
 		PROCEDURE Draw(canvas: WMGraphics.Canvas; w, h, q: LONGINT);
 		VAR
 			str: ARRAY 30 OF CHAR;
@@ -124,39 +124,39 @@ TYPE
 			font.GetStringSize(str, textWidth, textHeight);
 			canvas.DrawString(8, textHeight + 8, str);
 		END Draw;
-		
-		PROCEDURE UpdateImage;	
+
+		PROCEDURE UpdateImage;
 		VAR
-			t: HUGEINT;	
+			t: HUGEINT;
 			rect: WMRectangles.Rectangle;
 		BEGIN {EXCLUSIVE}
-		
+
 			t := GetTicks();
-			
+
 			context.MakeCurrent();
 			Display;
 			context.RenderInto(img);
 			context.DeActivate();
-			
+
 			rect := WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight());
 			WMRectangles.MoveRel(rect, bounds.l, bounds.t);
 			WMRectangles.ClipRect(rect, bounds);
 			manager.AddDirty(rect);
-			
+
 			fpsCounter.AddTimeMeasure(GetTime(GetTicks() - t));
-			
+
 		END UpdateImage;
 
 		PROCEDURE SaveImage;
 		VAR res: LONGINT;
 			fname: ARRAY 128 OF CHAR;
 		BEGIN
-		
+
 		fname:="mywmgltest.bmp";
 		IF WMDialogs.QueryString(" Save File name: ",fname)=WMDialogs.ResOk THEN
 				WMGraphics.StoreImage(img, fname,res);
 		END;
-		
+
 		END SaveImage;
 
 PROCEDURE DrawMode(dm: LONGINT);
@@ -164,7 +164,7 @@ VAR drawMode: LONGINT;
 BEGIN
 	drawMode := dm;
 	context.MakeCurrent();
-	  	
+
         IF drawMode = 0 THEN       (* fill mode*)
             GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);
             GL.glEnable(GLC.GL_DEPTH_TEST);
@@ -179,22 +179,22 @@ BEGIN
             GL.glDisable(GLC.GL_DEPTH_TEST);
             GL.glDisable(GLC.GL_CULL_FACE);
 	  END;
-	 
+
 	 context.DeActivate();;
-	  
+
 END DrawMode;
 
 PROCEDURE initGL;
-VAR 
+VAR
  white, black: ARRAY[4] OF GL.GLfloat;
- 
+
 BEGIN
     GL.glDisable (GLC.GL_DITHER);
     GL.glEnable (GLC.GL_DEPTH_TEST);
-    
-	white[0] := 1.0; white[1] := 1.0; white[2] := 1.0; white[3] := 1.0; 
-	black[0] := 0.0; black[1] := 0.0; black[2] := 0.0; black[3] := 0.0; 
-	
+
+	white[0] := 1.0; white[1] := 1.0; white[2] := 1.0; white[3] := 1.0;
+	black[0] := 0.0; black[1] := 0.0; black[2] := 0.0; black[3] := 0.0;
+
 
         (* Set up light1 *)
         GL.glEnable (GLC.GL_LIGHTING);
@@ -215,7 +215,7 @@ END initGL;
 PROCEDURE drawScene (order: GL.GLenum);
 VAR pos: ARRAY [4] OF GL.GLfloat;
 BEGIN
-    pos[0] := -2.8; pos[1] := 5.0; pos[2] := 1.8; pos[3] := 1.0; 
+    pos[0] := -2.8; pos[1] := 5.0; pos[2] := 1.8; pos[3] := 1.0;
 
     GL.glLightfv (GLC.GL_LIGHT1, GLC.GL_POSITION, SYSTEM.ADR(pos[0]));
 
@@ -271,13 +271,13 @@ PROCEDURE Display();
 VAR xx: REAL;
 BEGIN
     GL.glClear (GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
-    
+
     GL.glMatrixMode(GLC.GL_MODELVIEW);
     GL.glLoadIdentity ();
     GL.SetFCR();
 	    GL.gluLookAt (0.0, 1.0, 7.0, -1.0, 0.0, 0.0,  0.0, 1.0, 0.0);
 	GL.DelFCR();
-	
+
     xx := -xrot*0.35;
     GL.SetFCR();
 		GL.glRotatef (xx, 0.0, 1.0, 0.0);
@@ -288,12 +288,12 @@ BEGIN
 
 	GL.glPushMatrix ();
 	(* Mirrors lies in YZ plane, so scale by -1.0 in X axis *)
-GL.SetFCR();	
+GL.SetFCR();
 	GL.glScalef (-1.0, 1.0, 1.0);
 	(* Mirror is 2.0 units from origin, so translate by 4.0 *)
 	GL.glTranslatef (4.0, 0.0, 0.0);
 GL.DelFCR();
-	
+
     drawScene(GLC.GL_CW);
 	GL.glPopMatrix ();
 
@@ -323,8 +323,8 @@ PROCEDURE Reshape;
 BEGIN	 {EXCLUSIVE}
 context.MakeCurrent();
 
-    GL.glViewport (0, 0, width, height);       
-    GL.glMatrixMode (GLC.GL_PROJECTION);  
+    GL.glViewport (0, 0, width, height);
+    GL.glMatrixMode (GLC.GL_PROJECTION);
     GL.glLoadIdentity ();
     GL.gluPerspective (50.0, 1.0, 1.0, 20.0);
 
@@ -338,7 +338,7 @@ BEGIN  {ACTIVE}
 		IF animated THEN
 			UpdateImage();
 			xrot := xrot + 1.0;
-		END; 
+		END;
 	END;
 END GLWindow;
 
@@ -373,10 +373,10 @@ PROCEDURE GetTime(t: HUGEINT): REAL;
 BEGIN
 	(*RETURN t / 1000*)
 	RETURN t / QueryPerformanceFrequency()
-END GetTime;	    		
- 
+END GetTime;
+
 PROCEDURE Open*;
-VAR 
+VAR
 	window: GLWindow;
 BEGIN
 	NEW(fpsCounter, 1000);

@@ -5,7 +5,7 @@ MODULE MyXGear2; (** AUTHOR "fnecati"; PURPOSE "Adjusted for commandline run"; *
 (*!   fullscreen messages  *)
 IMPORT
 	X11, Api := X11Api, GL:=OpenGL, GLC := OpenGLConst, Kernel, Inputs, KS := X11KeySymDef,
-	 Math , Raster, WMGraphics,  SYSTEM, V := XF86VMode, KernelLog ;
+	 Math , Raster, WMGraphics,  SYSTEM, V := XF86VMode, StdIO, Commands ;
 
 (*
 Opens a native X11 window and renders.
@@ -37,7 +37,7 @@ TYPE
 
 VAR
 	timer : Kernel.MilliTimer;
-
+	context: Commands.Context; (* StdIO context *)
 
 	display: X11.DisplayPtr;
 	screen: LONGINT;
@@ -75,12 +75,12 @@ VAR
 	currX, currY: LONGINT;
 
   (*  gear variables *)
-  	gear1, gear2, gear3: GL.GLuint;
-  	rotx, roty, rotz, angle: GL.GLfloat;
+  	gear1, gear2, gear3: GL.Uint;
+  	rotx, roty, rotz, angle: GL.Float;
 
 
-PROCEDURE  MakeGear (innerRadius, outerRadius, width: GL.GLfloat; teeth: LONGINT;  toothDepth: GL.GLfloat);
-VAR  r0, r1, r2 , angle, da, u, v, len: GL.GLfloat;
+PROCEDURE  MakeGear (innerRadius, outerRadius, width: GL.Float; teeth: LONGINT;  toothDepth: GL.Float);
+VAR  r0, r1, r2 , angle, da, u, v, len: GL.Float;
 	  i: LONGINT;
 BEGIN
 
@@ -90,106 +90,106 @@ BEGIN
 
 	da := 2.0 * pi / teeth / 4.0;
 
-	GL.glShadeModel(GLC.GL_FLAT);
+	GL.ShadeModel(GLC.GL_FLAT);
 
-	GL.glNormal3f(0.0, 0.0, 1.0);
+	GL.Normal3f(0.0, 0.0, 1.0);
 
 	(* draw front face *)
-	GL.glBegin(GLC.GL_QUAD_STRIP);
+	GL.Begin(GLC.GL_QUAD_STRIP);
 
 	FOR  i := 0 TO teeth DO
 			angle := i * 2.0 * Math.pi / teeth;
-			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
-			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), width * 0.5);
+			GL.Vertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
+			GL.Vertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), width * 0.5);
 	END;
-	GL.glEnd;
+	GL.End;
 
 	(* draw front sides of teeth *)
-	GL.glBegin(GLC.GL_QUADS);
+	GL.Begin(GLC.GL_QUADS);
 		da := 2.0 * Math.pi / teeth / 4.0;
 		FOR  i := 0 TO teeth - 1 DO
 			angle := i * 2.0 * Math.pi / teeth;
-			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
-			GL.glVertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), width * 0.5);
-			GL.glVertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
+			GL.Vertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), width * 0.5);
+			GL.Vertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), width * 0.5);
 		END;
-	GL.glEnd;
+	GL.End;
 
-	GL.glNormal3f(0.0, 0.0, -1.0);
+	GL.Normal3f(0.0, 0.0, -1.0);
 
 	(* draw back face *)
-	GL.glBegin(GLC.GL_QUAD_STRIP);
+	GL.Begin(GLC.GL_QUAD_STRIP);
 
 	 FOR i := 0 TO teeth DO
 			angle := i * 2.0 * Math.pi / teeth;
-			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
-			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), -width * 0.5);
-			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
+			GL.Vertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), -width * 0.5);
+			GL.Vertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
 	END;
-	GL.glEnd;
+	GL.End;
 
 	(* draw back sides of teeth *)
-	GL.glBegin(GLC.GL_QUADS);
+	GL.Begin(GLC.GL_QUADS);
 		da := 2.0 * Math.pi / teeth / 4.0;
 		FOR i := 0 TO teeth - 1 DO
 			angle := i * 2.0 * Math.pi / teeth;
-			GL.glVertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), -width * 0.5);
-			GL.glVertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), -width * 0.5);
-			GL.glVertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), -width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), -width * 0.5);
+			GL.Vertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), -width * 0.5);
+			GL.Vertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), -width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
 	END;
-	GL.glEnd;
+	GL.End;
 
 	(* draw outward faces of teeth *)
-	GL.glBegin(GLC.GL_QUAD_STRIP);
+	GL.Begin(GLC.GL_QUAD_STRIP);
 
 	FOR i := 0 TO teeth - 1 DO
 			angle := i * 2.0 * Math.pi / teeth;
-			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
 			u := r2 * Math.cos(angle + da) - r1 * Math.cos(angle);
 			v := r2 * Math.sin(angle + da) - r1 * Math.sin(angle);
 			len := Math.sqrt(u * u + v * v);
 			u := u / len;  v := v / len;
-			GL.glNormal3f(v, -u, 0.0);
-			GL.glVertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), width * 0.5);
-			GL.glVertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), -width * 0.5);
-			GL.glNormal3f(Math.cos(angle), Math.sin(angle), 0.0);
-			GL.glVertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), width * 0.5);
-			GL.glVertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), -width * 0.5);
+			GL.Normal3f(v, -u, 0.0);
+			GL.Vertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), width * 0.5);
+			GL.Vertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), -width * 0.5);
+			GL.Normal3f(Math.cos(angle), Math.sin(angle), 0.0);
+			GL.Vertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), width * 0.5);
+			GL.Vertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), -width * 0.5);
 			u := r1 * Math.cos(angle + 3 * da) - r2 * Math.cos(angle + 2 * da);
 			v := r1 * Math.sin(angle + 3 * da) - r2 * Math.sin(angle + 2 * da);
-			GL.glNormal3f(v, -u, 0.0);
-			GL.glVertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), -width * 0.5);
-			GL.glNormal3f(Math.cos(angle), Math.sin(angle), 0.0);
+			GL.Normal3f(v, -u, 0.0);
+			GL.Vertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), -width * 0.5);
+			GL.Normal3f(Math.cos(angle), Math.sin(angle), 0.0);
 	END;
 
-	GL.glVertex3f(r1 * Math.cos(0), r1 * Math.sin(0), width * 0.5);
-	GL.glVertex3f(r1 * Math.cos(0), r1 * Math.sin(0), -width * 0.5);
+	GL.Vertex3f(r1 * Math.cos(0), r1 * Math.sin(0), width * 0.5);
+	GL.Vertex3f(r1 * Math.cos(0), r1 * Math.sin(0), -width * 0.5);
 
-	GL.glEnd;
+	GL.End;
 
-	GL.glShadeModel(GLC.GL_SMOOTH);
+	GL.ShadeModel(GLC.GL_SMOOTH);
 
 	(* draw inside radius cylinder *)
-	GL.glBegin(GLC.GL_QUAD_STRIP);
+	GL.Begin(GLC.GL_QUAD_STRIP);
 	FOR i := 0 TO teeth DO
 			angle := i * 2.0 * Math.pi / teeth;
-			GL.glNormal3f(-Math.cos(angle), -Math.sin(angle), 0.0);
-			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
-			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
+			GL.Normal3f(-Math.cos(angle), -Math.sin(angle), 0.0);
+			GL.Vertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
+			GL.Vertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
 	END;
-	GL.glEnd;
+	GL.End;
 END MakeGear;
 
 PROCEDURE  InitGears;
 VAR
-	red, green, blue, lightPos: ARRAY [4] OF GL.GLfloat;
+	red, green, blue, lightPos: ARRAY [4] OF GL.Float;
 
 BEGIN
 	rotx := 20;  roty := 30;  rotz := 0;  angle := 20;
@@ -206,75 +206,70 @@ BEGIN
     green[0] := 0.0; green[1] := 0.8; green[2] := 0.2; green[3] := 1.0;
     blue[0] := 0.2; blue[1] := 0.2; blue[2] := 1.0; blue[3] := 1.0;
 
-	GL.glLightfv(GLC.GL_LIGHT0, GLC.GL_POSITION, SYSTEM.ADR(lightPos[0]));
-	GL.glEnable(GLC.GL_CULL_FACE);
-	GL.glEnable(GLC.GL_LIGHTING);
-	GL.glEnable(GLC.GL_LIGHT0);
-	GL.glEnable(GLC.GL_DEPTH_TEST);
+	GL.Lightfv(GLC.GL_LIGHT0, GLC.GL_POSITION, lightPos);
+	GL.Enable(GLC.GL_CULL_FACE);
+	GL.Enable(GLC.GL_LIGHTING);
+	GL.Enable(GLC.GL_LIGHT0);
+	GL.Enable(GLC.GL_DEPTH_TEST);
 
 	(* make the gears *)
-	gear1 := GL.glGenLists(1);
-	GL.glNewList(gear1, GLC.GL_COMPILE);
-	GL.glMaterialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, SYSTEM.ADR(red[0]));
+	gear1 := GL.GenLists(1);
+	GL.NewList(gear1, GLC.GL_COMPILE);
+	GL.Materialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, red);
 	MakeGear( 1.0, 4.0, 1.0, 20, 0.7);
-	GL.glEndList;
+	GL.EndList;
 
 
-	gear2 := GL.glGenLists(1);
-	GL.glNewList(gear2, GLC.GL_COMPILE);
-	GL.glMaterialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, SYSTEM.ADR(green[0]));
+	gear2 := GL.GenLists(1);
+	GL.NewList(gear2, GLC.GL_COMPILE);
+	GL.Materialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, green);
 	MakeGear( 0.5, 2.0, 2.0, 10, 0.7);
-	GL.glEndList;
+	GL.EndList;
 
 
-	gear3 := GL.glGenLists(1);
-	GL.glNewList(gear3, GLC.GL_COMPILE);
-	GL.glMaterialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, SYSTEM.ADR(blue[0]));
+	gear3 := GL.GenLists(1);
+	GL.NewList(gear3, GLC.GL_COMPILE);
+	GL.Materialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, blue);
 	MakeGear(1.3, 2.0, 0.5, 10, 0.7);
-	GL.glEndList;
+	GL.EndList;
 
-	 GL.glEnable(GLC.GL_NORMALIZE);
+	 GL.Enable(GLC.GL_NORMALIZE);
 END InitGears;
 
 
 PROCEDURE DrawGears();
-VAR angle1, angle2: REAL;
 BEGIN
 
-angle1 := -2.0 * angle - 9.0;
-angle2 := -2.0 * angle - 25.0;
+	GL.Clear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
 
-GL.SetFCR();
-	GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
+	GL.PushMatrix;
 
-	GL.glPushMatrix;
-
-	GL.glRotatef(rotx, 1.0, 0.0, 0.0);
-	GL.glRotatef(roty, 0.0, 1.0, 0.0);
-	GL.glRotatef(rotz, 0.0, 0.0, 1.0);
+	GL.Rotatef(rotx, 1.0, 0.0, 0.0);
+	GL.Rotatef(roty, 0.0, 1.0, 0.0);
+	GL.Rotatef(rotz, 0.0, 0.0, 1.0);
 
 
-	GL.glPushMatrix;
-	GL.glTranslatef(-3.0, -2.0, 0.0);
-	GL.glRotatef(angle, 0.0, 0.0, 1.0);
-	GL.glCallList(gear1);
-	GL.glPopMatrix;
+	GL.PushMatrix;
+	GL.Translatef(-3.0, -2.0, 0.0);
+	GL.Rotatef(angle, 0.0, 0.0, 1.0);
+	GL.CallList(gear1);
+	GL.PopMatrix;
 
-	GL.glPushMatrix;
-	GL.glTranslatef(3.1, -2.0, 0.0);
-	GL.glRotatef(angle1, 0.0, 0.0, 1.0);
-	GL.glCallList(gear2);
-	GL.glPopMatrix;
+	GL.PushMatrix;
+	GL.Translatef(3.1, -2.0, 0.0);
+	GL.Rotatef(-2.0 * angle - 9.0, 0.0, 0.0, 1.0);
+	GL.CallList(gear2);
+	GL.PopMatrix;
 
-	GL.glPushMatrix;
-	GL.glTranslatef(-3.1, 4.2, 0.0);
-	GL.glRotatef(angle2, 0.0, 0.0, 1.0);
-	GL.glCallList(gear3);
-	GL.glPopMatrix;
+	GL.PushMatrix;
+	GL.Translatef(-3.1, 4.2, 0.0);
+	GL.Rotatef( -2.0 * angle - 25.0, 0.0, 0.0, 1.0);
+	GL.CallList(gear3);
+	GL.PopMatrix;
 
-	GL.glPopMatrix;
+	GL.PopMatrix;
 
- GL.DelFCR();
+
 
      GL.glXSwapBuffers(display, win);
 END DrawGears;
@@ -282,17 +277,16 @@ END DrawGears;
 PROCEDURE Reshape(w, h: LONGINT);
 
 BEGIN
-GL.SetFCR();
-	GL.glViewport(0, 0, w, h);
-	GL.glClearColor(0.0, 0.0, 0.0, 0.0);
-	GL.glMatrixMode(GLC.GL_PROJECTION);
-	GL.glLoadIdentity();
-	GL.glFrustum(-1, 1, -1, 1, 5, 100);
-	GL.glMatrixMode(GLC.GL_MODELVIEW);
-	GL.glLoadIdentity();
-	GL.glScaled(h/w, 1,1);
-	GL.glTranslatef(0.0, 0.0, -40.0);
-GL.DelFCR();
+
+	GL.Viewport(0, 0, w, h);
+	GL.ClearColor(0.0, 0.0, 0.0, 0.0);
+	GL.MatrixMode(GLC.GL_PROJECTION);
+	GL.LoadIdentity();
+	GL.Frustum(-1, 1, -1, 1,  5.0, 100.0);
+	GL.MatrixMode(GLC.GL_MODELVIEW);
+	GL.LoadIdentity();
+	GL.Translatef(0.0, 0.0, -40.0);
+
 END Reshape;
 
 (* close the window and its resources *)
@@ -306,7 +300,7 @@ END Reshape;
 	    	(* Delete the context *)
 		GL.glXDestroyContext(display, glctx);
 		glctx := 0;
-		IF debug THEN KernelLog.String("context deleted"); KernelLog.Ln; END;
+		IF debug THEN context.out.String("context deleted"); context.out.Ln; context.out.Update; END;
 	END;
 
 	(* switch back to original desktop resolution if we were in fullscreen *)
@@ -323,13 +317,13 @@ END Reshape;
 		(* Destroy the window *)
 		res:= Api.DestroyWindow(display, win);
 		win := 0;
-		IF debug THEN KernelLog.String("window deleted"); KernelLog.Ln; END;
+		IF debug THEN context.out.String("window deleted"); context.out.Ln; context.out.Update; END;
 	END;
 
 	(* do we have a display *)
 	IF display # 0 THEN
 		res := Api.CloseDisplay(display);
-		IF debug THEN KernelLog.String("display deleted"); KernelLog.Ln; END;
+		IF debug THEN context.out.String("display deleted"); context.out.Ln; context.out.Update; END;
 	END;
 
  END Close;
@@ -342,7 +336,7 @@ VAR
 
 	visinfoptr : Api.VisualInfoPtr; (* pointer to X11 VisualInfo *)
 	cmap : X11.Colormap; (* colormap for window *)
-	att : ARRAY [*] OF GL.GLint;  (* attributes of GL window *)
+	att : ARRAY [*] OF GL.Int;  (* attributes of GL window *)
 	glxMajor, glxMinor, wmMajor, wmMinor: LONGINT;
 	dispWidth, dispHeight: LONGINT;
 	modes : V.PPXF86VidModeModeInfo;
@@ -354,16 +348,16 @@ VAR
 BEGIN
 	display := Api.OpenDisplay(":0.0");
 	IF display =0 THEN
-		KernelLog.String(" cannot connect to X server"); KernelLog.Ln;
+		context.out.String(" cannot connect to X server"); context.out.Ln; context.out.Update;
 		RETURN FALSE;
 	END;
 
 	screen := X11.DefaultScreen(display);
 	res := V.XF86VidModeQueryVersion(display, wmMajor, wmMinor);
 	IF debug THEN
-		KernelLog.String("XF86 VideoMode extension version ");
-		KernelLog.Int(wmMajor,0); KernelLog.Char(".");
-		KernelLog.Int(wmMinor,0); KernelLog.Ln;
+		context.out.String("XF86 VideoMode extension version ");
+		context.out.Int(wmMajor,0); context.out.Char(".");
+		context.out.Int(wmMinor,0); context.out.Ln; context.out.Update;
 	END;
 
 
@@ -373,10 +367,11 @@ BEGIN
 	(* save desktop-resolution before switching modes *)
 	desktopMode := modes[0]^;
 	IF debug THEN
-		KernelLog.String("desktopMode=");
-		KernelLog.Int( desktopMode.hdisplay, 6);
-		KernelLog.Int(desktopMode.vdisplay, 6); KernelLog.Ln;
-		KernelLog.String(" # of modes= "); KernelLog.Int(modnum,0); KernelLog.Ln;
+		context.out.String("desktopMode=");
+		context.out.Int( desktopMode.hdisplay, 6);
+		context.out.Int(desktopMode.vdisplay, 6); context.out.Ln;
+		context.out.String(" # of modes= "); context.out.Int(modnum,0); context.out.Ln;
+		context.out.Update;
 	END;
 
 	bestmode := 0;  (* set best mode to current *)
@@ -386,9 +381,10 @@ BEGIN
  		bmodes := modes[i]^;
  		IF (bmodes.hdisplay=width) & (bmodes.vdisplay = height) THEN bestmode:=i; END;
  		IF debug THEN
- 			KernelLog.Int(i+1, 0); KernelLog.Char(":");
- 			KernelLog.Int( bmodes.hdisplay, 6);
-			KernelLog.Int(bmodes.vdisplay, 6); KernelLog.Ln;
+ 			context.out.Int(i+1, 0); context.out.Char(":");
+ 			context.out.Int( bmodes.hdisplay, 6);
+			context.out.Int(bmodes.vdisplay, 6); context.out.Ln;
+			context.out.Update;
 		END;
 	 END;
 	bmodes := modes[bestmode]^;
@@ -396,8 +392,9 @@ BEGIN
 	dispHeight := bmodes.vdisplay;
 
  	IF debug THEN
-		KernelLog.String("bestmode: "); KernelLog.Int(bestmode,0); KernelLog.Ln;
-		KernelLog.String("resolution:  "); KernelLog.Int(dispWidth,0); KernelLog.Char("x"); KernelLog.Int(dispHeight, 0); KernelLog.Ln;
+		context.out.String("bestmode: "); context.out.Int(bestmode,0); context.out.Ln;
+		context.out.String("resolution:  "); context.out.Int(dispWidth,0); context.out.Char("x");
+		context.out.Int(dispHeight, 0); context.out.Ln; context.out.Update;
  	END;
 
 	doubleBuffered := TRUE;
@@ -426,34 +423,37 @@ BEGIN
 	(* try to find a visual with this attribs *)
 	visinfoptr := GL.glXChooseVisual(display, screen , SYSTEM.ADR(att[0]));
 	 IF visinfoptr = NIL THEN
-		IF debug THEN KernelLog.String(" NO appropriate visual found"); KernelLog.Ln; END;
+		IF debug THEN context.out.String(" NO appropriate visual found"); context.out.Ln; context.out.Update; END;
 		Close;
 		RETURN FALSE;
 	ELSE
 		IF debug THEN
-			KernelLog.String("visinfoptr.depth= "); KernelLog.Int(visinfoptr.depth,0); KernelLog.Ln;
-			KernelLog.String("visinfoptr.visual ");  KernelLog.Int(visinfoptr.visualID, 0); KernelLog.Ln;
+			context.out.String("visinfoptr.depth= "); context.out.Int(visinfoptr.depth,0); context.out.Ln;
+			context.out.String("visinfoptr.visual ");  context.out.Int(visinfoptr.visualID, 0); context.out.Ln;
+			context.out.Update;
 		END;
 	END;
 
 
 	res := GL.glXQueryVersion(display, glxMajor, glxMinor);
 	IF debug THEN
-		KernelLog.String("GLX-Version "); KernelLog.Int(glxMajor,0); KernelLog.Char("."); KernelLog.Int(glxMinor,0); KernelLog.Ln;
+		context.out.String("GLX-Version "); context.out.Int(glxMajor,0); context.out.Char("."); context.out.Int(glxMinor,0); context.out.Ln;
+		context.out.Update;
 	END;
 
 	(* create GL context *)
 	 (* GL_TRUE: Use direct rendering, GL_FLASE: use X server for rendering *)
 	glctx := GL.glXCreateContext(display, visinfoptr, 0, GLC.GL_TRUE);
-	IF debug THEN KernelLog.String("glXCreateContext glctx= "); KernelLog.Int(glctx, 0); KernelLog.Ln; END;
+	IF debug THEN context.out.String("glXCreateContext glctx= "); context.out.Int(glctx, 0); context.out.Ln; context.out.Update; END;
 
 	(* create a color map *)
 	cmap := X11.CreateColormap(display, Api.RootWindow(display,visinfoptr.screen), visinfoptr.visual, X11.AllocNone);
 	IF cmap = 0 THEN
 		IF debug THEN
-			KernelLog.String(" cannot create colormap"); KernelLog.Ln;
+			context.out.String(" cannot create colormap"); context.out.Ln;
 			X11.GetErrorText(display, cmap, buf, LEN(buf));
-			KernelLog.String("ERROR: CreateColormap = "); KernelLog.String(buf); KernelLog.Ln;
+			context.out.String("ERROR: CreateColormap = "); context.out.String(buf); context.out.Ln;
+			context.out.Update;
 		END;
 	END;
 
@@ -476,7 +476,9 @@ BEGIN
        	(* Lock mode switch *)
   		res := V.XF86VidModeLockModeSwitch(display, screen, 1);
 
-		KernelLog.String("resolution-2 "); KernelLog.Int(dispWidth,0); KernelLog.Char("x"); KernelLog.Int(dispHeight, 0); KernelLog.Ln;
+		context.out.String("resolution-2 "); context.out.Int(dispWidth,0); context.out.Char("x"); context.out.Int(dispHeight, 0);
+		context.out.Ln; context.out.Update;
+
 		winAttr.overrideRedirect := TRUE;
 		 (* window event masks *)
 		winAttr.eventMask :=  Api.ExposureMask + Api.KeyPressMask + Api.ButtonPressMask + Api.StructureNotifyMask ;
@@ -518,15 +520,15 @@ BEGIN
 	END;
 
 	IF debug THEN
-		KernelLog.String("glXMakeCurrent res= "); KernelLog.Int(res, 0); KernelLog.Ln;
+		context.out.String("glXMakeCurrent res= "); context.out.Int(res, 0); context.out.Ln;
 		IF GL.glXIsDirect(display, glctx)=1 THEN
-			KernelLog.String("DRI enabled"); KernelLog.Ln;
+			context.out.String("DRI enabled"); context.out.Ln;
 		ELSE
-			KernelLog.String("no DRI available"); KernelLog.Ln;
+			context.out.String("no DRI available"); context.out.Ln;
 		END;
+		context.out.Update;
 	END;
 
- GL.ReadOpenGLCore();
  RETURN TRUE;
 END InitWindow;
 
@@ -548,7 +550,7 @@ END ToggleDecorations;
 
 PROCEDURE Wr(CONST str: ARRAY OF CHAR);
 BEGIN
-	IF debugevents THEN KernelLog.String(str); KernelLog.Ln END;
+	IF debugevents THEN context.out.String(str); context.out.Ln; context.out.Update; END;
 END Wr;
 
 (* save the rendered image to disk when mouse clicked *)
@@ -561,14 +563,14 @@ BEGIN
 
 (* needs to be flipped in y *)
 	FOR i:=0 TO height-1 DO
-		GL.glReadPixels(0, height-1-i, width, 1, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, image.adr + i*width*4);
+		GL.ReadPixels(0, height-1-i, width, 1, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, image.adr + i*width*4);
 	END;
 
-(* GL.glReadPixels(0, 0, width, height, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, image.adr); *)
+(* GL.ReadPixels(0, 0, width, height, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, image.adr); *)
 (* and  flip using Raster module  *)
 	WMGraphics.StoreImage(image, fname,res);
 	IF res = 0 THEN
-	  KernelLog.String(fname); KernelLog.String(" saved"); KernelLog.Ln;
+	  context.out.String(fname); context.out.String(" saved"); context.out.Ln; context.out.Update;
 	END;
 	image := NIL;
 END SaveImage;
@@ -591,7 +593,7 @@ END SaveImage;
 		IF ~(MMseen & MRseen) THEN  CheckAlternateKeys( mm.keys )  END;
 (*		Inputs.mouse.Handle( mm );*)
 		currX := x; currY := y;
-		IF debugevents THEN KernelLog.Int(x,0); KernelLog.Int(y, 4);  KernelLog.Int(dz,5); KernelLog.Ln;  END;
+		IF debugevents THEN context.out.Int(x,0); context.out.Int(y, 4);  context.out.Int(dz,5); context.out.Ln;  context.out.Update; END;
 	END SendMouseMsg;
 
 	(* keyboard handler *)
@@ -599,7 +601,7 @@ END SaveImage;
 	BEGIN
 	     IF km.ch='q' THEN alive := FALSE; END;
 	     IF km.ch = 's' THEN SaveImage('glxgears.bmp'); END;
-		IF debugevents THEN KernelLog.Char(km.ch); KernelLog.Ln; END;
+		IF debugevents THEN context.out.Char(km.ch); context.out.Ln; context.out.Update; END;
 	END SendKeyboardMsg;
 
 	(* Returns wether key (SHIFT, CTRL or ALT) is pressed *)
@@ -654,11 +656,23 @@ END SaveImage;
 		INC(curcursor);
 	END ChangeCursor;
 
+	PROCEDURE WrKey(keyc: LONGINT; buf: ARRAY OF CHAR; keysym: LONGINT);
+	BEGIN
+		context.out.String("keysym: "); context.out.Int(keysym,0); context.out.String(":"); context.out.Hex(keysym, 8);
+
+		context.out.String("  char: "); context.out.Char(CHR(keysym)); context.out.Ln;
+		context.out.String("keycount: "); context.out.Int(keyc,0); context.out.Ln;
+		context.out.String("keybuffer: "); context.out.String(buf); context.out.Ln;
+		context.out.Update;
+	END WrKey;
+
+
 (* process pending X11 events, from Unix.KbdMouse.Mod *)
 	PROCEDURE PollXQueue;
 	VAR
 		 keysym: X11.KeySym;
-
+		 buffer: ARRAY 32 OF CHAR;
+		keycount: LONGINT;
 		 cm: Api.XClientMessageEvent;
 		 ke: Api.XKeyEvent;
 		 be: Api.XButtonEvent;
@@ -673,7 +687,8 @@ END SaveImage;
 				CASE event.typ OF
 				| Api.Expose: Wr("Expose, GraphicsExpose");
 								ee := SYSTEM.VAL(Api.XExposeEvent, event);
-								KernelLog.String("expose serial"); KernelLog.Int(ee.serial,5); KernelLog.Ln;
+								context.out.String("expose serial"); context.out.Int(ee.serial,5); context.out.Ln;
+								context.out.Update;
 								IF ee.count = 0 THEN DrawGears(); END;
 
 				| Api.ConfigureNotify: Wr("ConfigureNotify");
@@ -688,14 +703,19 @@ END SaveImage;
 
 				| Api.ButtonPress: Wr("ButtonPress");
 							be := SYSTEM.VAL(Api.XButtonEvent, event);
-							KernelLog.String("sendEvent="); KernelLog.Boolean(be.sendEvent); KernelLog.Ln;
-							KernelLog.String("be.button="); KernelLog.Int(be.button,2); KernelLog.Ln;
+							context.out.String("sendEvent="); IF be.sendEvent THEN context.out.String("TRUE") ELSE context.out.String("FALSE") END; context.out.Ln;
+							context.out.String("be.button="); context.out.Int(be.button,2); context.out.Ln;
+							context.out.Update;
 							(* IF be.button = Api.Button1 THEN
 								alive := FALSE;
 							END; *)
 				| Api.KeyPress: Wr("KeyPress");
 								ke := SYSTEM.VAL(Api.XKeyEvent, event);
-								keysym := Api.LookupKeysym(ke, 0);
+								keycount := Api.LookupString(ke, buffer, X11.BufferSize, keysym, compstatus );
+
+								(* keysym := Api.LookupKeysym(ke, 0); *)
+								WrKey(keycount, buffer, keysym);
+
 								CASE keysym OF
 									KS.XK_Escape, KS.XK_q1, KS.XK_Q: alive := FALSE;
 								|	KS.XK_F1: Wr("F1 pressed"); (* start from begining *)
@@ -716,21 +736,21 @@ END SaveImage;
 
 				| Api.ClientMessage: Wr("ClientMessage");
 						cm := SYSTEM.VAL(Api.XClientMessageEvent, event);
-						(* KernelLog.String("sendEvent="); KernelLog.Boolean(cm.sendEvent); KernelLog.Ln; *)
+						(* context.out.String("sendEvent="); context.out.Boolean(cm.sendEvent); context.out.Ln; *)
 						atomName := Api.GetAtomName(display, cm.messageType);
-						KernelLog.String("cm.messageType= "); KernelLog.Int(cm.messageType, 0); KernelLog.Ln;
+						context.out.String("cm.messageType= "); context.out.Int(cm.messageType, 0); context.out.Ln;
 						IF atomName # NIL THEN
-							KernelLog.String("atomName="); KernelLog.String(atomName^); KernelLog.Ln;
+							context.out.String("atomName="); context.out.String(atomName^); context.out.Ln;
 						END;
 
 						datal := SYSTEM.VAL(Api.Data40l, cm.data);
-						KernelLog.String("datal[0]="); KernelLog.Int(SYSTEM.VAL(X11.Atom,datal[0]), 0); KernelLog.Ln;
-						KernelLog.String("wmDeleteWindow="); KernelLog.Int(wmDelete,0); KernelLog.Ln;
+						context.out.String("datal[0]="); context.out.Int(SYSTEM.VAL(X11.Atom,datal[0]), 0); context.out.Ln;
+						context.out.String("wmDeleteWindow="); context.out.Int(wmDelete,0); context.out.Ln;
 						atomName := Api.GetAtomName(display, SYSTEM.VAL(X11.Atom,datal[0]));
 						IF atomName # NIL THEN
-							KernelLog.String("datal[0] atomName="); KernelLog.String(atomName^); KernelLog.Ln;
+							context.out.String("datal[0] atomName="); context.out.String(atomName^); context.out.Ln;
 						END;
-
+						context.out.Update;
 
 						IF  SYSTEM.VAL(X11.Atom,datal[0]) = wmDelete THEN
 						    Wr("DeleteWindow");
@@ -754,14 +774,14 @@ WHILE  alive  DO
 		(* process X11 events *)
 		PollXQueue;
 		DrawGears();
-		angle := angle + 0.05;
+		angle := angle + 2.0;
 
 		 (* measure timing info *)
 		INC(frames);
 		IF Kernel.Expired(timer) THEN
-			KernelLog.Int(frames,0); KernelLog.String(" frames in 5 secs.");
-			KernelLog.String(" FPS = "); KernelLog.Int(frames DIV 5,0);
-			KernelLog.Ln;
+			context.out.Int(frames,0); context.out.String(" frames in 5 secs.");
+			context.out.String(" FPS = "); context.out.Int(frames DIV 5,0);
+			context.out.Ln; context.out.Update;
 			Kernel.SetTimer(timer,5000);
 			frames := 0;
 		END;
@@ -771,7 +791,9 @@ END MainLoop;
 
 PROCEDURE Open*;
 BEGIN
-	width := 320; height := 240; (* window size*)
+	context := StdIO.env;
+
+	width := 300; height := 300; (* window size*)
 	fullscreen := FALSE;
 	fullwindow := FALSE;
 	windecorations := TRUE;

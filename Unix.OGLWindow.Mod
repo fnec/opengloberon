@@ -2,7 +2,7 @@ MODULE OGLWindow; (** AUTHOR "fnecati"; PURPOSE "OpenGL enabled OO X11Window wra
 
 IMPORT
 	 SYSTEM, X11, Api := X11Api, Modules, GL:=OpenGL, GLC := OpenGLConst,
-	 Kernel, Inputs , Trace;
+	 Kernel, Inputs , KernelLog;
 
 (* Note: in OpenGL, window origin is lower left, check! *)
 	(** todo:
@@ -114,7 +114,7 @@ VAR
 	VAR res: LONGINT;
 	BEGIN
 		res := GL.glXMakeCurrent(display, win, glctx);
-		IF debug THEN Trace.String(" MakeCurrent:"); Trace.Boolean(res=1); Trace.Ln; END;
+		IF debug THEN KernelLog.String(" MakeCurrent:"); KernelLog.Boolean(res=1); KernelLog.Ln; END;
 	END MakeCurrent;
 
 	(** deactivate the current GL context *)
@@ -122,7 +122,7 @@ VAR
 	VAR res: LONGINT;
 	 BEGIN
 		res := GL.glXMakeCurrent(display, 0, 0);
-		IF debug THEN Trace.String(" DeActivate:"); Trace.Boolean(res=1); Trace.Ln; END;
+		IF debug THEN KernelLog.String(" DeActivate:"); KernelLog.Boolean(res=1); KernelLog.Ln; END;
 	END DeActivate;
 
 	(** swap the GL context contents to the window *)
@@ -184,7 +184,7 @@ VAR
 		    	(* Delete the context *)
 			GL.glXDestroyContext(display, glctx);
 			glctx := 0;
-			IF debug THEN Trace.String("context deleted"); Trace.Ln; END;
+			IF debug THEN KernelLog.String("context deleted"); KernelLog.Ln; END;
 		END;
 
 		(* do we have a window *)
@@ -194,14 +194,14 @@ VAR
 			(* Destroy the window *)
 			res:= Api.DestroyWindow(display, win);
 			win := 0;
-			IF debug THEN Trace.String("window deleted"); Trace.Ln; END;
+			IF debug THEN KernelLog.String("window deleted"); KernelLog.Ln; END;
 		END;
 
 		(* do we have a display *)
 		IF display # 0 THEN
 			res := Api.CloseDisplay(display);
 			display := 0;
-			IF debug THEN Trace.String("display deleted"); Trace.Ln; END;
+			IF debug THEN KernelLog.String("display deleted"); KernelLog.Ln; END;
 		END;
 
 		IF cmdlinerun THEN
@@ -248,6 +248,7 @@ VAR
 	(** set idle time  for calling IdleDisplay proc *)
 	PROCEDURE SetIdleTime*(ms: LONGINT);
 	BEGIN {EXCLUSIVE}
+		IF ms < 1 THEN ms := 1 END;
 		idletime := ms;
 	END SetIdleTime;
 
@@ -316,7 +317,7 @@ VAR
 	PROCEDURE  InitWindow(w, h, l, t: LONGINT);
 	VAR
 		masks, res: LONGINT;
-		attrib : POINTER TO ARRAY OF GL.GLint;  (* attributes of GL window *)
+		attrib : POINTER TO ARRAY OF GL.Int;  (* attributes of GL window *)
 		swa : Api.XSetWindowAttributes; (* set window attributes*)
 		visinfoptr : Api.VisualInfoPtr; (* pointer to X11 VisualInfo *)
 		xev: Api.XEvent;
@@ -325,7 +326,7 @@ VAR
 
 		display := X11.OpenDisplay(0);
 		IF display =0 THEN
-			Trace.String(" cannot connect to X server"); Trace.Ln;
+			KernelLog.String(" cannot connect to X server"); KernelLog.Ln;
 			Close;
 		     RETURN;
 		END;
@@ -344,14 +345,14 @@ VAR
 		visinfoptr := GL.glXChooseVisual(display, 0 , SYSTEM.ADR(attrib[0]));
 
 		IF visinfoptr = NIL THEN
-			IF debug THEN Trace.String(" NO appropriate visual found"); Trace.Ln; END;
+			IF debug THEN KernelLog.String(" NO appropriate visual found"); KernelLog.Ln; END;
 			Close;
 			RETURN;
 		END;
 
 		IF debug THEN
-			Trace.String("visinfoptr.depth= "); Trace.Int(visinfoptr.depth,0); Trace.Ln;
-			Trace.String("visinfoptr.visual ");  Trace.Int(visinfoptr.visualID, 0); Trace.Ln;
+			KernelLog.String("visinfoptr.depth= "); KernelLog.Int(visinfoptr.depth,0); KernelLog.Ln;
+			KernelLog.String("visinfoptr.visual ");  KernelLog.Int(visinfoptr.visualID, 0); KernelLog.Ln;
 		END;
 
  		(* window attributes *)
@@ -383,12 +384,12 @@ VAR
 		(* Wait for map notification *)
 	 	REPEAT
 			Api.NextEvent( display, xev );
-	 		IF debug THEN Trace.String("Event type="); Trace.Int(xev.typ,4); Trace.Ln; END;
+	 		IF debug THEN KernelLog.String("Event type="); KernelLog.Int(xev.typ,4); KernelLog.Ln; END;
 		UNTIL (xev.typ = Api.MapNotify) & (xev.window = win);
 
  		glctx := GL.glXCreateContext(display, visinfoptr, 0, GLC.GL_TRUE);
 		IF glctx = 0 THEN
-			IF debug THEN Trace.String("glXCreateContext glctx= "); Trace.Int(glctx, 0); Trace.Ln; END;
+			IF debug THEN KernelLog.String("glXCreateContext glctx= "); KernelLog.Int(glctx, 0); KernelLog.Ln; END;
 			Close;
 			RETURN;
 		END;
@@ -399,8 +400,10 @@ VAR
 		IF fullwindow THEN
 			SetFullWindow(TRUE);
 		END;
-		MakeCurrent();
-		GL.ReadOpenGLCore;
+	(*	 MakeCurrent();
+
+	GL.ReadOpenGLCore;
+		DeActivate; *)
 	END InitWindow;
 
 
@@ -526,9 +529,9 @@ VAR
 					height := cn.height;
 					Reshape(width, height);
 					IF debugevents THEN
-						Trace.String("x,y, w, h: ");
-						Trace.Int(left,0); Trace.Int(top,5); Trace.Int(width, 5); Trace.Int(height,5);
-						Trace.Ln;
+						KernelLog.String("x,y, w, h: ");
+						KernelLog.Int(left,0); KernelLog.Int(top,5); KernelLog.Int(width, 5); KernelLog.Int(height,5);
+						KernelLog.Ln;
 					END;
 				(* END;*)
 
@@ -560,9 +563,9 @@ VAR
 		IF debugframes THEN
 			INC(frames);
 			IF Kernel.Expired(fpstimer) THEN
-				Trace.Int(frames,0); Trace.String(" frames in 5 secs.");
-				Trace.String(" FPS = "); Trace.Int(frames DIV 5, 0);
-				Trace.Ln;
+				KernelLog.Int(frames,0); KernelLog.String(" frames in 5 secs.");
+				KernelLog.String(" FPS = "); KernelLog.Int(frames DIV 5, 0);
+				KernelLog.Ln;
 				Kernel.SetTimer(fpstimer, 5000);
 				frames := 0;
 			END;
@@ -577,7 +580,7 @@ VAR
 		Kernel.SetTimer(fpstimer, 5000);
 
 		MakeCurrent();
-
+	(*	GL.ReadOpenGLCore;*)
  		OnLoad;
 		Reshape(width, height);
 		active := TRUE;
@@ -627,7 +630,7 @@ END InitKeysym;
 
 PROCEDURE Wr(CONST str: ARRAY OF CHAR);
 BEGIN
-	IF debugevents THEN Trace.StringLn(str); Trace.Ln END;
+	IF debugevents THEN KernelLog.String(str); KernelLog.Ln END;
 END Wr;
 
 BEGIN

@@ -1,7 +1,7 @@
 MODULE Decoder3DS; (** AUTHOR "fnecati"; PURPOSE "a simple 3ds model loader"; *)
 
 IMPORT KernelLog, Files, Strings, Lists, Commands, Math, Streams, Reals, WMGraphics, Raster,
-	GLC := OpenGLConst, GL := OpenGL, SYSTEM;
+	GLC := OpenGLConst, GL := OpenGL, GLU, SYSTEM;
 
 CONST
 	debug = FALSE; (* for writing chunk values *)
@@ -937,23 +937,23 @@ BEGIN
 	img := TransposeImage(img0);
 
 	writer.String(filename); writer.String("  loaded.."); writer.Ln;  writer.Update;
-  	GL.glGenTextures(1, SYSTEM.ADR(textureNumber));
+  	GL.GenTextures(1, SYSTEM.ADR(textureNumber));
 
-	GL.glBindTexture(GLC.GL_TEXTURE_2D, textureNumber);  (* Bind the ID texture specified by the 2nd parameter *)
+	GL.BindTexture(GLC.GL_TEXTURE_2D, textureNumber);  (* Bind the ID texture specified by the 2nd parameter *)
 
 	(* The next commands sets the texture parameters *)
-	GL.glTexParameterf(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_WRAP_S, GLC.GL_REPEAT);  (* If the u,v coordinates overflow the range 0,1 the image is repeated *)
-	GL.glTexParameterf(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_WRAP_T, GLC.GL_REPEAT);
-	GL.glTexParameterf(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_LINEAR);  (* The magnification function ("linear" produces better results) *)
-	GL.glTexParameterf(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MIN_FILTER, GLC.GL_LINEAR_MIPMAP_NEAREST);  (*The minifying function *)
+	GL.TexParameterf(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_WRAP_S, GLC.GL_REPEAT);  (* If the u,v coordinates overflow the range 0,1 the image is repeated *)
+	GL.TexParameterf(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_WRAP_T, GLC.GL_REPEAT);
+	GL.TexParameterf(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_LINEAR);  (* The magnification function ("linear" produces better results) *)
+	GL.TexParameterf(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MIN_FILTER, GLC.GL_LINEAR_MIPMAP_NEAREST);  (*The minifying function *)
 
-	GL.glTexEnvf(GLC.GL_TEXTURE_ENV, GLC.GL_TEXTURE_ENV_MODE, GLC.GL_REPLACE);  (* We don't combine the color with the original surface color, use only the texture map. *)
+	GL.TexEnvf(GLC.GL_TEXTURE_ENV, GLC.GL_TEXTURE_ENV_MODE, GLC.GL_REPLACE);  (* We don't combine the color with the original surface color, use only the texture map. *)
 
 	(* Finally we define the 2d texture *)
-	GL.glTexImage2D(GLC.GL_TEXTURE_2D, 0, GLC.GL_RGBA, img.width, img.height, 0, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, img.adr);
+	GL.TexImage2D(GLC.GL_TEXTURE_2D, 0, GLC.GL_RGBA, img.width, img.height, 0, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, img.adr);
 
 	(* And create 2d mipmaps for the minifying function *)
-	res := GL.gluBuild2DMipmaps(GLC.GL_TEXTURE_2D, GLC.GL_RGBA, img.width, img.height, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, img.adr);
+	res := GLU.Build2DMipmaps(GLC.GL_TEXTURE_2D, GLC.GL_RGBA, img.width, img.height, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, img.adr);
 
 	img0 := NIL;
 	img := NIL;

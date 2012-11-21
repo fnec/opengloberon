@@ -3,8 +3,8 @@ MODULE OGLDemoFonts; (** AUTHOR "fnecati"; PURPOSE "simple demo for Fonts suppor
 
 IMPORT
 	Strings,  S := SYSTEM, KernelLog,  Streams,
-	Raster, WMGraphics,
-	GL := OpenGL, GLC := OpenGLConst, OGW:=OGLWindow;
+	Raster, WMGraphics, Inputs,
+	GL := OpenGL, GLC := OpenGLConst, GLU, OGW:=OGLWindow;
 
 CONST
 
@@ -19,7 +19,7 @@ TYPE
 	VAR
 		anglez: REAL;
 
-		fontOffset: GL.GLuint;
+		fontOffset: GL.Uint;
 		mode: Raster.Mode;
 		font: WMGraphics.Font;
 
@@ -34,22 +34,24 @@ TYPE
 	(* OGLWindow callback method *)
 	PROCEDURE OnLoad();
 	BEGIN
-		GL.glShadeModel (GLC.GL_FLAT);
+		GL.ShadeModel (GLC.GL_FLAT);
 		MakeRasterFont();
-		GL.glClearColor (0.0, 0.0, 0.0, 0.0); (*  clear the background and set it to black *)
+		GL.ClearColor (0.0, 0.0, 0.0, 0.0); (*  clear the background and set it to black *)
 	END OnLoad;
 
 	PROCEDURE KeyEvent (ucs: LONGINT; flags: SET; keysym: LONGINT);
 	BEGIN
-		CASE CHR(ucs) OF
-			 "-" : anglez := anglez - 1.0; ReDisplay();
-			| "+" : anglez := anglez + 1.0; ReDisplay();
-			| "p": (* PrintVals;*)
+		CASE keysym OF
+			Inputs.KsLeft: anglez := anglez - 1.0; ReDisplay();
+			| Inputs.KsRight: anglez := anglez + 1.0; ReDisplay();
+			| Inputs.KsUp:
+			| Inputs.KsDown:
 
-			| "q" : Close;
+			| ORD('p'): (* PrintVals;*)
+			| ORD('q'):  KernelLog.String("CLOSE"); KernelLog.Ln; Close;
 		ELSE
-
 		END;
+
 	END KeyEvent;
 
 	PROCEDURE PrintGlyphInfo(code: LONGINT; g: WMGraphics.GlyphSpacings);
@@ -98,10 +100,10 @@ TYPE
 		(* font := WMGraphics.GetDefaultFont(); *)
 		(* font := WMGraphics.GetFont("Arial", 12, {});*)
 		 font := WMGraphics.GetFont("Courier", 12, {});
-		GL.glPixelStorei(GLC.GL_UNPACK_ALIGNMENT, 1);
+		GL.PixelStorei(GLC.GL_UNPACK_ALIGNMENT, 1);
 
-		GL.glRasterPos2i(0, 0);
-		fontOffset := GL.glGenLists (256);
+		GL.RasterPos2i(0, 0);
+		fontOffset := GL.GenLists (256);
 
 		FOR i := 0 TO 255 DO
 			font.GetGlyphSpacings(i, g);
@@ -115,93 +117,95 @@ TYPE
 			END;
 			fim := FlipImage(charimg);
 
-	   		GL.glNewList(fontOffset + i, GLC.GL_COMPILE);
-			GL.SetFCR();
-				GL.glBitmap(fim.width, fim.height, 0.0, 0.0, g.width +g.bearing.r (*+g.bearing.l*), 0.0,fim.adr);
-			GL.DelFCR();
-			GL.glEndList();
+	   		GL.NewList(fontOffset + i, GLC.GL_COMPILE);
+
+				GL.Bitmap(fim.width, fim.height, 0.0, 0.0, g.width +g.bearing.r (*+g.bearing.l*), 0.0,fim.adr);
+
+			GL.EndList();
 		END;
 
 	END MakeRasterFont;
 
 	PROCEDURE DrawString(s: ARRAY OF CHAR);
 	BEGIN
-		GL.glPushAttrib (GLC.GL_LIST_BIT);
-		GL.glListBase(fontOffset);
-		GL.glCallLists(Strings.Length(s), GLC.GL_UNSIGNED_BYTE, S.ADR(s[0]));
-		GL.glPopAttrib ();
+		GL.PushAttrib (GLC.GL_LIST_BIT);
+		GL.ListBase(fontOffset);
+		GL.CallLists(Strings.Length(s), GLC.GL_UNSIGNED_BYTE, S.ADR(s[0]));
+		GL.PopAttrib ();
 	END DrawString;
 
 	PROCEDURE DrawStringAt(x, y, z: REAL;  s: ARRAY OF CHAR);
 	BEGIN
-		GL.glPushAttrib (GLC.GL_LIST_BIT);
-		GL.glRasterPos3f(x, y, z);
+		GL.PushAttrib (GLC.GL_LIST_BIT);
+		GL.RasterPos3f(x, y, z);
 
-		GL.glListBase(fontOffset);
-		GL.glCallLists(Strings.Length(s), GLC.GL_UNSIGNED_BYTE, S.ADR(s[0]));
-		GL.glPopAttrib ();
+		GL.ListBase(fontOffset);
+		GL.CallLists(Strings.Length(s), GLC.GL_UNSIGNED_BYTE, S.ADR(s[0]));
+		GL.PopAttrib ();
 	END DrawStringAt;
 
 	(* OGLWindow callback method *)
 	PROCEDURE Reshape(w, h: LONGINT);
-	VAR wx, hx: LONGREAL;
 	BEGIN
-		wx := w; hx := h;
-		GL.glViewport(0, 0, w, h);
-		GL.glMatrixMode(GLC.GL_PROJECTION);
-		GL.glLoadIdentity();
-		GL.SetFCR();
-			GL.glOrtho (0.0, wx, 0.0, hx, -1.0, 1.0);
-		GL.DelFCR();
+		GL.Viewport(0, 0, w, h);
+		GL.MatrixMode(GLC.GL_PROJECTION);
+		GL.LoadIdentity();
 
-		GL.glMatrixMode(GLC.GL_MODELVIEW);
-		GL.glLoadIdentity();
+		(*	GL.Ortho (0.0, w, 0.0, h, -1.0, 1.0);*)
+		GLU.Perspective(60.0,w/h,1.0,30.0) ;
+
+		GL.MatrixMode(GLC.GL_MODELVIEW);
+		GL.LoadIdentity();
+		GL.Translatef(0.0,0.0, -2) ;
 	END Reshape;
 
 	PROCEDURE DrawLetters;
 	VAR dx, dy: LONGINT;
 	BEGIN
 
-		GL.glClear (GLC.GL_COLOR_BUFFER_BIT);
-		GL.glPushMatrix();
-		GL.SetFCR();
-			GL.glRotatef(anglez, 0.0, 0.0, 1.0);
-		GL.DelFCR();
+		GL.Clear (GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
+		GL.PushMatrix();
 
-		GL.glColor3f(1.0, 1.0, 1.0);
+		GL.Rotatef(anglez, 0.0, 0.0, 1.0);
 
-		GL.glRasterPos2i(20, 60);
+
+		GL.Color3f(1.0, 1.0, 1.0);
+
+
+		GL.RasterPos3f(-0.4, -0.3, 1.0);
 			DrawString("THE QUICK BROWN FOX JUMPS");
-		GL.glRasterPos2i(20, 40);
+		GL.RasterPos3f(-0.3, -0.2, 1.0);
 			DrawString("OVER A LAZY DOG");
 
-		GL.glColor3f(0.0, 1.0, 0.0);
 
-		font.GetStringSize("Hello OpenGL Oberon", dx, dy);
-		GL.glRasterPos3f(width DIV 2-dx DIV 2, height DIV 2, 0.0);
-		DrawString("Hello OpenGL Oberon");
+		GL.Color3f(0.0, 1.0, 0.0);
 
-	(*		GL.glRasterPos2f(-0.9, 0.5);
+
+		GL.RasterPos3f(0.0, 0.3, 1.0);
+
+		DrawString("HELLO OBERON");
+
+	(*		GL.RasterPos2f(-0.9, 0.5);
 				DrawString("THE QUICK BROWN FOX JUMPS");
-			GL.glRasterPos2f(-0.9, 0.0);
+			GL.RasterPos2f(-0.9, 0.0);
 			DrawString("OVER A LAZY DOG");
 
-			GL.glColor3f(0.0, 1.0, 0.0);
-			GL.glRasterPos3f(-0.9, -0.5, -0.5);
+			GL.Color3f(0.0, 1.0, 0.0);
+			GL.RasterPos3f(-0.9, -0.5, -0.5);
 
 			DrawString("Hello OpenGL Oberon");
 	*)
 
-		GL.glColor3f(1.0, 0.0, 0.0);
-		GL.glBegin(GLC.GL_LINES);
-			GL.glVertex2f(0.0,0.0);
-			GL.glVertex2f(width, height);
-		GL.glEnd();
+		GL.Color3f(1.0, 0.0, 0.0);
+		GL.Begin(GLC.GL_LINES);
+			GL.Vertex3f(-0.5, -0.5, 1.0);
+			GL.Vertex3f(0.5, 0.5, 1.0);
+		GL.End();
 
-		GL.glColor3f(1.0, 0.0, 1.0);
-			DrawStringAt(20.0, 100.0, 0.2, "THE QUICK BROWN FOX JUMPS");
+		GL.Color3f(1.0, 0.0, 1.0);
+			DrawStringAt(0.0, 0.0, 1.0, "THE QUICK BROWN FOX JUMPS");
 
-		GL.glPopMatrix();
+		GL.PopMatrix();
 	END DrawLetters;
 
 	(* OGLWindow callback method *)

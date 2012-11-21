@@ -1,5 +1,5 @@
 MODULE WMGLWindow; (** AUTHOR "fnecati"; PURPOSE "an OpenGL Context enabled WM.Window using GLXPixmap for LinuxAos"; *)
-
+(*! Hidden context  *)
 IMPORT
 	Machine, X11, Api:=X11Api, GL:=OpenGL, GLC := OpenGLConst, Raster,
 	WM := WMWindowManager, KernelLog,  SYSTEM;
@@ -17,18 +17,18 @@ TYPE
 
 	Buffer = POINTER TO ARRAY OF CHAR;
 
-TYPE Context* = OBJECT
+TYPE Context = OBJECT
 	VAR
-		glWin* {UNTRACED}  : WindowStruct;
+		glWin- {UNTRACED}  : WindowStruct;
 		doublebuffered-: BOOLEAN; (* is context doublebuffered *)
 	 	buffer: Buffer; (* for speedup flip image in y*)
 	 	rastermode: Raster.Mode;
 		width-, height-: LONGINT;
 
-	PROCEDURE Init*(w, h: LONGINT);
+	PROCEDURE Init(w, h: LONGINT);
 	VAR
 		res: LONGINT;
-		att: POINTER TO  ARRAY OF GL.GLint;
+		att: POINTER TO  ARRAY OF GL.Int;
 	  	dumy1, dumy2: LONGINT;
 	BEGIN
 
@@ -124,13 +124,12 @@ TYPE Context* = OBJECT
 		NEW(buffer, w*h*4); (* create RGBA buffer for render operations *)
 		Raster.InitMode(rastermode, Raster.srcCopy);
 
-		(* after creating context, load OpenGL core functions *)
-	(*	GL.ReadOpenGLCore(); *)
+(*		GL.ReadOpenGLCore; *)
 
 	END Init;
 
 	(** *)
-	PROCEDURE CreatePixmaps*(w, h: LONGINT): BOOLEAN;
+	PROCEDURE CreatePixmaps(w, h: LONGINT): BOOLEAN;
 	VAR
 	BEGIN
 
@@ -168,66 +167,55 @@ TYPE Context* = OBJECT
 
 	END CreatePixmaps;
 
- 	(** *)
- 	PROCEDURE GetDisplay*(): X11.DisplayPtr;
- 	BEGIN
- 		RETURN glWin.display;
- 	END GetDisplay;
-
- 	(** *)
- 	PROCEDURE GetScreen*(): LONGINT;
- 	BEGIN
- 	 RETURN 0
- 	END GetScreen;
-
-	PROCEDURE MakeCurrent*();
+	PROCEDURE MakeCurrent();
 	 VAR res: LONGINT;
 	 BEGIN
+	 	GL.SetFCR();
 		Machine.Acquire( Machine.X11 );
-		GL.glXWaitX();
+	(*	GL.glXWaitX();
 		X11.Sync(glWin.display,X11.False);
-
+*)
 		res := GL.glXMakeCurrent(glWin.display, glWin.glxpixmap, glWin.glctx);
 		 IF debug THEN KernelLog.String(" MakeCurrent:"); KernelLog.Boolean(res=1); KernelLog.Ln; END;
 
  		Machine.Release( Machine.X11 );
 	END MakeCurrent;
 
-	PROCEDURE SwapBuffers*;
+	PROCEDURE SwapBuffers;
 	 BEGIN
 		Machine.Acquire( Machine.X11 );
 		IF doublebuffered THEN
 			GL.glXSwapBuffers(glWin.display, glWin.glxpixmap);
 		ELSE
-	 		GL.glFlush();
+	 		GL.Flush();
 		END;
  		Machine.Release( Machine.X11 );
 	END SwapBuffers;
 
-	PROCEDURE DeActivate*();
+	PROCEDURE DeActivate();
  	VAR res: LONGINT;
  	BEGIN
 		Machine.Acquire( Machine.X11 );
-		GL.glXWaitX();
+(*		GL.glXWaitX();
 		X11.Sync(glWin.display,X11.False);
-
+*)
 		res := GL.glXMakeCurrent(glWin.display, 0, 0);
 		IF debug THEN KernelLog.String(" DeActivate:"); KernelLog.Boolean(res=1); KernelLog.Ln; END;
 		Machine.Release( Machine.X11 );
 	END DeActivate;
 
 		(** Close the window *)
-	PROCEDURE Close*;
-	BEGIN {EXCLUSIVE}
+	PROCEDURE Close;
+	BEGIN (* {EXCLUSIVE}*)
 		CloseWindow();
 	END Close;
 
-	PROCEDURE CloseWindow*;
+	PROCEDURE CloseWindow;
 	VAR res: LONGINT;
 	BEGIN
 		Machine.Acquire( Machine.X11 );
-		GL.glXWaitX();
-		X11.Sync(glWin.display,X11.False);
+(*		GL.glXWaitX();
+		X11.Sync(glWin.display,X11.False); *)
 
 		(* do we have a rendering context *)
 		IF glWin.glctx # 0 THEN
@@ -260,7 +248,7 @@ TYPE Context* = OBJECT
  	END CloseWindow;
 
 
-	PROCEDURE Resize*(w, h: LONGINT);
+	PROCEDURE Resize(w, h: LONGINT);
 	BEGIN {EXCLUSIVE}
 		IF (w = width) & (h=height) THEN RETURN END;
 		width := w; height := h;
@@ -271,7 +259,7 @@ TYPE Context* = OBJECT
 		END;
 	END Resize;
 
-	PROCEDURE RenderInto*(image: Raster.Image);
+	PROCEDURE RenderInto(image: Raster.Image);
 	VAR
 		i: LONGINT;
 		w, h: LONGINT;
@@ -279,8 +267,8 @@ TYPE Context* = OBJECT
 		w := image.width;
 		h := image.height;
 		Machine.Acquire( Machine.X11 );
-		GL.glXWaitGL();
-		GL.glReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, SYSTEM.ADR(buffer^[0]));
+	(*	GL.glXWaitGL();*)
+		GL.ReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, SYSTEM.ADR(buffer^[0]));
 		Machine.Release( Machine.X11 );
 
 		(* flip vertical, y *)
@@ -290,25 +278,25 @@ TYPE Context* = OBJECT
 	END RenderInto;
 
 	(** *)
-	PROCEDURE Info*;
+	PROCEDURE Info;
 	VAR res: LONGINT;
 	BEGIN
 
 	END Info;
-
 
 BEGIN
 END Context;
 
 	Window* =  OBJECT(WM.DoubleBufferWindow)
 	VAR
-		context* : Context;
+		context : Context;
 
 		PROCEDURE &Init(w, h: LONGINT; alpha: BOOLEAN);
 		BEGIN
 			Init^(w, h, alpha); (* use alpha, for 32bpp img *)
 			NEW(context);
 			context.Init(w, h);
+
 		END Init;
 
 		(** *)
@@ -319,13 +307,25 @@ END Context;
 			Close^;
 		END Close;
 
-		PROCEDURE Reshape*(w,h: LONGINT);
+		PROCEDURE MakeCurrent*();
 		BEGIN
+			context.MakeCurrent();
+		END MakeCurrent;
+
+		PROCEDURE DeActivate*();
+		BEGIN
+			context.DeActivate();
+		END DeActivate;
+
+		PROCEDURE SwapGLBuffer*();
+		BEGIN
+			context.RenderInto(backImg);
+		END SwapGLBuffer;
+
+		PROCEDURE Reshape*(w,h: LONGINT);
 		END Reshape;
 
 		PROCEDURE UpdateImage*();
-		BEGIN
-
 		END UpdateImage;
 
 		PROCEDURE Resized(w, h: LONGINT);
@@ -335,6 +335,21 @@ END Context;
 			Reshape(w, h);
 			UpdateImage;
 		END Resized;
+
+		PROCEDURE GetDisplay*(): LONGINT;
+		BEGIN
+			RETURN context.glWin.display;
+		END GetDisplay;
+
+		PROCEDURE GetContext*(): LONGINT;
+		BEGIN
+			RETURN context.glWin.glctx;
+		END GetContext;
+
+		PROCEDURE GetScreen*(): LONGINT;
+		BEGIN
+			RETURN 0; (*context.glWin.screen*)
+		END GetScreen;
 
 	END Window;
 

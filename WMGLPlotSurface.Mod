@@ -3,7 +3,7 @@ MODULE WMGLPlotSurface; (** AUTHOR "fnecati"; PURPOSE "a test for 3D function pl
 IMPORT
 	WMRectangles, WMGraphics, Strings, Math:=MathL, Inputs,
 	WM := WMWindowManager,  WMMessages,  WMDialogs,
-	GL := OpenGL, GLC := OpenGLConst, WMGL := WMGLWindow, SYSTEM;
+	GL := OpenGL, GLC := OpenGLConst, GLU, WMGL := WMGLWindow;
 
 CONST
 	Nx = 50; (* number of samples in X, Y directions *)
@@ -30,22 +30,18 @@ TYPE
 
 		ambientLight,  diffuseLight, specularLight,
 		(* Position the light somewhere close over the top of the figure*)
-	  	position: ARRAY 4 OF GL.GLfloat;
+	  	position: ARRAY [4] OF GL.Float;
 		drawMode: LONGINT;
-		funcplane: GL.GLuint;
+		funcplane: GL.Uint;
 
 	PROCEDURE &New(w, h: LONGINT);
 	BEGIN
 		Init(w, h, FALSE); (* use alpha, for 32bpp img *)
-		WM.AddWindow(SELF, 100, 100);
-
+		WM.DefaultAddWindow(SELF);
 		SetTitle(Strings.NewString("WMGLPlotSurface: Sinc Function "));
 
-
-		context.MakeCurrent();
 		initGL;
 		Reshape(w, h);
-		context.DeActivate();
 		UpdateImage;
 	END New;
 
@@ -58,12 +54,12 @@ TYPE
 			| "q" :		Close;
 		ELSE
 
-			IF  keysym = Inputs.KsLeft  THEN   context.MakeCurrent(); GL.SetFCR(); GL.glRotated ( angle, 0.0, 0.0, 1.0 ) ; GL.DelFCR(); context.DeActivate(); UpdateImage; (* Cursor Left *)
-			ELSIF keysym = Inputs.KsRight THEN  context.MakeCurrent(); GL.SetFCR(); GL.glRotated ( -angle, 0.0, 0.0, 1.0 ) ; GL.DelFCR(); context.DeActivate(); UpdateImage; (* Cursor Right *)
-			ELSIF keysym = Inputs.KsDown THEN  context.MakeCurrent(); GL.SetFCR(); GL.glRotated ( -angle, 0.0, 1.0, 0.0 ); GL.DelFCR(); context.DeActivate(); UpdateImage; (* Cursor Down *)
-			ELSIF keysym = Inputs.KsUp THEN   context.MakeCurrent(); GL.SetFCR(); GL.glRotated ( angle, 0.0, 1.0, 0.0 ); GL.DelFCR(); context.DeActivate(); UpdateImage; (* Cursor Up *)
-			ELSIF keysym = Inputs.KsPageDown THEN   context.MakeCurrent(); GL.SetFCR(); GL.glScaled ( scalefactor, scalefactor, scalefactor ) ; GL.DelFCR(); context.DeActivate(); UpdateImage;  (* Page Down *)
-			ELSIF keysym = Inputs.KsPageUp THEN  context.MakeCurrent(); GL.SetFCR(); GL.glScaled ( 1.0 / scalefactor, 1.0 / scalefactor, 1.0 / scalefactor ) ; GL.DelFCR(); context.DeActivate(); UpdateImage; (* Page Up *)
+			IF  keysym = Inputs.KsLeft  THEN   MakeCurrent();  GL.Rotated ( angle, 0.0, 0.0, 1.0 ) ;   DeActivate(); UpdateImage; (* Cursor Left *)
+			ELSIF keysym = Inputs.KsRight THEN  MakeCurrent();  GL.Rotated ( -angle, 0.0, 0.0, 1.0 ) ;   DeActivate(); UpdateImage; (* Cursor Right *)
+			ELSIF keysym = Inputs.KsDown THEN  MakeCurrent();  GL.Rotated ( -angle, 0.0, 1.0, 0.0 );   DeActivate(); UpdateImage; (* Cursor Down *)
+			ELSIF keysym = Inputs.KsUp THEN   MakeCurrent();  GL.Rotated ( angle, 0.0, 1.0, 0.0 );   DeActivate(); UpdateImage; (* Cursor Up *)
+			ELSIF keysym = Inputs.KsPageDown THEN   MakeCurrent(); GL.Scaled ( scalefactor, scalefactor, scalefactor ) ;   DeActivate(); UpdateImage;  (* Page Down *)
+			ELSIF keysym = Inputs.KsPageUp THEN  MakeCurrent();  GL.Scaled ( 1.0 / scalefactor, 1.0 / scalefactor, 1.0 / scalefactor ) ;   DeActivate(); UpdateImage; (* Page Up *)
 			ELSE
 			END;
 		END;
@@ -72,14 +68,14 @@ TYPE
 	PROCEDURE WheelMove*(dz : LONGINT);
 	BEGIN
 		IF dz < 0 THEN
-			context.MakeCurrent();
-			GL.SetFCR(); GL.glScaled ( scalefactor, scalefactor, scalefactor ) ; GL.DelFCR();
-			context.DeActivate();
+			MakeCurrent();
+			  GL.Scaled ( scalefactor, scalefactor, scalefactor ) ;
+			DeActivate();
 			UpdateImage;
 		ELSE
-			context.MakeCurrent();
-			GL.SetFCR(); GL.glScaled ( 1.0 / scalefactor, 1.0 / scalefactor, 1.0 / scalefactor ) ; GL.DelFCR();
-			 context.DeActivate();
+			MakeCurrent();
+			  GL.Scaled ( 1.0 / scalefactor, 1.0 / scalefactor, 1.0 / scalefactor ) ;
+			 DeActivate();
 			 UpdateImage;
 		END;
 	END WheelMove;
@@ -99,10 +95,10 @@ TYPE
 
 	PROCEDURE UpdateImage;
 	BEGIN
-		context.MakeCurrent();
+		MakeCurrent();
 			Display;
-		context.RenderInto(backImg);
-		context.DeActivate();
+		SwapGLBuffer();
+		DeActivate();
 		Swap();
 		Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));
 	END UpdateImage;
@@ -181,20 +177,20 @@ TYPE
 	PROCEDURE Grid;
 	VAR x: LONGREAL;
 	BEGIN
-		GL.glLineWidth(1.0);
-		GL.glColor3d(1.0,1.0,1.0);
-		GL.glBegin(GLC.GL_LINES);
+		GL.LineWidth(1.0);
+		GL.Color3d(1.0,1.0,1.0);
+		GL.Begin(GLC.GL_LINES);
 		x := -1.2;
 		WHILE x <=1.2 DO
-			GL.SetFCR();
-			GL.glVertex3d(-1.0, 0.0, x);
-			GL.glVertex3d(1.0, 0.0, x);
-			GL.glVertex3d(x, 0.0,-1.0);
-			GL.glVertex3d(x, 0.0, 1.0);
-			GL.DelFCR();
+
+			GL.Vertex3d(-1.0, 0.0, x);
+			GL.Vertex3d(1.0, 0.0, x);
+			GL.Vertex3d(x, 0.0,-1.0);
+			GL.Vertex3d(x, 0.0, 1.0);
+
 			x := x + 0.2;
 		END;
-		GL.glEnd();
+		GL.End();
 	END Grid;
 (*
 	PROCEDURE render;
@@ -205,12 +201,12 @@ TYPE
 			FOR j:=0 TO Ny-1 DO
 				x := Xmin + i*dx;
 				y := Ymin + j*dy;
-				GL.glBegin (GLC.GL_QUADS);
-					GL.glVertex3d(x, MyFunc(x,y), y);
-					GL.glVertex3d(x+dx, MyFunc(x+dx, y), y);
-					GL.glVertex3d(x+dx, MyFunc(x+dx,y+dy), y+dy);
-					GL.glVertex3d(x, MyFunc(x,y+dy), y+dy);
-				GL.glEnd();
+				GL.Begin (GLC.GL_QUADS);
+					GL.Vertex3d(x, MyFunc(x,y), y);
+					GL.Vertex3d(x+dx, MyFunc(x+dx, y), y);
+					GL.Vertex3d(x+dx, MyFunc(x+dx,y+dy), y+dy);
+					GL.Vertex3d(x, MyFunc(x,y+dy), y+dy);
+				GL.End();
 			END;
 		END;
 	END render;
@@ -224,16 +220,16 @@ TYPE
 			FOR j:=0 TO Ny-1 DO
 				x := Xmin + i*dx;
 				y := Ymin + j*dy;
-				GL.glBegin (GLC.GL_TRIANGLES);
+				GL.Begin (GLC.GL_TRIANGLES);
 					p1[0] := x;  p1[1] := MyFunc(x,y); p1[2] := y;
 					p2[0] := x+dx;  p2[1] := MyFunc(x+dx, y); p2[2] := y;
 					p3[0] := x; p3[1] := MyFunc(x,y+dy); p3[2] := y + dy;
 					v1 := p2-p1; v2 := p3-p1;
 					norm := VNormed3(Cross(v1, v2));
-					GL.glNormal3d(norm[0], norm[1], norm[2]);
-					GL.glVertex3d(p1[0], p1[1], p1[2]);
-					GL.glVertex3d(p2[0], p2[1], p2[2]);
-					GL.glVertex3d(p3[0], p3[1], p3[2]);
+					GL.Normal3d(norm[0], norm[1], norm[2]);
+					GL.Vertex3d(p1[0], p1[1], p1[2]);
+					GL.Vertex3d(p2[0], p2[1], p2[2]);
+					GL.Vertex3d(p3[0], p3[1], p3[2]);
 
 
 					p1[0] := x+dx;  p1[1] := MyFunc(x+dx,y); p1[2] := y;
@@ -241,58 +237,56 @@ TYPE
 					p3[0] := x; p3[1] := MyFunc(x,y+dy); p3[2] := y + dy;
 					v1 := p2-p1; v2 := p3-p1;
 					norm := VNormed3(Cross(v1, v2));
-					GL.glNormal3d(norm[0], norm[1], norm[2]);
-					GL.glVertex3d(p1[0], p1[1], p1[2]);
-					GL.glVertex3d(p2[0], p2[1], p2[2]);
-					GL.glVertex3d(p3[0], p3[1], p3[2]);
-				GL.glEnd();
+					GL.Normal3d(norm[0], norm[1], norm[2]);
+					GL.Vertex3d(p1[0], p1[1], p1[2]);
+					GL.Vertex3d(p2[0], p2[1], p2[2]);
+					GL.Vertex3d(p3[0], p3[1], p3[2]);
+				GL.End();
 			END;
 		 END;
 	END render;
 
 	PROCEDURE Reshape(w, h: LONGINT);
 	BEGIN
+		MakeCurrent();
+		GL.Viewport (0, 0, w, h);
+		GL.MatrixMode (GLC.GL_PROJECTION);
+		GL.LoadIdentity ();
 
-		GL.glViewport (0, 0, w, h);
-		GL.glMatrixMode (GLC.GL_PROJECTION);
-		GL.glLoadIdentity ();
+			GLU.Perspective (30, 1.0, 1.0, 100.0);
 
-		GL.SetFCR();
-			GL.gluPerspective (30, 1.0, 1.0, 100.0);
-		GL.DelFCR();
+		GL.MatrixMode (GLC.GL_MODELVIEW);
+		GL.LoadIdentity();
 
-		GL.glMatrixMode (GLC.GL_MODELVIEW);
-		GL.glLoadIdentity();
-
-		GL.SetFCR();
-			GL.gluLookAt (5.0, 5.0, 7.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0);
-		GL.DelFCR();
+			GLU.LookAt (5.0, 5.0, 7.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0);
+		DeActivate;
 	END Reshape;
 
 	PROCEDURE DrawMode(dm: LONGINT);
 	VAR drawMode: LONGINT;
 	BEGIN
 	(*	drawMode := dm;
-		context.MakeCurrent();
+		MakeCurrent();
 
 		IF drawMode = 0 THEN       (* fill mode*)
-		(*	GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);
-			GL.glEnable(GLC.GL_DEPTH_TEST);
-			GL.glEnable(GLC.GL_CULL_FACE);*)
+		(*	GL.PolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);
+			GL.Enable(GLC.GL_DEPTH_TEST);
+			GL.Enable(GLC.GL_CULL_FACE);*)
 		ELSIF drawMode = 1 THEN  (* wireframe mode *)
-			GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_LINE);
-			GL.glDisable(GLC.GL_DEPTH_TEST);
-			GL.glDisable(GLC.GL_CULL_FACE);
+			GL.PolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_LINE);
+			GL.Disable(GLC.GL_DEPTH_TEST);
+			GL.Disable(GLC.GL_CULL_FACE);
 		ELSE                    (* point mode *)
-			GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_POINT);
-			GL.glDisable(GLC.GL_DEPTH_TEST);
-			GL.glDisable(GLC.GL_CULL_FACE);
+			GL.PolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_POINT);
+			GL.Disable(GLC.GL_DEPTH_TEST);
+			GL.Disable(GLC.GL_CULL_FACE);
 		END;
-		context.DeActivate(); *)
+		DeActivate(); *)
 	END DrawMode;
 
 	PROCEDURE initGL;
 	BEGIN
+		MakeCurrent();
 		(* Setup the lighting *)
 		ambientLight[0] :=  1.0; ambientLight[1] :=  1.0; ambientLight[2] :=  1.0; ambientLight[3] :=  1.0;
 		diffuseLight[0] := 1.0; diffuseLight[1] := 0.9; diffuseLight[2] := 0.8; diffuseLight[3] := 1.0;
@@ -301,33 +295,34 @@ TYPE
 		position[0] := 1.0; position[1] := 1.0; position[2] := 1.0; position[3] := 1.0;
 
 		(* Call the actual options for light0 *)
-		GL.glLightfv(GLC.GL_LIGHT0, GLC.GL_AMBIENT, SYSTEM.ADR(ambientLight[0]));
-		(* GL.glLightfv(GLC.GL_LIGHT0, GLC.GL_DIFFUSE, SYSTEM.ADR(diffuseLight[0]));*)
-		GL.glLightfv(GLC.GL_LIGHT0, GLC.GL_SPECULAR, SYSTEM.ADR(specularLight[0]));
-		GL.glLightfv(GLC.GL_LIGHT0, GLC.GL_POSITION, SYSTEM.ADR(position[0]));
+		GL.Lightfv(GLC.GL_LIGHT0, GLC.GL_AMBIENT, ambientLight);
+		(* GL.Lightfv(GLC.GL_LIGHT0, GLC.GL_DIFFUSE, diffuseLight);*)
+		GL.Lightfv(GLC.GL_LIGHT0, GLC.GL_SPECULAR, specularLight);
+		GL.Lightfv(GLC.GL_LIGHT0, GLC.GL_POSITION, position);
 
-		GL.glEnable (GLC.GL_DEPTH_TEST);
-		GL.glEnable (GLC.GL_LIGHTING);
-		GL.glEnable (GLC.GL_LIGHT0);
-		GL.glShadeModel (GLC.GL_FLAT);  (* can be GL_SMOOTH if you dont want to see edges *)
-		GL.glShadeModel (GLC.GL_SMOOTH);
-		(*  GL.glEnable(GLC.GL_CULL_FACE);*)
-		GL.glClearColor (0.0,0.0,0.0,1.0);
+		GL.Enable (GLC.GL_DEPTH_TEST);
+		GL.Enable (GLC.GL_LIGHTING);
+		GL.Enable (GLC.GL_LIGHT0);
+		GL.ShadeModel (GLC.GL_FLAT);  (* can be GL_SMOOTH if you dont want to see edges *)
+		GL.ShadeModel (GLC.GL_SMOOTH);
+		(*  GL.Enable(GLC.GL_CULL_FACE);*)
+		GL.ClearColor (0.0,0.0,0.0,1.0);
 
 		(* make the plane *)
-		funcplane := GL.glGenLists(1);
-		GL.glNewList(funcplane, GLC.GL_COMPILE);
+		funcplane := GL.GenLists(1);
+		GL.NewList(funcplane, GLC.GL_COMPILE);
 			render;
-		GL.glEndList;
+		GL.EndList;
+		DeActivate;
 	END initGL;
 
 
 	PROCEDURE Display;
 	BEGIN
-		GL.glClear (GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
+		GL.Clear (GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
 		(*  Grid(); *)
 		(*  render(); *)
-		GL.glCallList(funcplane);
+		GL.CallList(funcplane);
 	END Display;
 
 BEGIN

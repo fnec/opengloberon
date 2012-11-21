@@ -3,7 +3,7 @@ MODULE WMGLDemo; (** AUTHOR "fnecati"; PURPOSE "opengl demo: uses simple primiti
 IMPORT
 	WMRectangles, WMGraphics, Strings, Kernel,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
-	GL := OpenGL, GLC := OpenGLConst, WMGL := WMGLWindow;
+	GL := OpenGL, GLC := OpenGLConst, GLU, WMGL := WMGLWindow;
 
 CONST waittime = 50;
 TYPE
@@ -21,7 +21,7 @@ TYPE
 		BEGIN
 
 			Init(w, h, FALSE); (* use alpha, for 32bpp img *)
-			WM.AddWindow(SELF, 100, 100);
+			WM.DefaultAddWindow(SELF);
 
 			SetTitle(Strings.NewString("WMGLDemo: Cube"));
 
@@ -74,11 +74,12 @@ TYPE
 
 		PROCEDURE UpdateImage;
 		BEGIN
-			context.MakeCurrent();
+			MakeCurrent();
+			GL.Clear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
 				DrawAQuad();
 				Cube();
-			context.RenderInto(backImg);
-			context.DeActivate();
+			SwapGLBuffer();
+			DeActivate();
 			Swap();
 			Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));
 		END UpdateImage;
@@ -96,104 +97,100 @@ TYPE
 		END SaveImage;
 
 PROCEDURE Reshape(w, h: LONGINT);
-VAR lookat: LONGREAL;
+
 BEGIN
-lookat := eyeposz;
 
- context.MakeCurrent();
-  GL.glViewport(0, 0, w, h);
-  GL.glClearColor(0.3, 0.3, 0.0, 0.0);
-  GL.glEnable(GLC.GL_DEPTH_TEST);
+ MakeCurrent();
+  GL.Viewport(0, 0, w, h);
+  GL.ClearColor(0.3, 0.3, 0.0, 0.0);
+  GL.Enable(GLC.GL_DEPTH_TEST);
 
-GL.SetFCR();
- GL.glMatrixMode(GLC.GL_PROJECTION);
- GL.glLoadIdentity();
- GL.gluPerspective(45, 1, 0.1, 100);
 
- GL.glMatrixMode(GLC.GL_MODELVIEW);
- GL.glLoadIdentity();
- GL.gluLookAt(0.0, 0.0, lookat, 0., 0., 0., 0., 1., 0.);
+ GL.MatrixMode(GLC.GL_PROJECTION);
+ GL.LoadIdentity();
+ GLU.Perspective(45, 1, 0.1, 100);
 
-GL.DelFCR();
-context.DeActivate;
+ GL.MatrixMode(GLC.GL_MODELVIEW);
+ GL.LoadIdentity();
+ GLU.LookAt(0.0, 0.0, eyeposz, 0., 0., 0., 0., 1., 0.);
+
+DeActivate;
 END Reshape;
 
 PROCEDURE DrawAQuad();
 BEGIN
- GL.glPushMatrix();
- GL.SetFCR();
-	GL.glRotatef(anglez, 0.0, 0.0, 1.0);
- GL.DelFCR();
- GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
- GL.glBegin(GLC.GL_QUADS);
- GL.glColor3f(1., 0., 0.); GL.glVertex3f(-0.75, -0.75, 1.);
- GL.glColor3f(0., 1., 0.); GL.glVertex3f( 0.75, -0.75, 1.);
- GL.glColor3f(0., 0., 1.); GL.glVertex3f( 0.75,  0.75, 1.);
- GL.glColor3f(1., 1., 0.); GL.glVertex3f(-0.75,  0.75, 1.);
- GL.glEnd();
+ GL.PushMatrix();
 
- GL.glPopMatrix();
+	GL.Rotatef(anglez, 0.0, 0.0, 1.0);
+
+ GL.Begin(GLC.GL_QUADS);
+ GL.Color3f(1., 0., 0.); GL.Vertex3f(-0.75, -0.75, 1.);
+ GL.Color3f(0., 1., 0.); GL.Vertex3f( 0.75, -0.75, 1.);
+ GL.Color3f(0., 0., 1.); GL.Vertex3f( 0.75,  0.75, 1.);
+ GL.Color3f(1., 1., 0.); GL.Vertex3f(-0.75,  0.75, 1.);
+ GL.End();
+
+ GL.PopMatrix();
 
 END DrawAQuad;
 
 PROCEDURE  Cube*;
 BEGIN
 
-GL.glPushMatrix();
-(*  GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT); *)
-GL.SetFCR();
-	GL.glRotatef(anglez, 1.0, 1.0, 0.0);
-GL.DelFCR();
+GL.PushMatrix();
 
-GL.glBegin(GLC.GL_POLYGON); (* top face oriented toward y *)
-	GL.glColor3f(0.0,0.0,1.0);
-	GL.glVertex3f(-1.0, 1.0, 1.0);
-	GL.glVertex3f(1.0, 1.0, 1.0);
-	GL.glVertex3f(1.0, 1.0, -1.0);
-	GL.glVertex3f(-1.0, 1.0, -1.0);
-GL.glEnd();
+	GL.Rotatef(anglez, 1.0, 1.0, 0.0);
 
-GL.glBegin(GLC.GL_POLYGON); (* back face oriented toward -z *)
-	GL.glColor3f(0.0,1.0,0.0);
-	GL.glVertex3f(-1.0, 1.0, -1.0);
-	GL.glVertex3f(1.0, 1.0, -1.0);
-	GL.glVertex3f(1.0, -1.0, -1.0);
-	GL.glVertex3f(-1.0, -1.0, -1.0);
-GL.glEnd();
 
-GL.glBegin(GLC.GL_POLYGON); (* right face oriented toward x *)
-	GL.glColor3f(1.0,0.0,0.0);
-	GL.glVertex3f(1.0, 1.0, 1.0);
-	GL.glVertex3f(1.0, -1.0, 1.0);
-	GL.glVertex3f(1.0, -1.0, -1.0);
-	GL.glVertex3f(1.0, 1.0, -1.0);
-GL.glEnd();
+GL.Begin(GLC.GL_POLYGON); (* top face oriented toward y *)
+	GL.Color3f(0.0,0.0,1.0);
+	GL.Vertex3f(-1.0, 1.0, 1.0);
+	GL.Vertex3f(1.0, 1.0, 1.0);
+	GL.Vertex3f(1.0, 1.0, -1.0);
+	GL.Vertex3f(-1.0, 1.0, -1.0);
+GL.End();
 
-GL.glBegin(GLC.GL_POLYGON); (* left face oriented toward -x *)
-	GL.glColor3f(1.0,0.0,0.0);
-	GL.glVertex3f(-1.0, -1.0, 1.0);
-	GL.glVertex3f(-1.0, 1.0, 1.0);
-	GL.glVertex3f(-1.0, 1.0, -1.0);
-	GL.glVertex3f(-1.0, -1.0, -1.0);
-GL.glEnd();
+GL.Begin(GLC.GL_POLYGON); (* back face oriented toward -z *)
+	GL.Color3f(0.0,1.0,0.0);
+	GL.Vertex3f(-1.0, 1.0, -1.0);
+	GL.Vertex3f(1.0, 1.0, -1.0);
+	GL.Vertex3f(1.0, -1.0, -1.0);
+	GL.Vertex3f(-1.0, -1.0, -1.0);
+GL.End();
 
-GL.glBegin(GLC.GL_POLYGON); (* bottom face oriented toward -y *)
-	GL.glColor3f(0.0,0.0,1.0);
-	GL.glVertex3f(-1.0, -1.0, 1.0);
-	GL.glVertex3f(-1.0, -1.0, -1.0);
-	GL.glVertex3f(1.0, -1.0, -1.0);
-	GL.glVertex3f(1.0, -1.0, 1.0);
-GL.glEnd();
+GL.Begin(GLC.GL_POLYGON); (* right face oriented toward x *)
+	GL.Color3f(1.0,0.0,0.0);
+	GL.Vertex3f(1.0, 1.0, 1.0);
+	GL.Vertex3f(1.0, -1.0, 1.0);
+	GL.Vertex3f(1.0, -1.0, -1.0);
+	GL.Vertex3f(1.0, 1.0, -1.0);
+GL.End();
 
-GL.glBegin(GLC.GL_POLYGON); (* front face oriented toward z*)
-	GL.glColor3f(0.0,1.0,0.0);
-	GL.glVertex3f(1.0, 1.0, 1.0);
-	GL.glVertex3f(-1.0, 1.0, 1.0);
-	GL.glVertex3f(-1.0, -1.0, 1.0);
-	GL.glVertex3f(1.0, -1.0, 1.0);
-GL.glEnd();
+GL.Begin(GLC.GL_POLYGON); (* left face oriented toward -x *)
+	GL.Color3f(1.0,0.0,0.0);
+	GL.Vertex3f(-1.0, -1.0, 1.0);
+	GL.Vertex3f(-1.0, 1.0, 1.0);
+	GL.Vertex3f(-1.0, 1.0, -1.0);
+	GL.Vertex3f(-1.0, -1.0, -1.0);
+GL.End();
 
-GL.glPopMatrix;
+GL.Begin(GLC.GL_POLYGON); (* bottom face oriented toward -y *)
+	GL.Color3f(0.0,0.0,1.0);
+	GL.Vertex3f(-1.0, -1.0, 1.0);
+	GL.Vertex3f(-1.0, -1.0, -1.0);
+	GL.Vertex3f(1.0, -1.0, -1.0);
+	GL.Vertex3f(1.0, -1.0, 1.0);
+GL.End();
+
+GL.Begin(GLC.GL_POLYGON); (* front face oriented toward z*)
+	GL.Color3f(0.0,1.0,0.0);
+	GL.Vertex3f(1.0, 1.0, 1.0);
+	GL.Vertex3f(-1.0, 1.0, 1.0);
+	GL.Vertex3f(-1.0, -1.0, 1.0);
+	GL.Vertex3f(1.0, -1.0, 1.0);
+GL.End();
+
+GL.PopMatrix;
 END Cube;
 
 BEGIN {ACTIVE}

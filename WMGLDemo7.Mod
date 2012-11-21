@@ -1,9 +1,9 @@
 MODULE WMGLDemo7;  (** AUTHOR "fnecati"; PURPOSE "opengl mirroring effect "; *)
 
 IMPORT
-	WMRectangles, WMGraphics, Strings, Kernel, SYSTEM,
+	WMRectangles, WMGraphics, Strings, Kernel,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
-	GL := OpenGL, GLC := OpenGLConst, WMGL := WMGLWindow;
+	gl := OpenGL, glc := OpenGLConst, GLU, WMGL := WMGLWindow;
 
 TYPE
 	KillerMsg = OBJECT
@@ -15,7 +15,7 @@ TYPE
 		timer: Kernel.MilliTimer;
 		alive,  animated: BOOLEAN;
 		xrot : REAL;
- 		quad: GL.TGLUQuadricObj;
+ 		quad: GLU.QuadricObj;
 		drawMode: LONGINT;
 		font: WMGraphics.Font;
 		frames: LONGINT;
@@ -24,7 +24,7 @@ TYPE
 	PROCEDURE &New(w, h: LONGINT);
 	BEGIN
 		Init(w, h, FALSE); (* use alpha, for 32bpp img *)
-		WM.AddWindow(SELF, 100, 100);
+		WM.DefaultAddWindow(SELF);
 
 		SetTitle(Strings.NewString("WMGLDemo7- Mirroring"));
 
@@ -32,13 +32,10 @@ TYPE
 		font := canvas.GetFont();
 		fpsstr := "FPS: ";
 
-		Reshape(w, h);
-		context.MakeCurrent();
-		initGL;
-		context.DeActivate();
 		xrot := 0.0;
 		drawMode:= 0;
-
+		initGL;
+		Reshape(w, h);
 		DrawMode(0);
 		UpdateImage;
 		animated := FALSE;
@@ -50,13 +47,13 @@ TYPE
 		CASE CHR(ucs) OF
 			"a", "A": animated := ~ animated;
 
-			| "d": drawMode := (drawMode+1) MOD 3; DrawMode(drawMode); GL.DelFCR(); UpdateImage;
+			| "d": drawMode := (drawMode+1) MOD 3; DrawMode(drawMode);   UpdateImage;
 
-			| "-" : xrot := xrot - 1.0; GL.DelFCR(); UpdateImage;
-			| "+" : xrot := xrot + 1.0; GL.DelFCR();UpdateImage;
+			| "-" : xrot := xrot - 1.0;   UpdateImage;
+			| "+" : xrot := xrot + 1.0;  UpdateImage;
 
 			| "s": SaveImage;
-			| "q" : Close;
+			| "q" : Close; RETURN;
 		ELSE
 
 		END;
@@ -81,23 +78,17 @@ TYPE
 		textWidth, textHeight: LONGINT;
 		rect: WMRectangles.Rectangle;
 	BEGIN
-		context.MakeCurrent();
+		MakeCurrent();
 			Display;
-			context.RenderInto(backImg);
-		context.DeActivate();
-		
+			SwapGLBuffer();
+		DeActivate();
+
 		canvas.SetColor(WMGraphics.Green);
 		font.GetStringSize(fpsstr, textWidth, textHeight);
 		canvas.DrawString(4, textHeight, fpsstr);
 		Swap();
-		
-	
-		rect := WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight());
-		WMRectangles.MoveRel(rect, bounds.l, bounds.t);
-		WMRectangles.ClipRect(rect, bounds);
-		manager.AddDirty(rect);
-	
-	(*	Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));*)
+
+		Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));
 	END UpdateImage;
 
 	PROCEDURE SaveImage;
@@ -114,158 +105,156 @@ TYPE
 	VAR drawMode: LONGINT;
 	BEGIN
 		drawMode := dm;
-		context.MakeCurrent();
+		MakeCurrent();
 	        IF drawMode = 0 THEN       (* fill mode*)
-	            GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_FILL);
-	            GL.glEnable(GLC.GL_DEPTH_TEST);
-	            GL.glEnable(GLC.GL_CULL_FACE);
+	            gl.PolygonMode(glc.GL_FRONT_AND_BACK, glc.GL_FILL);
+	            gl.Enable(glc.GL_DEPTH_TEST);
+	            gl.Enable(glc.GL_CULL_FACE);
 	        ELSIF drawMode = 1 THEN  (* wireframe mode *)
-	            GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_LINE);
-	            GL.glDisable(GLC.GL_DEPTH_TEST);
-	            GL.glDisable(GLC.GL_CULL_FACE);
+	            gl.PolygonMode(glc.GL_FRONT_AND_BACK, glc.GL_LINE);
+	            gl.Disable(glc.GL_DEPTH_TEST);
+	            gl.Disable(glc.GL_CULL_FACE);
 	        ELSE                    (* point mode *)
 
-	            GL.glPolygonMode(GLC.GL_FRONT_AND_BACK, GLC.GL_POINT);
-	            GL.glDisable(GLC.GL_DEPTH_TEST);
-	            GL.glDisable(GLC.GL_CULL_FACE);
+	            gl.PolygonMode(glc.GL_FRONT_AND_BACK, glc.GL_POINT);
+	            gl.Disable(glc.GL_DEPTH_TEST);
+	            gl.Disable(glc.GL_CULL_FACE);
 		  END;
-		 context.DeActivate();;
+		 DeActivate();;
 	END DrawMode;
 
 	PROCEDURE initGL;
 	VAR
-		white, black: ARRAY[4] OF GL.GLfloat;
+		white, black: ARRAY[4] OF gl.Float;
 	BEGIN
-		GL.glDisable (GLC.GL_DITHER);
-		GL.glEnable (GLC.GL_DEPTH_TEST);
+		MakeCurrent();
+		gl.Disable (glc.GL_DITHER);
+		gl.Enable (glc.GL_DEPTH_TEST);
 		white[0] := 1.0; white[1] := 1.0; white[2] := 1.0; white[3] := 1.0;
 		black[0] := 0.0; black[1] := 0.0; black[2] := 0.0; black[3] := 0.0;
 
 		(* Set up light1 *)
-	 	GL.glEnable (GLC.GL_LIGHTING);
-	 	GL.glEnable (GLC.GL_LIGHT1);
-		GL.glLightfv (GLC.GL_LIGHT1, GLC.GL_DIFFUSE, SYSTEM.ADR(white[0]));
-		GL.glLightfv (GLC.GL_LIGHT1, GLC.GL_SPECULAR, SYSTEM.ADR(white[0]));
+	 	gl.Enable (glc.GL_LIGHTING);
+	 	gl.Enable (glc.GL_LIGHT1);
+		gl.Lightfv (glc.GL_LIGHT1, glc.GL_DIFFUSE, white);
+		gl.Lightfv (glc.GL_LIGHT1, glc.GL_SPECULAR, white);
 
 		(* ambient and diffuse will track glColor *)
-		GL.glEnable (GLC.GL_COLOR_MATERIAL);
-		GL.glColorMaterial (GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE);
-		GL.glMaterialfv (GLC.GL_FRONT, GLC.GL_SPECULAR, SYSTEM.ADR(white[0]));
-		GL.glMaterialf (GLC.GL_FRONT, GLC.GL_SHININESS, 20.);
-		quad := GL.gluNewQuadric ();
+		gl.Enable (glc.GL_COLOR_MATERIAL);
+		gl.ColorMaterial (glc.GL_FRONT, glc.GL_AMBIENT_AND_DIFFUSE);
+		gl.Materialfv (glc.GL_FRONT, glc.GL_SPECULAR, white);
+		gl.Materialf (glc.GL_FRONT, glc.GL_SHININESS, 20.);
+		quad := GLU.NewQuadric ();
+		DeActivate();
 	END initGL;
 
-	PROCEDURE drawScene (order: GL.GLenum);
+	PROCEDURE drawScene (order: gl.Enum);
 	VAR
-		pos: ARRAY [4] OF GL.GLfloat;
+		pos: ARRAY [4] OF gl.Float;
 	BEGIN
 	 	pos[0] := -2.8; pos[1] := 5.0; pos[2] := 1.8; pos[3] := 1.0;
-	 	GL.glLightfv (GLC.GL_LIGHT1, GLC.GL_POSITION, SYSTEM.ADR(pos[0]));
-		GL.glPushMatrix();
+	 	gl.Lightfv (glc.GL_LIGHT1, glc.GL_POSITION, pos);
+		gl.PushMatrix();
 
-		GL.glEnable (GLC.GL_CULL_FACE);
-		GL.glCullFace (GLC.GL_BACK);
-		GL.glFrontFace (order);
+		gl.Enable (glc.GL_CULL_FACE);
+		gl.CullFace (glc.GL_BACK);
+		gl.FrontFace (order);
 
 		(* Draw the walls *)
-	 	GL.glColor3f (1., 1., 1.);
-		GL.glBegin(GLC.GL_QUADS);
-		GL.glNormal3f (1., 0., 0.);
-			GL.glVertex3f (-3., 3., 4.);
-			GL.glVertex3f (-3., -3., 4.);
-			GL.glVertex3f (-3., -3., -3.);
-			GL.glVertex3f (-3., 3., -3.);
-		GL.glNormal3f (0., 0., 1.);
-			GL.glVertex3f (-3., 3., -3.);
-			GL.glVertex3f (-3., -3., -3.);
-			GL.glVertex3f (3., -3., -3.);
-			GL.glVertex3f (3., 3., -3.);
-		  GL.glNormal3f (-1., 0., 0.);
-			GL.glVertex3f (3., 3., -3.);
-			GL.glVertex3f (3., -3., -3.);
-			GL.glVertex3f (3., -3., 3.);
-			GL.glVertex3f (3., 3., 3.);
-		GL.glEnd();
-		GL.glDisable (GLC.GL_CULL_FACE);
+	 	gl.Color3f (1., 1., 1.);
+		gl.Begin(glc.GL_QUADS);
+		gl.Normal3f (1., 0., 0.);
+			gl.Vertex3f (-3., 3., 4.);
+			gl.Vertex3f (-3., -3., 4.);
+			gl.Vertex3f (-3., -3., -3.);
+			gl.Vertex3f (-3., 3., -3.);
+		gl.Normal3f (0., 0., 1.);
+			gl.Vertex3f (-3., 3., -3.);
+			gl.Vertex3f (-3., -3., -3.);
+			gl.Vertex3f (3., -3., -3.);
+			gl.Vertex3f (3., 3., -3.);
+		  gl.Normal3f (-1., 0., 0.);
+			gl.Vertex3f (3., 3., -3.);
+			gl.Vertex3f (3., -3., -3.);
+			gl.Vertex3f (3., -3., 3.);
+			gl.Vertex3f (3., 3., 3.);
+		gl.End();
+		gl.Disable (glc.GL_CULL_FACE);
 
 		(* Draw the cylinder *)
-	 	GL.glRotatef (xrot, 1., 0., 0.);
-	 	GL.glTranslatef (0.0, 0.0, -1.0);
+	 	gl.Rotatef (xrot, 1., 0., 0.);
+	 	gl.Translatef (0.0, 0.0, -1.0);
 
-	 	GL.glColor3f (0.5, 0.5, 1.0);
-	 	GL.glPushMatrix ();
-	 	GL.glTranslatef (0.0, 0.0, 2.0);
-	 	GL.gluDisk (quad, 0.0, 0.25, 18, 1);
-	 	GL.glPopMatrix ();
+	 	gl.Color3f (0.5, 0.5, 1.0);
+	 	gl.PushMatrix ();
+	 	gl.Translatef (0.0, 0.0, 2.0);
+	 	GLU.Disk (quad, 0.0, 0.25, 18, 1);
+	 	gl.PopMatrix ();
 
-	 	GL.gluCylinder (quad, 0.25, 0.25, 2.0, 18, 8);
+	 	GLU.Cylinder (quad, 0.25, 0.25, 2.0, 18, 8);
 
-	 	GL.glPushMatrix ();
-	 	GL.glScalef (1., 1., -1.);
-	 	GL.gluDisk (quad, 0.0, 0.25, 18, 1);
-	 	GL.glPopMatrix ();
+	 	gl.PushMatrix ();
+	 	gl.Scalef (1., 1., -1.);
+	 	GLU.Disk (quad, 0.0, 0.25, 18, 1);
+	 	gl.PopMatrix ();
 
-		GL.glPopMatrix();
+		gl.PopMatrix();
 	END drawScene;
 
 	PROCEDURE Display();
-	VAR xx: REAL;
 	BEGIN
-		GL.glClear (GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
-		GL.glMatrixMode(GLC.GL_MODELVIEW);
-		GL.glLoadIdentity ();
-		GL.SetFCR();
-			GL.gluLookAt (0.0, 1.0, 7.0, -1.0, 0.0, 0.0,  0.0, 1.0, 0.0);
-		GL.DelFCR();
+		gl.Clear (glc.GL_COLOR_BUFFER_BIT + glc.GL_DEPTH_BUFFER_BIT);
+		gl.MatrixMode(glc.GL_MODELVIEW);
+		gl.LoadIdentity ();
 
-		xx := -xrot*0.35;
-		GL.SetFCR();
-			GL.glRotatef (xx, 0.0, 1.0, 0.0);
-		GL.DelFCR();
+			GLU.LookAt (0.0, 1.0, 7.0, -1.0, 0.0, 0.0,  0.0, 1.0, 0.0);
 
-		(*GL.glRotatef (-xrot*0.35, 0.0, 1.0, 0.0);*)
+			gl.Rotatef (-xrot*0.35, 0.0, 1.0, 0.0);
+
+
+		(*gl.Rotatef (-xrot*0.35, 0.0, 1.0, 0.0);*)
 		(* Draw reflected scene first *)
 
-		GL.glPushMatrix ();
+		gl.PushMatrix ();
 		(* Mirrors lies in YZ plane, so scale by -1.0 in X axis *)
-		GL.SetFCR();
-		GL.glScalef (-1.0, 1.0, 1.0);
-		(* Mirror is 2.0 units from origin, so translate by 4.0 *)
-		GL.glTranslatef (4.0, 0.0, 0.0);
-		GL.DelFCR();
 
-		drawScene(GLC.GL_CW);
-		GL.glPopMatrix ();
+		gl.Scalef (-1.0, 1.0, 1.0);
+		(* Mirror is 2.0 units from origin, so translate by 4.0 *)
+		gl.Translatef (4.0, 0.0, 0.0);
+
+
+		drawScene(glc.GL_CW);
+		gl.PopMatrix ();
 
 		(* draw mirror *)
-		GL.glClear (GLC.GL_DEPTH_BUFFER_BIT);
-		GL.glPushAttrib (SHORT(0FFFFFFFFH));
-		GL.glDisable (GLC.GL_LIGHTING);
+		gl.Clear (glc.GL_DEPTH_BUFFER_BIT);
+		gl.PushAttrib (SHORT(0FFFFFFFFH));
+		gl.Disable (glc.GL_LIGHTING);
 		(* Create imperfect reflector effect by blending a black
 		   mirror over the reflected scene with alpha of 0.05 *)
-		GL.glEnable (GLC.GL_BLEND);
-		GL.glBlendFunc (GLC.GL_SRC_ALPHA, GLC.GL_ONE_MINUS_SRC_ALPHA);
-		GL.glColor4f (0., 0., 0., 0.05);
-		GL.glBegin (GLC.GL_QUADS);
-			GL.glVertex3f (-2., 1., 3.);
-			GL.glVertex3f (-2., -1., 3.);
-			GL.glVertex3f (-2., -1., -2.5);
-			GL.glVertex3f (-2., 1., -2.5);
-		GL.glEnd ();
-		GL.glPopAttrib();
+		gl.Enable (glc.GL_BLEND);
+		gl.BlendFunc (glc.GL_SRC_ALPHA, glc.GL_ONE_MINUS_SRC_ALPHA);
+		gl.Color4f (0., 0., 0., 0.05);
+		gl.Begin (glc.GL_QUADS);
+			gl.Vertex3f (-2., 1., 3.);
+			gl.Vertex3f (-2., -1., 3.);
+			gl.Vertex3f (-2., -1., -2.5);
+			gl.Vertex3f (-2., 1., -2.5);
+		gl.End ();
+		gl.PopAttrib();
 
 		(* Draw the real scene *)
-		drawScene(GLC.GL_CCW);
+		drawScene(glc.GL_CCW);
 	END Display;
 
 	PROCEDURE Reshape(w, h: LONGINT);
 	BEGIN
-		context.MakeCurrent();
-		GL.glViewport (0, 0, w, h);
-		GL.glMatrixMode (GLC.GL_PROJECTION);
-		GL.glLoadIdentity ();
-		GL.gluPerspective (50.0, 1.0, 1.0, 20.0);
-		context.DeActivate();
+		MakeCurrent();
+		gl.Viewport (0, 0, w, h);
+		gl.MatrixMode (glc.GL_PROJECTION);
+		gl.LoadIdentity ();
+		GLU.Perspective (50.0, 1.0, 1.0, 20.0);
+		DeActivate();
 	END Reshape;
 
 BEGIN  {ACTIVE}
@@ -274,7 +263,7 @@ BEGIN  {ACTIVE}
 		IF animated THEN
 	 		UpdateImage();
 	 		xrot := xrot + 1.0;
-			GL.DelFCR();
+
 			INC(frames);
 			IF Kernel.Expired(timer) THEN
 				Strings.FloatToStr(frames/5.0, 0, 2, 0, fpsstr);

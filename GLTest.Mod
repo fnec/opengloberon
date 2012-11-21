@@ -1,7 +1,7 @@
 MODULE  GLTest; (** AUTHOR "fnecati"; PURPOSE "Simple GL rendering with commands"; *)
 
 IMPORT  GL := OpenGL, GLC := OpenGLConst, KernelLog,
-			S:=SYSTEM, Math, GLContext, WMGraphics, Raster ;
+			SYSTEM, Math, GLContext, GLU, WMGraphics, Raster ;
 
 (* Note:
 	Since GL is state machine, drawing with different commands may leave
@@ -17,7 +17,7 @@ CONST
 
 TYPE
 
-	Point = ARRAY 3 OF GL.GLfloat;
+	Point = ARRAY 3 OF GL.Float;
 
 VAR
 	 w, h: LONGINT; (* size of window *)
@@ -42,76 +42,76 @@ END SaveToImage;
 (* ******************* *)
 PROCEDURE Points;
 BEGIN
- GL.glBegin(GLC.GL_POINTS);
-GL.SetFCR();
-   GL.glVertex3f( 0.0, 1.0,-1.0);(* a *)
-   GL.glVertex3f(-1.0,-1.0, 0.0);(* b *)
-   GL.glVertex3f( 1.0,-1.0, 0.0);(* c *)
-GL.DelFCR();
-  GL.glEnd();
+ GL.Begin(GLC.GL_POINTS);
+
+   GL.Vertex3f( 0.0, 1.0,-1.0);(* a *)
+   GL.Vertex3f(-1.0,-1.0, 0.0);(* b *)
+   GL.Vertex3f( 1.0,-1.0, 0.0);(* c *)
+
+  GL.End();
 END Points;
 
 PROCEDURE Line;
 BEGIN
-GL.glBegin(GLC.GL_LINE_LOOP);
-GL.SetFCR();
-   GL.glVertex3f( 0.0, 1.0,-1.0);(* a *)
-   GL.glVertex3f(-1.0,-1.0, 0.0);(* b *)
-   GL.glVertex3f( 1.0,-1.0, 0.0);(* c *)
-GL.DelFCR();
-  GL.glEnd();
+GL.Begin(GLC.GL_LINE_LOOP);
+
+   GL.Vertex3f( 0.0, 1.0,-1.0);(* a *)
+   GL.Vertex3f(-1.0,-1.0, 0.0);(* b *)
+   GL.Vertex3f( 1.0,-1.0, 0.0);(* c *)
+
+  GL.End();
 END Line;
 
 PROCEDURE Triangle;
 BEGIN
-GL.glBegin(GLC.GL_POLYGON);
-GL.SetFCR();
-	GL.glVertex3f( 0.0, 1.0,-1.0); (* a *)
-	GL.glVertex3f(-1.0,-1.0, 0.0); (* b *)
-	GL.glVertex3f( 1.0,-1.0, 0.0); (* c *)
-GL.DelFCR();
-GL.glEnd();
+GL.Begin(GLC.GL_POLYGON);
+
+	GL.Vertex3f( 0.0, 1.0,-1.0); (* a *)
+	GL.Vertex3f(-1.0,-1.0, 0.0); (* b *)
+	GL.Vertex3f( 1.0,-1.0, 0.0); (* c *)
+
+GL.End();
 END Triangle;
 
 PROCEDURE Square;
 BEGIN
-GL.glBegin(GLC.GL_POLYGON);
-GL.SetFCR();
-	GL.glVertex3f(0.0,0.0 ,0.0);(* a *)
-	GL.glVertex3f(1.0,0.0, 0.0);(* b *)
-	GL.glVertex3f(1.0,0.0,-1.0);(* c *)
-	GL.glVertex3f(0.0,0.0,-1.0);(* d *)
-GL.DelFCR();
-GL.glEnd();
+GL.Begin(GLC.GL_POLYGON);
+
+	GL.Vertex3f(0.0,0.0 ,0.0);(* a *)
+	GL.Vertex3f(1.0,0.0, 0.0);(* b *)
+	GL.Vertex3f(1.0,0.0,-1.0);(* c *)
+	GL.Vertex3f(0.0,0.0,-1.0);(* d *)
+
+GL.End();
 END Square;
 
 PROCEDURE Esquare();
 BEGIN
-GL.SetFCR();
-GL.glBegin(GLC.GL_QUAD_STRIP);
-    GL.glVertex3f(0.0,0.0 ,0.0);(* a0 *)
-    GL.glVertex3f(0.0,1.0 ,0.0);(* a1 *)
-    GL.glVertex3f(1.0,0.0, 0.0);(* b0 *)
-    GL.glVertex3f(1.0,1.0, 0.0);(* b1 *)
-    GL.glVertex3f(1.0,0.0,-1.0);(* c0 *)
-    GL.glVertex3f(1.0,1.0,-1.0);(* c1 *)
-    GL.glVertex3f(0.0,0.0,-1.0);(* d0 *)
-    GL.glVertex3f(0.0,1.0,-1.0);(* d1 *)
-    GL.glVertex3f(0.0,0.0 ,0.0);(* a0 *)
-    GL.glVertex3f(0.0,1.0 ,0.0);(* a1 *)
-GL.glEnd();
 
-  GL.glBegin(GLC.GL_POLYGON);
-	GL.glVertex3f(0.0,0.0 ,0.0);(* a0 *)
-	GL.glVertex3f(1.0,0.0, 0.0);(* b0 *)
-	GL.glVertex3f(1.0,0.0,-1.0);(* c0 *)
-	GL.glVertex3f(0.0,0.0,-1.0);(* d0 *)
-	GL.glVertex3f(0.0,1.0 ,0.0);(* a1 *)
-	GL.glVertex3f(1.0,1.0, 0.0);(* b1 *)
-	GL.glVertex3f(1.0,1.0,-1.0);(* c1 *)
-	GL.glVertex3f(0.0,1.0,-1.0);(* d1 *)
-  GL.glEnd();
-GL.DelFCR();
+GL.Begin(GLC.GL_QUAD_STRIP);
+    GL.Vertex3f(0.0,0.0 ,0.0);(* a0 *)
+    GL.Vertex3f(0.0,1.0 ,0.0);(* a1 *)
+    GL.Vertex3f(1.0,0.0, 0.0);(* b0 *)
+    GL.Vertex3f(1.0,1.0, 0.0);(* b1 *)
+    GL.Vertex3f(1.0,0.0,-1.0);(* c0 *)
+    GL.Vertex3f(1.0,1.0,-1.0);(* c1 *)
+    GL.Vertex3f(0.0,0.0,-1.0);(* d0 *)
+    GL.Vertex3f(0.0,1.0,-1.0);(* d1 *)
+    GL.Vertex3f(0.0,0.0 ,0.0);(* a0 *)
+    GL.Vertex3f(0.0,1.0 ,0.0);(* a1 *)
+GL.End();
+
+  GL.Begin(GLC.GL_POLYGON);
+	GL.Vertex3f(0.0,0.0 ,0.0);(* a0 *)
+	GL.Vertex3f(1.0,0.0, 0.0);(* b0 *)
+	GL.Vertex3f(1.0,0.0,-1.0);(* c0 *)
+	GL.Vertex3f(0.0,0.0,-1.0);(* d0 *)
+	GL.Vertex3f(0.0,1.0 ,0.0);(* a1 *)
+	GL.Vertex3f(1.0,1.0, 0.0);(* b1 *)
+	GL.Vertex3f(1.0,1.0,-1.0);(* c1 *)
+	GL.Vertex3f(0.0,1.0,-1.0);(* d1 *)
+  GL.End();
+
 END Esquare;
 
 PROCEDURE Park;
@@ -119,14 +119,14 @@ VAR i: LONGINT;
     p: REAL;
     x, y: REAL;
 BEGIN
- GL.glBegin(GLC.GL_TRIANGLE_FAN);
-   GL.glVertex3f(0,0,0.0 );
+ GL.Begin(GLC.GL_TRIANGLE_FAN);
+   GL.Vertex3f(0,0,0.0 );
    FOR i:=0 TO 390 BY 30 DO
    	p := i*3.14/180;
    	x := Math.sin(p); y := Math.cos(p);
-    	GL.SetFCR(); GL.glVertex3f(x, y, 0.0 ); GL.DelFCR();
+    	  GL.Vertex3f(x, y, 0.0 );
    END;
-  GL.glEnd();
+  GL.End();
 END Park;
 
 PROCEDURE Pillar;
@@ -134,16 +134,16 @@ VAR i : LONGINT;
     p: REAL;
     x, y: REAL;
 BEGIN
-GL.glBegin(GLC.GL_QUAD_STRIP);
+GL.Begin(GLC.GL_QUAD_STRIP);
    FOR i := 0 TO 390 BY 30 DO
    	p :=i*3.14/180;
    	x := Math.sin(p)/2.0; y := Math.cos(p)/2.0;
-   	GL.SetFCR();
-	GL.glVertex3f(x, y,1.0 );
-	GL.glVertex3f(x, y,0.0 );
-	GL.DelFCR();
+
+	GL.Vertex3f(x, y,1.0 );
+	GL.Vertex3f(x, y,0.0 );
+
    END;
- GL.glEnd();
+ GL.End();
 END Pillar;
 (* ******************* *)
 
@@ -152,67 +152,67 @@ PROCEDURE Primitives*;
 
 BEGIN
 IF ctx = NIL THEN Error; RETURN END;
-GL.SetFCR();
+
 	(* Resize *)
 	ctx.MakeCurrent();
-	GL.glViewport(0, 0, w, h);
+	GL.Viewport(0, 0, w, h);
 
 	(* Restore *)
-	GL.glClearColor (0, 0, 0, 0);
-	GL.glMatrixMode(GLC.GL_PROJECTION);
-	GL.glLoadIdentity;
+	GL.ClearColor (0, 0, 0, 0);
+	GL.MatrixMode(GLC.GL_PROJECTION);
+	GL.LoadIdentity;
 
-	GL.glOrtho(-2.0, 2.0, -2.0 , 2.0, -4.0, 4.0);
+	GL.Ortho(-2.0, 2.0, -2.0 , 2.0, -4.0, 4.0);
 
-	GL.glClear (GLC.GL_COLOR_BUFFER_BIT+ GLC.GL_DEPTH_BUFFER_BIT);
+	GL.Clear (GLC.GL_COLOR_BUFFER_BIT+ GLC.GL_DEPTH_BUFFER_BIT);
 
-GL.DelFCR();
-	GL.glPushMatrix();
-	GL.glTranslatef(-0.3, 0.3, 0);
-	GL.glScalef(0.4, 0.4, 0.5);
+
+	GL.PushMatrix();
+	GL.Translatef(-0.3, 0.3, 0);
+	GL.Scalef(0.4, 0.4, 0.5);
 	Points();
-	GL.glPopMatrix();
+	GL.PopMatrix();
 
-	GL.glPushMatrix();
-	GL.glColor3f (0.0, 1.0, 1.0);
-	GL.glTranslatef(0.3, 0.3, 0);
-	GL.glScalef(0.4, 0.4, 0.5);
+	GL.PushMatrix();
+	GL.Color3f (0.0, 1.0, 1.0);
+	GL.Translatef(0.3, 0.3, 0);
+	GL.Scalef(0.4, 0.4, 0.5);
 	Line();
-	GL.glPopMatrix();
+	GL.PopMatrix();
 
-	GL.glPushMatrix();
-	GL.glColor3f (1.0, 0.0, 1.0);
-	GL.glRotatef(45, 0, 0, 1);
-	GL.glTranslatef(0.3, 0.5, 0);
-	GL.glScalef(0.4, 0.4, 0.5);
+	GL.PushMatrix();
+	GL.Color3f (1.0, 0.0, 1.0);
+	GL.Rotatef(45, 0, 0, 1);
+	GL.Translatef(0.3, 0.5, 0);
+	GL.Scalef(0.4, 0.4, 0.5);
 	Triangle();
-	GL.glPopMatrix();
+	GL.PopMatrix();
 
-	GL.glPushMatrix();
-	GL.glColor3f (0.0, 1.0, 1.0);
-	GL.glTranslatef(-0.3, -0.3, 0);
-	GL.glScalef(0.4, 0.4, 0.5);
+	GL.PushMatrix();
+	GL.Color3f (0.0, 1.0, 1.0);
+	GL.Translatef(-0.3, -0.3, 0);
+	GL.Scalef(0.4, 0.4, 0.5);
 	Square();
-	GL.glPopMatrix();
+	GL.PopMatrix();
 
-	GL.glPushMatrix();
-	GL.glTranslatef(-0.3, 0.3, 0);
-	GL.glScalef(0.4, 0.4, 0.5);
+	GL.PushMatrix();
+	GL.Translatef(-0.3, 0.3, 0);
+	GL.Scalef(0.4, 0.4, 0.5);
 	Esquare();
-	GL.glPopMatrix();
+	GL.PopMatrix();
 
-	GL.glPushMatrix();
-	GL.glTranslatef(0.6, 0.6, 0);
-	GL.glScalef(0.4, 0.4, 0.5);
+	GL.PushMatrix();
+	GL.Translatef(0.6, 0.6, 0);
+	GL.Scalef(0.4, 0.4, 0.5);
 	Park();
-	GL.glPopMatrix();
+	GL.PopMatrix();
 
-	GL.glPushMatrix();
-	GL.glColor3f (1.0, 1.0, 1.0);
-	GL.glTranslatef(0.6, -0.6, 0);
-	GL.glScalef(0.4, 0.4, 0.5);
+	GL.PushMatrix();
+	GL.Color3f (1.0, 1.0, 1.0);
+	GL.Translatef(0.6, -0.6, 0);
+	GL.Scalef(0.4, 0.4, 0.5);
 	Pillar();
-	GL.glPopMatrix();
+	GL.PopMatrix();
 
 
 (* ctx.SwapBuffers *);
@@ -232,108 +232,108 @@ BEGIN
 
 	da := 2.0 * Math.pi / teeth / 4.0;
 
-GL.SetFCR();
-	GL.glShadeModel(GLC.GL_FLAT);
 
-	GL.glNormal3f(0.0, 0.0, 1.0);
+	GL.ShadeModel(GLC.GL_FLAT);
+
+	GL.Normal3f(0.0, 0.0, 1.0);
 
 	(* draw front face *)
-	GL.glBegin(GLC.GL_QUAD_STRIP);
+	GL.Begin(GLC.GL_QUAD_STRIP);
 
 		FOR  i := 0 TO teeth DO
 			angle := i * 2.0 * Math.pi / teeth;
-			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
-			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), width * 0.5);
+			GL.Vertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
+			GL.Vertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), width * 0.5);
 		END;
-	GL.glEnd;
+	GL.End;
 
 	(* draw front sides of teeth *)
-	GL.glBegin(GLC.GL_QUADS);
+	GL.Begin(GLC.GL_QUADS);
 		da := 2.0 * Math.pi / teeth / 4.0;
 		FOR  i := 0 TO teeth - 1 DO
 			angle := i * 2.0 * Math.pi / teeth;
-			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
-			GL.glVertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), width * 0.5);
-			GL.glVertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
+			GL.Vertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), width * 0.5);
+			GL.Vertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), width * 0.5);
 		END;
-	GL.glEnd;
+	GL.End;
 
-	GL.glNormal3f(0.0, 0.0, -1.0);
+	GL.Normal3f(0.0, 0.0, -1.0);
 
 	(* draw back face *)
-	GL.glBegin(GLC.GL_QUAD_STRIP);
+	GL.Begin(GLC.GL_QUAD_STRIP);
 	 FOR i := 0 TO teeth DO
 			angle := i * 2.0 * Math.pi / teeth;
-			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
-			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), -width * 0.5);
-			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
+			GL.Vertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), -width * 0.5);
+			GL.Vertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
 	END;
-	GL.glEnd;
+	GL.End;
 
 	(* draw back sides of teeth *)
-	GL.glBegin(GLC.GL_QUADS);
+	GL.Begin(GLC.GL_QUADS);
 		da := 2.0 * Math.pi / teeth / 4.0;
 		FOR i := 0 TO teeth - 1 DO
 			angle := i * 2.0 * Math.pi / teeth;
-			GL.glVertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), -width * 0.5);
-			GL.glVertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), -width * 0.5);
-			GL.glVertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), -width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), -width * 0.5);
+			GL.Vertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), -width * 0.5);
+			GL.Vertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), -width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
 	END;
-	GL.glEnd;
+	GL.End;
 
 	(* draw outward faces of teeth *)
-	GL.glBegin(GLC.GL_QUAD_STRIP);
+	GL.Begin(GLC.GL_QUAD_STRIP);
 		FOR i := 0 TO teeth - 1 DO
 			angle := i * 2.0 * Math.pi / teeth;
-			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle), r1 * Math.sin(angle), -width * 0.5);
 			u := r2 * Math.cos(angle + da) - r1 * Math.cos(angle);
 			v := r2 * Math.sin(angle + da) - r1 * Math.sin(angle);
 			len := Math.sqrt(u * u + v * v);
 			u := u / len;  v := v / len;
-			GL.glNormal3f(v, -u, 0.0);
-			GL.glVertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), width * 0.5);
-			GL.glVertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), -width * 0.5);
-			GL.glNormal3f(Math.cos(angle), Math.sin(angle), 0.0);
-			GL.glVertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), width * 0.5);
-			GL.glVertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), -width * 0.5);
+			GL.Normal3f(v, -u, 0.0);
+			GL.Vertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), width * 0.5);
+			GL.Vertex3f(r2 * Math.cos(angle + da), r2 * Math.sin(angle + da), -width * 0.5);
+			GL.Normal3f(Math.cos(angle), Math.sin(angle), 0.0);
+			GL.Vertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), width * 0.5);
+			GL.Vertex3f(r2 * Math.cos(angle + 2 * da), r2 * Math.sin(angle + 2 * da), -width * 0.5);
 			u := r1 * Math.cos(angle + 3 * da) - r2 * Math.cos(angle + 2 * da);
 			v := r1 * Math.sin(angle + 3 * da) - r2 * Math.sin(angle + 2 * da);
-			GL.glNormal3f(v, -u, 0.0);
-			GL.glVertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), width * 0.5);
-			GL.glVertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), -width * 0.5);
-			GL.glNormal3f(Math.cos(angle), Math.sin(angle), 0.0);
+			GL.Normal3f(v, -u, 0.0);
+			GL.Vertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), width * 0.5);
+			GL.Vertex3f(r1 * Math.cos(angle + 3 * da), r1 * Math.sin(angle + 3 * da), -width * 0.5);
+			GL.Normal3f(Math.cos(angle), Math.sin(angle), 0.0);
 	END;
 
-	GL.glVertex3f(r1 * Math.cos(0), r1 * Math.sin(0), width * 0.5);
-	GL.glVertex3f(r1 * Math.cos(0), r1 * Math.sin(0), -width * 0.5);
+	GL.Vertex3f(r1 * Math.cos(0), r1 * Math.sin(0), width * 0.5);
+	GL.Vertex3f(r1 * Math.cos(0), r1 * Math.sin(0), -width * 0.5);
 
-	GL.glEnd;
+	GL.End;
 
-	GL.glShadeModel(GLC.GL_SMOOTH);
+	GL.ShadeModel(GLC.GL_SMOOTH);
 
 	(* draw inside radius cylinder *)
-	GL.glBegin(GLC.GL_QUAD_STRIP);
+	GL.Begin(GLC.GL_QUAD_STRIP);
 	FOR i := 0 TO teeth DO
 			angle := i * 2.0 * Math.pi / teeth;
-			GL.glNormal3f(-Math.cos(angle), -Math.sin(angle), 0.0);
-			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
-			GL.glVertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
+			GL.Normal3f(-Math.cos(angle), -Math.sin(angle), 0.0);
+			GL.Vertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), -width * 0.5);
+			GL.Vertex3f(r0 * Math.cos(angle), r0 * Math.sin(angle), width * 0.5);
 	END;
-	GL.glEnd;
-GL.DelFCR();
+	GL.End;
+
 END MakeGear;
 
 
 PROCEDURE  Do*;
 VAR
 	i: LONGINT;
-	r, g, b: ARRAY 3 OF GL.GLfloat;
+	r, g, b: ARRAY 3 OF GL.Float;
 BEGIN
 	IF ctx = NIL THEN Error; RETURN END;
 
@@ -342,34 +342,34 @@ BEGIN
 	r[2] := 0;  g[2] := 0;  b[2] := 1;
 
 
-GL.SetFCR();
+
 	(* Resize *)
 	ctx.MakeCurrent();
-	GL.glViewport(0, 0, w, h);
+	GL.Viewport(0, 0, w, h);
 
-	GL.glMatrixMode(GLC.GL_PROJECTION);
-	GL.glLoadIdentity;
+	GL.MatrixMode(GLC.GL_PROJECTION);
+	GL.LoadIdentity;
 
-	GL.glOrtho(0, 1, 0, 1, -1, 1);
+	GL.Ortho(0, 1, 0, 1, -1, 1);
 
 	(* Restore, Draw *)
-	GL.glClearColor (0.6, 0.6, 0.6, 0);
-	GL.glClear (GLC.GL_COLOR_BUFFER_BIT);
+	GL.ClearColor (0.6, 0.6, 0.6, 0);
+	GL.Clear (GLC.GL_COLOR_BUFFER_BIT);
 
-	GL.glBegin(GLC.GL_TRIANGLES);
+	GL.Begin(GLC.GL_TRIANGLES);
 		i := 0;
-		GL.glColor3f (r[i], g[i], b[i]);
-		GL.glVertex3f (0.25, 0.25, 0.0);
+		GL.Color3f (r[i], g[i], b[i]);
+		GL.Vertex3f (0.25, 0.25, 0.0);
 
 		i := (i + 1) MOD 3;
-		GL.glColor3f (r[i], g[i], b[i]);
-		GL.glVertex3f (0.75, 0.25, 0.0);
+		GL.Color3f (r[i], g[i], b[i]);
+		GL.Vertex3f (0.75, 0.25, 0.0);
 
 		i := (i + 1) MOD 3;
-		GL.glColor3f (r[i], g[i], b[i]);
-		GL.glVertex3f (0.5, 0.75, 0.0);
-	GL.glEnd;
-GL.DelFCR();
+		GL.Color3f (r[i], g[i], b[i]);
+		GL.Vertex3f (0.5, 0.75, 0.0);
+	GL.End;
+
 
 (* ctx.SwapBuffers *);
 SaveToImage("gldo.bmp");
@@ -380,31 +380,31 @@ PROCEDURE  Do1*;
 BEGIN
 IF ctx = NIL THEN Error; RETURN END;
 
-GL.SetFCR();
+
 	(* intialize *)
 ctx.MakeCurrent();
-	GL.glViewport(0, 0, w, h);
+	GL.Viewport(0, 0, w, h);
 
-	GL.glClearColor (0, 0, 0, 0);
-	GL.glMatrixMode(GLC.GL_PROJECTION);
-	GL.glLoadIdentity;
-	GL.glOrtho(0, 1, 0, 1, -1, 1);
+	GL.ClearColor (0, 0, 0, 0);
+	GL.MatrixMode(GLC.GL_PROJECTION);
+	GL.LoadIdentity;
+	GL.Ortho(0, 1, 0, 1, -1, 1);
 
 	(* draw *)
-	GL.glClear (GLC.GL_COLOR_BUFFER_BIT);
-	GL.glColor3d (1.0, 1.0, 1.0);
-	GL.glBegin(GLC.GL_POLYGON);
-		GL.glColor3d (1.0, 0.0, 0.0);
-		GL.glVertex3d (0.25, 0.25, 0.0);
-		GL.glColor3d (0.0, 1.0, 0.0);
-		GL.glVertex3d (0.75, 0.25, 0.0);
-		GL.glColor3d (0.0, 0.0, 1.0);
-		GL.glVertex3d (0.75, 0.75, 0.0);
-		GL.glColor3d (1.0, 1.0, 0.0);
-		GL.glVertex3d (0.25, 0.75, 0.0);
-	GL.glEnd;
+	GL.Clear (GLC.GL_COLOR_BUFFER_BIT);
+	GL.Color3d (1.0, 1.0, 1.0);
+	GL.Begin(GLC.GL_POLYGON);
+		GL.Color3d (1.0, 0.0, 0.0);
+		GL.Vertex3d (0.25, 0.25, 0.0);
+		GL.Color3d (0.0, 1.0, 0.0);
+		GL.Vertex3d (0.75, 0.25, 0.0);
+		GL.Color3d (0.0, 0.0, 1.0);
+		GL.Vertex3d (0.75, 0.75, 0.0);
+		GL.Color3d (1.0, 1.0, 0.0);
+		GL.Vertex3d (0.25, 0.75, 0.0);
+	GL.End;
 
-GL.DelFCR();
+
 (* ctx.SwapBuffers *);
 
 SaveToImage("gldo1.bmp");
@@ -414,9 +414,9 @@ END Do1;
 PROCEDURE  Gears*;
 VAR
 
-	gear1, gear2, gear3: GL.GLuint;
-	rotx, roty, rotz, angle, angle1, angle2: GL.GLfloat;
-	red, green, blue, lightPos: ARRAY 4 OF GL.GLfloat;
+	gear1, gear2, gear3: GL.Uint;
+	rotx, roty, rotz, angle, angle1, angle2: GL.Float;
+	red, green, blue, lightPos: ARRAY [4] OF GL.Float;
 
 BEGIN
 	IF ctx = NIL THEN Error; RETURN END;
@@ -436,87 +436,87 @@ BEGIN
 	green[0] := 0.0;	green[1] := 0.8;	green[2] := 0.2;	green[3] := 1.0;
 	blue[0] := 0.2;		blue[1] := 0.2;		blue[2] := 1.0;		blue[3] := 1.0;
 
-GL.SetFCR();
+
 ctx.MakeCurrent();
-	GL.glEnable(GLC.GL_LIGHTING);
-	GL.glLightfv(GLC.GL_LIGHT0, GLC.GL_POSITION, S.ADR(lightPos[0]));
-	GL.glEnable(GLC.GL_LIGHT0);
-	GL.glEnable(GLC.GL_CULL_FACE);
-	GL.glEnable(GLC.GL_DEPTH_TEST);
+	GL.Enable(GLC.GL_LIGHTING);
+	GL.Lightfv(GLC.GL_LIGHT0, GLC.GL_POSITION, lightPos);
+	GL.Enable(GLC.GL_LIGHT0);
+	GL.Enable(GLC.GL_CULL_FACE);
+	GL.Enable(GLC.GL_DEPTH_TEST);
 
 	(* make the gears *)
-	gear1 := GL.glGenLists(1);
-	GL.glNewList(gear1, GLC.GL_COMPILE);
-	GL.glMaterialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, S.ADR(red[0]));
+	gear1 := GL.GenLists(1);
+	GL.NewList(gear1, GLC.GL_COMPILE);
+	GL.Materialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, red);
 	MakeGear( 1.0, 4.0, 1.0, 20, 0.7);
-	GL.glEndList;
+	GL.EndList;
 
-	gear2 := GL.glGenLists(1);
-	GL.glNewList(gear2, GLC.GL_COMPILE);
-	GL.glMaterialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, S.ADR(green[0]));
+	gear2 := GL.GenLists(1);
+	GL.NewList(gear2, GLC.GL_COMPILE);
+	GL.Materialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, green);
 	MakeGear( 0.5, 2.0, 2.0, 10, 0.7);
-	GL.glEndList;
+	GL.EndList;
 
-	gear3 := GL.glGenLists(1);
-	GL.glNewList(gear3, GLC.GL_COMPILE);
-	GL.glMaterialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, S.ADR(blue[0]));
+	gear3 := GL.GenLists(1);
+	GL.NewList(gear3, GLC.GL_COMPILE);
+	GL.Materialfv(GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE, blue);
 	MakeGear(1.3, 2.0, 0.5, 10, 0.7);
-	GL.glEndList;
+	GL.EndList;
 
 
 	(* ********** projection matrices  *********** *)
-	GL.glClearColor (0.0, 0.0, 0.0, 0);
-	GL.glViewport(0, 0, w, h);
-	GL.glMatrixMode (GLC.GL_PROJECTION);
-	GL.glLoadIdentity;
-	GL.glFrustum(-1.0, 1.0, -1, 1, 5.0, 60.0);
+	GL.ClearColor (0.0, 0.0, 0.0, 0);
+	GL.Viewport(0, 0, w, h);
+	GL.MatrixMode (GLC.GL_PROJECTION);
+	GL.LoadIdentity;
+	GL.Frustum(-1.0, 1.0, -1, 1, 5.0, 60.0);
 
-	GL.glMatrixMode (GLC.GL_MODELVIEW);
-	GL.glLoadIdentity;
+	GL.MatrixMode (GLC.GL_MODELVIEW);
+	GL.LoadIdentity;
 
-	GL.glTranslatef(0.0, 0.0, -40.0);
-GL.DelFCR();
+	GL.Translatef(0.0, 0.0, -40.0);
+
 
 	(* ********** Draw ********** *)
 angle1 := -2.0 * angle - 9.0;
 angle2 := -2.0 * angle - 25.0;
 
-GL.SetFCR();
-	GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
 
-	GL.glPushMatrix;
+	GL.Clear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
 
-	GL.glRotatef(rotx, 1.0, 0.0, 0.0);
-	GL.glRotatef(roty, 0.0, 1.0, 0.0);
-	GL.glRotatef(rotz, 0.0, 0.0, 1.0);
+	GL.PushMatrix;
 
-	GL.glPushMatrix;
-	GL.glTranslatef(-3.0, -2.0, 0.0);
-	GL.glRotatef(angle, 0.0, 0.0, 1.0);
-	GL.glCallList(gear1);
-	GL.glPopMatrix;
+	GL.Rotatef(rotx, 1.0, 0.0, 0.0);
+	GL.Rotatef(roty, 0.0, 1.0, 0.0);
+	GL.Rotatef(rotz, 0.0, 0.0, 1.0);
 
-	GL.glPushMatrix;
-	GL.glTranslatef(3.1, -2.0, 0.0);
-	GL.glRotatef(angle1, 0.0, 0.0, 1.0);
-	GL.glCallList(gear2);
-	GL.glPopMatrix;
+	GL.PushMatrix;
+	GL.Translatef(-3.0, -2.0, 0.0);
+	GL.Rotatef(angle, 0.0, 0.0, 1.0);
+	GL.CallList(gear1);
+	GL.PopMatrix;
 
-	GL.glPushMatrix;
-	GL.glTranslatef(-3.1, 4.2, 0.0);
-	GL.glRotatef(angle2, 0.0, 0.0, 1.0);
-	GL.glCallList(gear3);
-	GL.glPopMatrix;
+	GL.PushMatrix;
+	GL.Translatef(3.1, -2.0, 0.0);
+	GL.Rotatef(angle1, 0.0, 0.0, 1.0);
+	GL.CallList(gear2);
+	GL.PopMatrix;
 
-	GL.glPopMatrix;
-GL.DelFCR();
+	GL.PushMatrix;
+	GL.Translatef(-3.1, 4.2, 0.0);
+	GL.Rotatef(angle2, 0.0, 0.0, 1.0);
+	GL.CallList(gear3);
+	GL.PopMatrix;
+
+	GL.PopMatrix;
+
 (* ctx.SwapBuffers *);
 SaveToImage("glgears.bmp");
 
 ctx.DeActivate;
 END Gears;
 
-PROCEDURE  SetP (VAR a: ARRAY OF GL.GLfloat;  a0, a1, a2: LONGREAL);
+PROCEDURE  SetP (VAR a: ARRAY OF GL.Float;  a0, a1, a2: LONGREAL);
 BEGIN
 	a[0] := SHORT(a0);  a[1] := SHORT(a1);  a[2] := SHORT(a2)
 END SetP;
@@ -550,46 +550,46 @@ BEGIN
 
 
 
-GL.SetFCR();
+
 	(* Init View *)
 	ctx.MakeCurrent();
 
-	GL.glMap2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, S.ADR(ctrlPoints[0, 0, 0]));
-	GL.glEnable(GLC.GL_MAP2_VERTEX_3);
-	GL.glMapGrid2f(20, 0, 1, 20, 0, 1);
-	GL.glEnable(GLC.GL_DEPTH_TEST);
-	GL.glShadeModel(GLC.GL_FLAT);
+	GL.Map2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, SYSTEM.ADR(ctrlPoints[0, 0, 0]));
+	GL.Enable(GLC.GL_MAP2_VERTEX_3);
+	GL.MapGrid2f(20, 0, 1, 20, 0, 1);
+	GL.Enable(GLC.GL_DEPTH_TEST);
+	GL.ShadeModel(GLC.GL_FLAT);
 
 	(* intialize *)
-	GL.glMatrixMode(GLC.GL_PROJECTION);
-	GL.glLoadIdentity;
-	GL.glOrtho(-4.0, 4.0, -4.0 , 4.0, -4.0, 4.0);
-	GL.glMatrixMode(GLC.GL_MODELVIEW);
-	GL.glLoadIdentity;
+	GL.MatrixMode(GLC.GL_PROJECTION);
+	GL.LoadIdentity;
+	GL.Ortho(-4.0, 4.0, -4.0 , 4.0, -4.0, 4.0);
+	GL.MatrixMode(GLC.GL_MODELVIEW);
+	GL.LoadIdentity;
 
 
 	(*  draw *)
-	GL.glClearColor (0.0, 0, 0, 0);
-	GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
-	GL.glColor3d(1.0, 1.0, 0.0);
-	GL.glPushMatrix ();
-	GL.glRotatef(85, 1, 1, 1);
+	GL.ClearColor (0.0, 0, 0, 0);
+	GL.Clear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
+	GL.Color3d(1.0, 1.0, 0.0);
+	GL.PushMatrix ();
+	GL.Rotatef(85, 1, 1, 1);
 	FOR  j := 0 TO 8 DO
-		GL.glBegin(GLC.GL_LINE_STRIP);
+		GL.Begin(GLC.GL_LINE_STRIP);
 			FOR  i := 0 TO 30 DO
-				GL.glEvalCoord2d( i / 30.0,  j / 8.0)
+				GL.EvalCoord2d( i / 30.0,  j / 8.0)
 			END;
-		GL.glEnd;
-		GL.glBegin(GLC.GL_LINE_STRIP);
+		GL.End;
+		GL.Begin(GLC.GL_LINE_STRIP);
 			FOR  i := 0 TO 30 DO
-				GL.glEvalCoord2d( j / 8.0, i / 30.0)
+				GL.EvalCoord2d( j / 8.0, i / 30.0)
 			END;
-		GL.glEnd
+		GL.End
 	END;
-	GL.glPopMatrix ();
-	GL.glFinish();
+	GL.PopMatrix ();
+	GL.Finish();
 
-GL.DelFCR();
+
 (* ctx.SwapBuffers *);
 SaveToImage("glpbeziersurf.bmp");
 
@@ -599,46 +599,46 @@ END BezSurf;
 
 PROCEDURE  Accum*;
 VAR
-	thing1, thing2: GL.GLint;
+	thing1, thing2: GL.Int;
 BEGIN
 IF ctx = NIL THEN Error; RETURN END;
 
 ctx.MakeCurrent();
 
-	thing1 := GL.glGenLists(1);
-	GL.glNewList(thing1, GLC.GL_COMPILE);
-	GL.glColor3f(1, 0, 0);
-	GL.glRectf(-1, -1, 1, 0);
-	GL.glEndList;
+	thing1 := GL.GenLists(1);
+	GL.NewList(thing1, GLC.GL_COMPILE);
+	GL.Color3f(1, 0, 0);
+	GL.Rectf(-1, -1, 1, 0);
+	GL.EndList;
 
-	thing2 := GL.glGenLists(1);
-	GL.glNewList(thing2, GLC.GL_COMPILE);
-	GL.glColor3f(0.0, 1.0, 0.0);
-	GL.glRectf(0.0, -1.0, 1.0, 1.0);
-	GL.glEndList;
+	thing2 := GL.GenLists(1);
+	GL.NewList(thing2, GLC.GL_COMPILE);
+	GL.Color3f(0.0, 1.0, 0.0);
+	GL.Rectf(0.0, -1.0, 1.0, 1.0);
+	GL.EndList;
 
 
 	(* initialize *)
-	GL.glClearColor(0.6, 0.6, 0.6, 0);
-	GL.glClearAccum(0.0, 0.0, 0, 0.0);
+	GL.ClearColor(0.6, 0.6, 0.6, 0);
+	GL.ClearAccum(0.0, 0.0, 0, 0.0);
 
-	GL.glMatrixMode(GLC.GL_PROJECTION);
-	GL.glLoadIdentity;
-	GL.glMatrixMode(GLC.GL_MODELVIEW);
-	GL.glLoadIdentity;
+	GL.MatrixMode(GLC.GL_PROJECTION);
+	GL.LoadIdentity;
+	GL.MatrixMode(GLC.GL_MODELVIEW);
+	GL.LoadIdentity;
 
 	(* draw *)
-	GL.glClear(GLC.GL_COLOR_BUFFER_BIT);
-	GL.glCallList(thing1);
-	GL.glAccum(GLC.GL_LOAD, 0.5);
+	GL.Clear(GLC.GL_COLOR_BUFFER_BIT);
+	GL.CallList(thing1);
+	GL.Accum(GLC.GL_LOAD, 0.5);
 
-	GL.glClear(GLC.GL_COLOR_BUFFER_BIT);
-	GL.glCallList(thing2);
-	GL.glAccum(GLC.GL_ACCUM, 0.5);
+	GL.Clear(GLC.GL_COLOR_BUFFER_BIT);
+	GL.CallList(thing2);
+	GL.Accum(GLC.GL_ACCUM, 0.5);
 
-	GL.glAccum(GLC.GL_RETURN, 1);
+	GL.Accum(GLC.GL_RETURN, 1);
 
-	GL.glFinish();
+	GL.Finish();
 
 	(* ctx.SwapBuffers *);
 SaveToImage("glaccumulation.bmp");
@@ -647,36 +647,36 @@ END Accum;
 
 
 
-PROCEDURE  MakeBall ():GL.GLuint;
+PROCEDURE  MakeBall ():GL.Uint;
 CONST  da = 18;  db = 18;  r = 1.0;
-VAR  list: GL.GLuint;  color: BOOLEAN;
+VAR  list: GL.Uint;  color: BOOLEAN;
 		a, b: LONGINT;
 		x, y, z: LONGREAL;
 BEGIN
 ctx.MakeCurrent();
-	list := GL.glGenLists(1);
-	GL.glNewList(list, GLC.GL_COMPILE);
+	list := GL.GenLists(1);
+	GL.NewList(list, GLC.GL_COMPILE);
 	color := FALSE;
 	FOR  a := -90 TO 90 - da BY da DO
-		GL.glBegin(GLC.GL_QUAD_STRIP);
+		GL.Begin(GLC.GL_QUAD_STRIP);
 			FOR  b := 0 TO 360 BY db DO
-				IF color THEN GL.glColor3d(1, 0, 0); ELSE GL.glColor3d(1, 1, 1); END;
+				IF color THEN GL.Color3d(1, 0, 0); ELSE GL.Color3d(1, 1, 1); END;
 				x := Math.cos(b * degToRad) * Math.cos(a * degToRad);
 				y := Math.sin(b * degToRad) * Math.cos(a * degToRad);
 				z := Math.sin(a * degToRad);
-				GL.SetFCR(); GL.glVertex3d(x, y, z); GL.DelFCR();
+				  GL.Vertex3d(x, y, z);
 
 				x := r * Math.cos(b * degToRad) * Math.cos((a + da) * degToRad);
 				y := Math.sin(b * degToRad) * Math.cos((a + da) * degToRad);
 				z := Math.sin((a + da) * degToRad);
 
-				GL.SetFCR();	GL.glVertex3d(x, y, z); GL.DelFCR();
+				 	GL.Vertex3d(x, y, z);
 				color := ~color
 			END;
-		GL.glEnd
+		GL.End
 	END;
 
-	GL.glEndList;
+	GL.EndList;
 
 ctx.DeActivate();
 KernelLog.String("MakeBall. Ok"); KernelLog.Ln;
@@ -684,35 +684,35 @@ KernelLog.String("MakeBall. Ok"); KernelLog.Ln;
 
 END MakeBall;
 
-PROCEDURE  MakeLines ():GL.GLuint;
-	VAR  list: GL.GLuint;  i: LONGINT;
+PROCEDURE  MakeLines ():GL.Uint;
+	VAR  list: GL.Uint;  i: LONGINT;
 		  x: REAL;
 BEGIN
 ctx.MakeCurrent();
-	list := GL.glGenLists(1);
-	GL.glNewList(list, GLC.GL_COMPILE);
+	list := GL.GenLists(1);
+	GL.NewList(list, GLC.GL_COMPILE);
 
-	GL.glBegin(GLC.GL_LINES);
-		GL.glColor3f(0.0, 1.0, 1.0);
+	GL.Begin(GLC.GL_LINES);
+		GL.Color3f(0.0, 1.0, 1.0);
 		FOR  i := -5 TO 5 DO
-			GL.SetFCR();	GL.glVertex2i(i, -5);  GL.glVertex2i(i, 5); GL.DelFCR();
+			 	GL.Vertex2i(i, -5);  GL.Vertex2i(i, 5);
 		END;
 		FOR  i := -5 TO 5 DO
-			GL.SetFCR();	GL.glVertex2i(-5, i);  GL.glVertex2i(5, i); GL.DelFCR();
+			 	GL.Vertex2i(-5, i);  GL.Vertex2i(5, i);
 		END;
 		FOR  i := -5 TO 5 DO
 			x := i*1.15;
-			GL.SetFCR();	GL.glVertex2i(i, -5);  GL.glVertex2f(x, -5.9); GL.DelFCR();
+			 	GL.Vertex2i(i, -5);  GL.Vertex2f(x, -5.9);
 		END;
-GL.SetFCR();
-		GL.glVertex2f(-5.3, -5.35);
-		GL.glVertex2f(5.3, -5.35);
-		GL.glVertex2f(-5.75, -5.9);
-		GL.glVertex2f(5.75, -5.9);
-GL.DelFCR();
-	GL.glEnd;
 
-	GL.glEndList;
+		GL.Vertex2f(-5.3, -5.35);
+		GL.Vertex2f(5.3, -5.35);
+		GL.Vertex2f(-5.75, -5.9);
+		GL.Vertex2f(5.75, -5.9);
+
+	GL.End;
+
+	GL.EndList;
 ctx.DeActivate();
 	KernelLog.String("MakeLines. Ok"); KernelLog.Ln;
 	RETURN list
@@ -721,7 +721,7 @@ END MakeLines;
 PROCEDURE  Bounce*;
 VAR
 
-	ball, lines: GL.GLuint;
+	ball, lines: GL.Uint;
 	x, y: REAL;
 	vx, vy: REAL;
 	zRot, dRot: LONGINT;
@@ -737,37 +737,37 @@ IF ctx = NIL THEN Error; RETURN END;
   	lines := MakeLines();
   	ball := MakeBall();
 
-GL.SetFCR();
+
 ctx.MakeCurrent();
-  	GL.glClearColor(0, 0.0, 0.0, 0);
-	GL.glShadeModel (GLC.GL_FLAT);
-	GL.glEnable(GLC.GL_CULL_FACE);
-	GL.glCullFace(GLC.GL_BACK);
+  	GL.ClearColor(0, 0.0, 0.0, 0);
+	GL.ShadeModel (GLC.GL_FLAT);
+	GL.Enable(GLC.GL_CULL_FACE);
+	GL.CullFace(GLC.GL_BACK);
   (****************)
 
-	GL.glMatrixMode (GLC.GL_PROJECTION);
-	GL.glLoadIdentity;
-	GL.glOrtho(-6.0, 6.0, -6.0, 6.0 , -6.0, 6.0);
+	GL.MatrixMode (GLC.GL_PROJECTION);
+	GL.LoadIdentity;
+	GL.Ortho(-6.0, 6.0, -6.0, 6.0 , -6.0, 6.0);
 
-	GL.glMatrixMode(GLC.GL_MODELVIEW);
-	GL.glLoadIdentity;
+	GL.MatrixMode(GLC.GL_MODELVIEW);
+	GL.LoadIdentity;
 
-	GL.glClear (GLC.GL_COLOR_BUFFER_BIT);
+	GL.Clear (GLC.GL_COLOR_BUFFER_BIT);
 
-	GL.glCallList(lines);
+	GL.CallList(lines);
 
-	GL.glPushMatrix;
-	GL.glTranslatef(x, y, 0.0);
-	GL.glScalef(2, 2, 2);
-	GL.glRotatef(8, 0, 0, 1);
-	GL.glRotatef(90, 1, 0, 0);
-	GL.glRotatef(zRot, 0, 0, 1);
+	GL.PushMatrix;
+	GL.Translatef(x, y, 0.0);
+	GL.Scalef(2, 2, 2);
+	GL.Rotatef(8, 0, 0, 1);
+	GL.Rotatef(90, 1, 0, 0);
+	GL.Rotatef(zRot, 0, 0, 1);
 
-	GL.glCallList(ball);
+	GL.CallList(ball);
 
-	GL.glPopMatrix;
+	GL.PopMatrix;
 
-GL.DelFCR();
+
 (* ctx.SwapBuffers *);
 SaveToImage("glbounce.bmp");
 ctx.DeActivate;
@@ -777,71 +777,71 @@ PROCEDURE  Cube*;
 BEGIN
 IF ctx = NIL THEN Error; RETURN END;
 ctx.MakeCurrent();
-GL.SetFCR();
-	GL.glClearColor(0.0, 0.0, 0.0, 0.0);
 
-	GL.glMatrixMode(GLC.GL_PROJECTION);
-	GL.glLoadIdentity;
-	GL.gluPerspective(45, 1, 1, 100);
+	GL.ClearColor(0.0, 0.0, 0.0, 0.0);
 
-	GL.glMatrixMode(GLC.GL_MODELVIEW);
-	GL.glLoadIdentity;
-	GL.glTranslatef(0.0, 0.0, -10.0);
-	GL.glRotatef(45, 1.0, 1.0, 0.0);
+	GL.MatrixMode(GLC.GL_PROJECTION);
+	GL.LoadIdentity;
+	GLU.Perspective(45, 1, 1, 100);
+
+	GL.MatrixMode(GLC.GL_MODELVIEW);
+	GL.LoadIdentity;
+	GL.Translatef(0.0, 0.0, -10.0);
+	GL.Rotatef(45, 1.0, 1.0, 0.0);
 
 	(* draw *)
-	GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
+	GL.Clear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
 
-GL.glBegin(GLC.GL_POLYGON); (* top face oriented toward y *)
-	GL.glColor3f(0.0,0.0,1.0);
-	GL.glVertex3f(-1.0, 1.0, 1.0);
-	GL.glVertex3f(1.0, 1.0, 1.0);
-	GL.glVertex3f(1.0, 1.0, -1.0);
-	GL.glVertex3f(-1.0, 1.0, -1.0);
-GL.glEnd();
+GL.Begin(GLC.GL_POLYGON); (* top face oriented toward y *)
+	GL.Color3f(0.0,0.0,1.0);
+	GL.Vertex3f(-1.0, 1.0, 1.0);
+	GL.Vertex3f(1.0, 1.0, 1.0);
+	GL.Vertex3f(1.0, 1.0, -1.0);
+	GL.Vertex3f(-1.0, 1.0, -1.0);
+GL.End();
 
-GL.glBegin(GLC.GL_POLYGON); (* back face oriented toward -z *)
-	GL.glColor3f(0.0,1.0,0.0);
-	GL.glVertex3f(-1.0, 1.0, -1.0);
-	GL.glVertex3f(1.0, 1.0, -1.0);
-	GL.glVertex3f(1.0, -1.0, -1.0);
-	GL.glVertex3f(-1.0, -1.0, -1.0);
-GL.glEnd();
+GL.Begin(GLC.GL_POLYGON); (* back face oriented toward -z *)
+	GL.Color3f(0.0,1.0,0.0);
+	GL.Vertex3f(-1.0, 1.0, -1.0);
+	GL.Vertex3f(1.0, 1.0, -1.0);
+	GL.Vertex3f(1.0, -1.0, -1.0);
+	GL.Vertex3f(-1.0, -1.0, -1.0);
+GL.End();
 
-GL.glBegin(GLC.GL_POLYGON); (* right face oriented toward x *)
-	GL.glColor3f(1.0,0.0,0.0);
-	GL.glVertex3f(1.0, 1.0, 1.0);
-	GL.glVertex3f(1.0, -1.0, 1.0);
-	GL.glVertex3f(1.0, -1.0, -1.0);
-	GL.glVertex3f(1.0, 1.0, -1.0);
-GL.glEnd();
+GL.Begin(GLC.GL_POLYGON); (* right face oriented toward x *)
+	GL.Color3f(1.0,0.0,0.0);
+	GL.Vertex3f(1.0, 1.0, 1.0);
+	GL.Vertex3f(1.0, -1.0, 1.0);
+	GL.Vertex3f(1.0, -1.0, -1.0);
+	GL.Vertex3f(1.0, 1.0, -1.0);
+GL.End();
 
-GL.glBegin(GLC.GL_POLYGON); (* left face oriented toward -x *)
-	GL.glColor3f(1.0,0.0,0.0);
-	GL.glVertex3f(-1.0, -1.0, 1.0);
-	GL.glVertex3f(-1.0, 1.0, 1.0);
-	GL.glVertex3f(-1.0, 1.0, -1.0);
-	GL.glVertex3f(-1.0, -1.0, -1.0);
-GL.glEnd();
+GL.Begin(GLC.GL_POLYGON); (* left face oriented toward -x *)
+	GL.Color3f(1.0,0.0,0.0);
+	GL.Vertex3f(-1.0, -1.0, 1.0);
+	GL.Vertex3f(-1.0, 1.0, 1.0);
+	GL.Vertex3f(-1.0, 1.0, -1.0);
+	GL.Vertex3f(-1.0, -1.0, -1.0);
+GL.End();
 
-GL.glBegin(GLC.GL_POLYGON); (* bottom face oriented toward -y *)
-	GL.glColor3f(0.0,0.0,1.0);
-	GL.glVertex3f(-1.0, -1.0, 1.0);
-	GL.glVertex3f(-1.0, -1.0, -1.0);
-	GL.glVertex3f(1.0, -1.0, -1.0);
-	GL.glVertex3f(1.0, -1.0, 1.0);
-GL.glEnd();
+GL.Begin(GLC.GL_POLYGON); (* bottom face oriented toward -y *)
+	GL.Color3f(0.0,0.0,1.0);
+	GL.Vertex3f(-1.0, -1.0, 1.0);
+	GL.Vertex3f(-1.0, -1.0, -1.0);
+	GL.Vertex3f(1.0, -1.0, -1.0);
+	GL.Vertex3f(1.0, -1.0, 1.0);
+GL.End();
 
-GL.glBegin(GLC.GL_POLYGON); (* front face oriented toward z*)
-	GL.glColor3f(0.0,1.0,0.0);
-	GL.glVertex3f(1.0, 1.0, 1.0);
-	GL.glVertex3f(-1.0, 1.0, 1.0);
-	GL.glVertex3f(-1.0, -1.0, 1.0);
-	GL.glVertex3f(1.0, -1.0, 1.0);
-GL.glEnd();
-GL.glFinish();
+GL.Begin(GLC.GL_POLYGON); (* front face oriented toward z*)
+	GL.Color3f(0.0,1.0,0.0);
+	GL.Vertex3f(1.0, 1.0, 1.0);
+	GL.Vertex3f(-1.0, 1.0, 1.0);
+	GL.Vertex3f(-1.0, -1.0, 1.0);
+	GL.Vertex3f(1.0, -1.0, 1.0);
+GL.End();
+GL.Finish();
 
-GL.DelFCR();
+
 
 (* ctx.SwapBuffers *);
 SaveToImage("glcube.bmp");
@@ -851,10 +851,10 @@ END Cube;
 
 PROCEDURE  Quadric*;
 VAR
-	matAmbient, matSpecular, lightPosition, modelAmbient: ARRAY 4 OF GL.GLfloat;
-	matShininess: GL.GLfloat;
-	qObj: GL.TGLUQuadricObj;
-	startList: GL.GLuint;
+	matAmbient, matSpecular, lightPosition, modelAmbient: ARRAY [4] OF GL.Float;
+	matShininess: GL.Float;
+	qObj: GLU.QuadricObj;
+	startList: GL.Uint;
 BEGIN
 IF ctx = NIL THEN Error; RETURN END;
 (*	matAmbient := [ 0.5, 0.5, 0.5, 1.0];
@@ -870,91 +870,91 @@ lightPosition[0] := 1.0; 	lightPosition[1] := 1.0;		lightPosition[2] := 1.0;		li
 modelAmbient[0] := 0.5;	modelAmbient[1] := 0.5;	modelAmbient[2] := 0.5;	modelAmbient[3] := 1.0;
 
 ctx.MakeCurrent();
-	GL.glClearColor(0.0, 0.0, 0.0, 0.0);
+	GL.ClearColor(0.0, 0.0, 0.0, 0.0);
 
-	GL.glMaterialfv(GLC.GL_FRONT, GLC.GL_AMBIENT, S.ADR(matAmbient[0]));
-	GL.glMaterialfv(GLC.GL_FRONT, GLC.GL_SPECULAR, S.ADR(matSpecular[0]));
-	GL.glMaterialf(GLC.GL_FRONT, GLC.GL_SHININESS, matShininess);
-	GL.glLightfv(GLC.GL_LIGHT0, GLC.GL_POSITION, S.ADR(lightPosition[0]));
-	GL.glLightModelfv(GLC.GL_LIGHT_MODEL_AMBIENT, S.ADR(modelAmbient[0]));
+	GL.Materialfv(GLC.GL_FRONT, GLC.GL_AMBIENT, matAmbient);
+	GL.Materialfv(GLC.GL_FRONT, GLC.GL_SPECULAR, matSpecular);
+	GL.Materialf(GLC.GL_FRONT, GLC.GL_SHININESS, matShininess);
+	GL.Lightfv(GLC.GL_LIGHT0, GLC.GL_POSITION, lightPosition);
+	GL.LightModelfv(GLC.GL_LIGHT_MODEL_AMBIENT, modelAmbient);
 
-	GL.glEnable(GLC.GL_LIGHTING);
-	GL.glEnable(GLC.GL_LIGHT0);
-	GL.glEnable(GLC.GL_DEPTH_TEST);
+	GL.Enable(GLC.GL_LIGHTING);
+	GL.Enable(GLC.GL_LIGHT0);
+	GL.Enable(GLC.GL_DEPTH_TEST);
 
 
 (*  Create 4 display lists, each with a different quadric object.
  *  Different drawing styles and surface normal specifications
  *  are demonstrated.
  *)
-	startList := GL.glGenLists(4);
-	qObj := GL.gluNewQuadric();
-	GL.gluQuadricCallback(qObj, GLC.GLU_ERROR, 0 (* S.ADR(QuadricError)*));
+	startList := GL.GenLists(4);
+	qObj := GLU.NewQuadric();
+	GLU.QuadricCallback(qObj, GLU.GLU_ERROR, 0 (* S.ADR(QuadricError)*));
 
-	GL.gluQuadricDrawStyle(qObj, GLC.GLU_FILL); (* smooth shaded *)
-	GL.gluQuadricNormals(qObj, GLC.GLU_SMOOTH);
-	GL.glNewList(startList, GLC.GL_COMPILE);
-		GL.gluSphere(qObj, 0.75, 15, 10);
-	GL.glEndList();
+	GLU.QuadricDrawStyle(qObj, GLU.GLU_FILL); (* smooth shaded *)
+	GLU.QuadricNormals(qObj, GLU.GLU_SMOOTH);
+	GL.NewList(startList, GLC.GL_COMPILE);
+		GLU.Sphere(qObj, 0.75, 15, 10);
+	GL.EndList();
 
-	GL.gluQuadricDrawStyle(qObj, GLC.GLU_FILL); (* flat shaded *)
-	GL.gluQuadricNormals(qObj, GLC.GLU_FLAT);
-	GL.glNewList(startList+1, GLC.GL_COMPILE);
-		GL.gluCylinder(qObj, 0.5, 0.3, 1.0, 15, 5);
-	GL.glEndList();
+	GLU.QuadricDrawStyle(qObj, GLU.GLU_FILL); (* flat shaded *)
+	GLU.QuadricNormals(qObj, GLU.GLU_FLAT);
+	GL.NewList(startList+1, GLC.GL_COMPILE);
+		GLU.Cylinder(qObj, 0.5, 0.3, 1.0, 15, 5);
+	GL.EndList();
 
-	GL.gluQuadricDrawStyle(qObj, GLC.GLU_LINE); (* all polygons wireframe *)
-	GL.gluQuadricNormals(qObj, GLC.GLU_NONE);
-	GL.glNewList(startList+2, GLC.GL_COMPILE);
-		GL.gluDisk(qObj, 0.25, 1.0, 20, 4);
-	GL.glEndList();
+	GLU.QuadricDrawStyle(qObj, GLU.GLU_LINE); (* all polygons wireframe *)
+	GLU.QuadricNormals(qObj, GLU.GLU_NONE);
+	GL.NewList(startList+2, GLC.GL_COMPILE);
+		GLU.Disk(qObj, 0.25, 1.0, 20, 4);
+	GL.EndList();
 
-	GL.gluQuadricDrawStyle(qObj, GLC.GLU_SILHOUETTE); (* boundary only  *)
-	GL.gluQuadricNormals(qObj, GLC.GLU_NONE);
-	GL.glNewList(startList+3, GLC.GL_COMPILE);
-		GL.gluPartialDisk(qObj, 0.0, 1.0, 20, 4, 0.0, 225.0);
-	GL.glEndList;
+	GLU.QuadricDrawStyle(qObj, GLU.GLU_SILHOUETTE); (* boundary only  *)
+	GLU.QuadricNormals(qObj, GLU.GLU_NONE);
+	GL.NewList(startList+3, GLC.GL_COMPILE);
+		GLU.PartialDisk(qObj, 0.0, 1.0, 20, 4, 0.0, 225.0);
+	GL.EndList;
 
 	(* Resize *)
-	GL.glViewport(0, 0, w, h);
+	GL.Viewport(0, 0, w, h);
 
-	GL.glMatrixMode (GLC.GL_PROJECTION);
-	GL.glLoadIdentity;
-	GL.glOrtho(-2.5, 2.5, -2.5 , 2.5 , -10.0, 10.0);
+	GL.MatrixMode (GLC.GL_PROJECTION);
+	GL.LoadIdentity;
+	GL.Ortho(-2.5, 2.5, -2.5 , 2.5 , -10.0, 10.0);
 
-	GL.glMatrixMode (GLC.GL_MODELVIEW);
-	GL.glLoadIdentity;
+	GL.MatrixMode (GLC.GL_MODELVIEW);
+	GL.LoadIdentity;
 
 	(* draw *)
-GL.SetFCR();
-	GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
-	GL.glPushMatrix;
 
-	GL.glEnable(GLC.GL_LIGHTING);
-	GL.glShadeModel (GLC.GL_SMOOTH);
-	GL.glTranslated(-1.0, -1.0, 0.0);
-	GL.glCallList(startList);
+	GL.Clear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);
+	GL.PushMatrix;
 
-	GL.glShadeModel (GLC.GL_FLAT);
-	GL.glTranslated(0.0, 2.0, 0.0);
-	GL.glPushMatrix;
-	GL.glRotated(300.0, 1.0, 0.0, 0.0);
-	GL.glCallList(startList+1);
-	GL.glPopMatrix;
+	GL.Enable(GLC.GL_LIGHTING);
+	GL.ShadeModel (GLC.GL_SMOOTH);
+	GL.Translated(-1.0, -1.0, 0.0);
+	GL.CallList(startList);
 
-	GL.glDisable(GLC.GL_LIGHTING);
-	GL.glColor3d(0.0, 1.0, 1.0);
-	GL.glTranslated(2.0, -2.0, 0.0);
-	GL.glCallList(startList+2);
+	GL.ShadeModel (GLC.GL_FLAT);
+	GL.Translated(0.0, 2.0, 0.0);
+	GL.PushMatrix;
+	GL.Rotated(300.0, 1.0, 0.0, 0.0);
+	GL.CallList(startList+1);
+	GL.PopMatrix;
 
-	GL.glColor3d(1.0, 1.0, 0.0);
-	GL.glTranslated(0.0, 2.0, 0.0);
-	GL.glCallList(startList+3);
+	GL.Disable(GLC.GL_LIGHTING);
+	GL.Color3d(0.0, 1.0, 1.0);
+	GL.Translated(2.0, -2.0, 0.0);
+	GL.CallList(startList+2);
 
-	GL.glPopMatrix;
-	GL.glFinish();
+	GL.Color3d(1.0, 1.0, 0.0);
+	GL.Translated(0.0, 2.0, 0.0);
+	GL.CallList(startList+3);
 
-GL.DelFCR();
+	GL.PopMatrix;
+	GL.Finish();
+
+
 
 SaveToImage("glquadric.bmp");
 ctx.DeActivate;

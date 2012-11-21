@@ -3,7 +3,7 @@ MODULE WMGLDemoFlags; (** AUTHOR "fnecati"; PURPOSE "Flags simulation demo"; *)
 IMPORT
 	WMRectangles, WMGraphics, Strings, Kernel, Raster, Math, KernelLog,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
-	SYSTEM, GL := OpenGL, GLC := OpenGLConst, WMGL:=WMGLWindow;
+	SYSTEM, GL := OpenGL, GLC := OpenGLConst, GLU, WMGL:=WMGLWindow;
 
 CONST
 		waittime=50;
@@ -12,7 +12,7 @@ TYPE
 	KillerMsg = OBJECT
 	END KillerMsg;
 
-	Points=ARRAY 45, 45, 3 OF GL.GLfloat;
+	Points=ARRAY 45, 45, 3 OF GL.Float;
 
 	GLWindow* =  OBJECT(WMGL.Window)
 	VAR
@@ -20,28 +20,27 @@ TYPE
 
 		alive, animated: BOOLEAN;
 
-		xrot: GL.GLfloat;                 (* Rotate v about x *)
- 		yrot: GL.GLfloat;                    (* Rotate v about y *)
- 		zrot: GL.GLfloat;                    (* Rotate v about z *)
-		texture, texture2:  GL.GLuint;  (*  handles for texture *)
+		xrot: GL.Float;                 (* Rotate v about x *)
+ 		yrot: GL.Float;                    (* Rotate v about y *)
+ 		zrot: GL.Float;                    (* Rotate v about z *)
+		texture, texture2:  GL.Uint;  (*  handles for texture *)
 		wigglecount, wigglecount2: LONGINT;        (* Rychlost vln*)
-		hold: GL.GLfloat;                    (* Pomocnk zajilynulosti pohybu *)
+		hold: GL.Float;                    (* Pomocnk zajilynulosti pohybu *)
 		points, points2:  Points;  (* flag vertice points *)
 
 	PROCEDURE &New(w, h: LONGINT);
 	BEGIN
 		Init(w, h, FALSE); (* use alpha, for 32bpp img *)
-		WM.AddWindow(SELF, 100, 100);
+		WM.DefaultAddWindow(SELF);
 		SetTitle(Strings.NewString("WMGLDemoFlags: Flags"));
 
 		wigglecount := 0; wigglecount2 := 0;
 		animated := FALSE;
 		alive := TRUE;
-		context.MakeCurrent();
+
 		initGL;
-		context.DeActivate();
-		Reshape(GetWidth(), GetHeight());
-		UpdateImage;		
+		Reshape(w, h);
+		UpdateImage;
 	  END New;
 
 	PROCEDURE KeyEvent (ucs: LONGINT; flags: SET; keysym: LONGINT);
@@ -68,17 +67,17 @@ TYPE
 	END Handle;
 
 	PROCEDURE Close*;
-	BEGIN {EXCLUSIVE}
+	BEGIN  (* {EXCLUSIVE}*)
 		alive := FALSE;
 		Close^;
 	END Close;
 
 	PROCEDURE UpdateImage;
 	BEGIN
-		context.MakeCurrent();
+		MakeCurrent();
 			displayCB();
-			context.RenderInto(backImg);
-		context.DeActivate();
+			SwapGLBuffer();
+		DeActivate();
 		Swap();
 		Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));
 	END UpdateImage;
@@ -95,31 +94,38 @@ TYPE
 
 	PROCEDURE Reshape(w, h: LONGINT);
 	BEGIN
-		  context.MakeCurrent();
-		  GL.glViewport(0, 0, w, h);
+		  MakeCurrent();
+		  GL.Viewport(0, 0, w, h);
 		  (* Resetuje aktuastaven  *)
-		  GL.glMatrixMode(GLC.GL_PROJECTION);     (* projection matrix *)
-		  GL.glLoadIdentity();                                       (* Reset matrix *)
-		  GL.gluPerspective(45.0, 1.0 ,0.1,100.0);           (*  perspective view *)
-		  GL.glMatrixMode(GLC.GL_MODELVIEW);   (* model view matrix *)
-		  GL.glLoadIdentity;        (* Reset matix *)
-		  context.DeActivate();
+		  GL.MatrixMode(GLC.GL_PROJECTION);     (* projection matrix *)
+		  GL.LoadIdentity();                                       (* Reset matrix *)
+		  GLU.Perspective(45.0, 1.0 ,0.1,100.0);           (*  perspective view *)
+
+		  GL.MatrixMode(GLC.GL_MODELVIEW);   (* model view matrix *)
+		  GL.LoadIdentity;        (* Reset matix *)
+		  DeActivate();
 	END Reshape;
 
 	PROCEDURE initGL();
 	VAR x, y: LONGINT;
 	BEGIN
-		loadTextures;
-		GL.glEnable(GLC.GL_TEXTURE_2D);                          (* Zapne mapov textur*)
-		GL.glShadeModel(GLC.GL_SMOOTH);			                    (* Povolemntv*)
-		GL.glClearColor(0.0, 0.0, 0.0, 0.5);	  	            (* rnozad  *)
-		GL.glClearDepth(1.0);				                        (* Nastavenloubkov bufferu*)
-		GL.glEnable(GLC.GL_DEPTH_TEST);			                    (* Povolloubkovestov*)
-		GL.glDepthFunc(GLC.GL_LEQUAL);				                    (* Typ hloubkov testov *)
-		GL.glHint(GLC.GL_PERSPECTIVE_CORRECTION_HINT, GLC.GL_NICEST); (* Nejleppektivnorekce *)
-		GL.glPolygonMode(GLC.GL_BACK, GLC.GL_FILL);                  (* P strana vypln polygony *)
-		(*GL.glPolygonMode(GLC.GL_FRONT, GLC.GL_LINE);*)                 (* Zadntrana vypln mu *)
-		GL.glPolygonMode(GLC.GL_FRONT, GLC.GL_FILL);
+		MakeCurrent();
+
+		texture := LoadTexture("europe.png");
+
+		texture2 := LoadTexture("turkiye.png");
+
+
+		GL.Enable(GLC.GL_TEXTURE_2D);                          (* Zapne mapov textur*)
+		GL.ShadeModel(GLC.GL_SMOOTH);			                    (* Povolemntv*)
+		GL.ClearColor(0.0, 0.0, 0.0, 0.5);	  	            (* rnozad  *)
+		GL.ClearDepth(1.0);				                        (* Nastavenloubkov bufferu*)
+		GL.Enable(GLC.GL_DEPTH_TEST);			                    (* Povolloubkovestov*)
+		GL.DepthFunc(GLC.GL_LEQUAL);				                    (* Typ hloubkov testov *)
+		GL.Hint(GLC.GL_PERSPECTIVE_CORRECTION_HINT, GLC.GL_NICEST); (* Nejleppektivnorekce *)
+		GL.PolygonMode(GLC.GL_BACK, GLC.GL_FILL);                  (* P strana vypln polygony *)
+		(*GL.PolygonMode(GLC.GL_FRONT, GLC.GL_LINE);*)                 (* Zadntrana vypln mu *)
+		GL.PolygonMode(GLC.GL_FRONT, GLC.GL_FILL);
 		FOR x:=0 TO 44 DO                                 (* initialize vertices *)
 			FOR y:=0 TO 44 DO
 				points[x,y,0] := x/5 - 4.5;
@@ -135,65 +141,60 @@ TYPE
 				points2[x,y,2] := Math.sin((((x/5)*40)/360)*2*Math.pi);
 			END;
 		END;
-		GL.DelFCR();
+		DeActivate();
 	END initGL;
 
-	PROCEDURE loadTextures;
+	PROCEDURE LoadTexture(CONST fname: ARRAY OF CHAR): GL.Uint;
 	VAR teximg: Raster.Image;
+		tex: GL.Uint;
 	BEGIN
-		teximg := WMGraphics.LoadImage("europe.png", FALSE);
-	 	GL.glGenTextures(1, SYSTEM.ADR(texture));
-	 	GL.glBindTexture(GLC.GL_TEXTURE_2D, texture);
-	 	GL.glTexImage2D(GLC.GL_TEXTURE_2D, 0, GLC.GL_RGBA, teximg.width, teximg.height, 0, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, teximg.adr);
-	 	GL.glTexParameteri(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_LINEAR);
-	 	GL.glTexParameteri(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MIN_FILTER, GLC.GL_LINEAR);
-		teximg := NIL;
+		teximg := WMGraphics.LoadImage(fname, FALSE);
+		ASSERT(teximg # NIL, 220 );
 
-		teximg := WMGraphics.LoadImage("turkiye.png", FALSE);
-		GL.glGenTextures(1, SYSTEM.ADR(texture2));
-		GL.glBindTexture(GLC.GL_TEXTURE_2D, texture2);
-		GL.glTexImage2D(GLC.GL_TEXTURE_2D, 0, GLC.GL_RGBA, teximg.width, teximg.height, 0, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, teximg.adr);
-		GL.glTexParameteri(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_LINEAR);
-		GL.glTexParameteri(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MIN_FILTER, GLC.GL_LINEAR);
-		teximg := NIL;
-	END loadTextures;
+	 	GL.GenTextures(1, SYSTEM.ADR(tex));
+	 	GL.BindTexture(GLC.GL_TEXTURE_2D, tex);
+	 	GL.TexImage2D(GLC.GL_TEXTURE_2D, 0, GLC.GL_RGBA, teximg.width, teximg.height, 0, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, teximg.adr);
+	 	GL.TexParameteri(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_LINEAR);
+	 	GL.TexParameteri(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MIN_FILTER, GLC.GL_LINEAR);
+	 	RETURN tex;
+	END LoadTexture;
 
 	PROCEDURE displayEurope;
 	VAR
 		x, y: LONGINT;
-		float_x, float_y, float_xb, float_yb: GL.GLfloat;
+		float_x, float_y, float_xb, float_yb: GL.Float;
 	 BEGIN
-		GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);  (* Smazovku a hloubkover *)
+		GL.Clear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT);  (* Smazovku a hloubkover *)
 
-		GL.glLoadIdentity();	                                    (* Reset matix *)
-		GL.SetFCR();
-		GL.glTranslatef(0.0,0.0,-12.0);                          (* Posunuto obrazovky *)
-		GL.glRotatef(xrot,1.0,0.0,0.0);                          (* Rotace na ose x *)
-		GL.glRotatef(yrot,0.0,1.0,0.0);                          (* Rotace na ose y *)
-		GL.glRotatef(zrot,0.0,0.0,1.0);                          (* Rotace na ose z *)
-		GL.DelFCR();
+		GL.LoadIdentity();	                                    (* Reset matix *)
 
-		GL.glBindTexture(GLC.GL_TEXTURE_2D, texture);              (* Vextury *)
-		GL.glBegin(GLC.GL_QUADS);                                    (* Zaek kreslentverc  *)
+		GL.Translatef(0.0,0.0,-12.0);                          (* Posunuto obrazovky *)
+		GL.Rotatef(xrot,1.0,0.0,0.0);                          (* Rotace na ose x *)
+		GL.Rotatef(yrot,0.0,1.0,0.0);                          (* Rotace na ose y *)
+		GL.Rotatef(zrot,0.0,0.0,1.0);                          (* Rotace na ose z *)
+
+
+		GL.BindTexture(GLC.GL_TEXTURE_2D, texture);              (* Vextury *)
+		GL.Begin(GLC.GL_QUADS);                                    (* Zaek kreslentverc  *)
 		FOR x:=0 TO 43 DO                                   (* Cykly prochjole *)
 			FOR y:=0 TO 43 DO
 				float_x := x/44;                                (* Vypo texturovordin *)
 				float_y := y/44;
 				float_xb := (x+1)/44;
 				float_yb := (y+1)/44;
-				GL.SetFCR();
-				GL.glTexCoord2f(float_x, float_y);                  (* Zad jednotlivd  *)
-				GL.glVertex3f(points[x,y,0], points[x,y,1], points[x,y,2]);
-				GL.glTexCoord2f(float_x, float_yb);
-				GL.glVertex3f(points[x,y+1,0], points[x,y+1,1], points[x,y+1,2]);
-				GL.glTexCoord2f(float_xb, float_yb);
-				GL.glVertex3f(points[x+1, y+1,0], points[x+1,y+1,1], points[x+1,y+1,2]);
-				GL.glTexCoord2f(float_xb, float_y);
-				GL.glVertex3f(points[x+1,y,0], points[x+1,y,1], points[x+1,y,2]);
-				GL.DelFCR();
+
+				GL.TexCoord2f(float_x, float_y);                  (* Zad jednotlivd  *)
+				GL.Vertex3f(points[x,y,0], points[x,y,1], points[x,y,2]);
+				GL.TexCoord2f(float_x, float_yb);
+				GL.Vertex3f(points[x,y+1,0], points[x,y+1,1], points[x,y+1,2]);
+				GL.TexCoord2f(float_xb, float_yb);
+				GL.Vertex3f(points[x+1, y+1,0], points[x+1,y+1,1], points[x+1,y+1,2]);
+				GL.TexCoord2f(float_xb, float_y);
+				GL.Vertex3f(points[x+1,y,0], points[x+1,y,1], points[x+1,y,2]);
+
 			END;
 		END;
-		GL.glEnd();                                              (* Konec kreslentverc *)
+		GL.End();                                              (* Konec kreslentverc *)
 
 		IF wigglecount = 2 THEN                             (* Pro snnychlosti pohybu *)
 			FOR y:=0 TO 44 DO                                   (* Proch hodnoty na y *)
@@ -209,38 +210,38 @@ TYPE
 	PROCEDURE displayTurkiye();
 	VAR
 		x, y: LONGINT;
-		float_x, float_y, float_xb, float_yb: GL.GLfloat;
+		float_x, float_y, float_xb, float_yb: GL.Float;
 	 BEGIN
 
-		GL.glLoadIdentity();	                                    (* Reset matix *)
-		GL.SetFCR();
-		GL.glTranslatef(2.0,0.0,-22.0);                          (* Posunuto obrazovky *)
-		GL.glRotatef(xrot,1.0,0.0,0.0);                          (* Rotace na ose x *)
-		GL.glRotatef(yrot,0.0,1.0,0.0);                          (* Rotace na ose y *)
-		GL.glRotatef(zrot,0.0,0.0,1.0);                          (* Rotace na ose z *)
-		GL.DelFCR();
+		GL.LoadIdentity();	                                    (* Reset matix *)
 
-		GL.glBindTexture(GLC.GL_TEXTURE_2D, texture2);              (* Vextury *)
-		GL.glBegin(GLC.GL_QUADS);                                    (* Zaek kreslentverc  *)
+		GL.Translatef(2.0,0.0,-22.0);                          (* Posunuto obrazovky *)
+		GL.Rotatef(xrot,1.0,0.0,0.0);                          (* Rotace na ose x *)
+		GL.Rotatef(yrot,0.0,1.0,0.0);                          (* Rotace na ose y *)
+		GL.Rotatef(zrot,0.0,0.0,1.0);                          (* Rotace na ose z *)
+
+
+		GL.BindTexture(GLC.GL_TEXTURE_2D, texture2);              (* Vextury *)
+		GL.Begin(GLC.GL_QUADS);                                    (* Zaek kreslentverc  *)
 		FOR x:=0 TO 43 DO                                   (* Cykly prochjole *)
 			FOR y:=0 TO 43 DO
 				float_x := x/44;                                (* Vypo texturovordin *)
 				float_y := y/44;
 	 			float_xb := (x+1)/44;
 	 			float_yb := (y+1)/44;
-	 			GL.SetFCR();
-	 			GL.glTexCoord2f(float_x, float_y);                  (* Zad jednotlivd  *)
-	 			GL.glVertex3f(points2[x,y,0], points2[x,y,1], points2[x,y,2]);
-	 			GL.glTexCoord2f(float_x, float_yb);
-	 			GL.glVertex3f(points2[x,y+1,0], points2[x,y+1,1], points2[x,y+1,2]);
-	 			GL.glTexCoord2f(float_xb, float_yb);
-	 			GL.glVertex3f(points2[x+1, y+1,0], points2[x+1,y+1,1], points2[x+1,y+1,2]);
-	 			GL.glTexCoord2f(float_xb, float_y);
-	 			GL.glVertex3f(points2[x+1,y,0], points2[x+1,y,1], points2[x+1,y,2]);
-	 			GL.DelFCR();
+
+	 			GL.TexCoord2f(float_x, float_y);                  (* Zad jednotlivd  *)
+	 			GL.Vertex3f(points2[x,y,0], points2[x,y,1], points2[x,y,2]);
+	 			GL.TexCoord2f(float_x, float_yb);
+	 			GL.Vertex3f(points2[x,y+1,0], points2[x,y+1,1], points2[x,y+1,2]);
+	 			GL.TexCoord2f(float_xb, float_yb);
+	 			GL.Vertex3f(points2[x+1, y+1,0], points2[x+1,y+1,1], points2[x+1,y+1,2]);
+	 			GL.TexCoord2f(float_xb, float_y);
+	 			GL.Vertex3f(points2[x+1,y,0], points2[x+1,y,1], points2[x+1,y,2]);
+
 	 		END;
 	 	END;
-	 	GL.glEnd();                                              (* Konec kreslentverc *)
+	 	GL.End();                                              (* Konec kreslentverc *)
 
 	 	 IF wigglecount2 = 2 THEN                             (* Pro snnychlosti pohybu *)
 	 		FOR y:=0 TO 44 DO                                   (* Proch hodnoty na y *)
@@ -255,6 +256,7 @@ TYPE
 
 	PROCEDURE displayCB();
 	BEGIN
+
 		displayEurope;
 		xrot := xrot + 0.3;
 		yrot := yrot + 0.2;

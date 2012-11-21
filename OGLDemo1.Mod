@@ -1,7 +1,7 @@
 MODULE OGLDemo1; (** AUTHOR "fnecati"; PURPOSE "an OGLWindow demo"; *)
 
 IMPORT
-	 GL:=OpenGL, GLC := OpenGLConst, OGW := OGLWindow, Inputs,
+	 GL:=OpenGL, GLC := OpenGLConst, GLU, OGW := OGLWindow, Inputs,
 	KernelLog, GLLib ;
 
 TYPE
@@ -79,7 +79,7 @@ TYPE
 				| Inputs.KsDown: listenerPos[2] := listenerPos[2]+ 0.1;
 		ELSE
 		END;
-		GL.DelFCR();
+
 	END KeyEvent ;
 
 	PROCEDURE ChangePosititon*;
@@ -94,44 +94,44 @@ TYPE
 	PROCEDURE Display;
 	VAR x: REAL;
 	BEGIN
-		GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT) ;
-		GL.glPushMatrix() ;
-		GL.glRotatef(20.0,1.0,1.0, 0.0) ;
+		GL.Clear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT) ;
+		GL.PushMatrix() ;
+		GL.Rotatef(20.0,1.0,1.0, 0.0) ;
 
 		(* sources *)
-		GL.glPushMatrix() ;
-			GL.glTranslatef(source0Pos[0], source0Pos[1], source0Pos[2]) ;
-			GL.glColor3f(1.0, 0.0, 0.0) ;
+		GL.PushMatrix() ;
+			GL.Translatef(source0Pos[0], source0Pos[1], source0Pos[2]) ;
+			GL.Color3f(1.0, 0.0, 0.0) ;
 			GLLib.WireCube(0.5) ;
-			GL.glPopMatrix() ;
+			GL.PopMatrix() ;
 
-			GL.glPushMatrix() ;
-				GL.glTranslatef(source2Pos[0], source2Pos[1], source2Pos[2]) ;
-				GL.glColor3f(0.0, 0.0,1.0) ;
+			GL.PushMatrix() ;
+				GL.Translatef(source2Pos[0], source2Pos[1], source2Pos[2]) ;
+				GL.Color3f(0.0, 0.0,1.0) ;
 				GLLib.WireCube(0.5) ;
-			GL.glPopMatrix() ;
+			GL.PopMatrix() ;
 
-			GL.glPushMatrix() ;
-				GL.glTranslatef(source1Pos[0], source0Pos[1], source0Pos[2]) ;
-				GL.glColor3f(0.0,1.0, 0.0) ;
+			GL.PushMatrix() ;
+				GL.Translatef(source1Pos[0], source0Pos[1], source0Pos[2]) ;
+				GL.Color3f(0.0,1.0, 0.0) ;
 				GLLib.WireCube(0.5) ;
-			GL.glPopMatrix() ;
+			GL.PopMatrix() ;
 
 			(* the listener *)
-			GL.glPushMatrix() ;
-				GL.glTranslatef(listenerPos[0], listenerPos[1], listenerPos[2]) ;
- 				GL.glColor3f(1.0,1.0, 1.0);
+			GL.PushMatrix() ;
+				GL.Translatef(listenerPos[0], listenerPos[1], listenerPos[2]) ;
+ 				GL.Color3f(1.0,1.0, 1.0);
 				GLLib.WireCube(0.5) ;
-			GL.glPopMatrix() ;
+			GL.PopMatrix() ;
 
-			GL.glPopMatrix() ;
+			GL.PopMatrix() ;
 			SwapBuffers();
 
 			(* update poisition for next display *)
 			x := listenerPos[0] + 0.1;
 			IF x > 4.0 THEN x := -4.0; END;
 			listenerPos[0] :=x;
-			GL.DelFCR();
+
 		END Display;
 
 
@@ -139,20 +139,20 @@ TYPE
 		VAR ratio: LONGREAL;
 		BEGIN
 			ratio := w / h;
-			GL.glViewport(0, 0, w, h) ;
-			GL.glClearColor(0.0, 0.0 ,0.0, 1.0) ;
+			GL.Viewport(0, 0, w, h) ;
+			GL.ClearColor(0.0, 0.0 ,0.0, 1.0) ;
 
-			GL.glMatrixMode(GLC.GL_PROJECTION) ;
-			GL.glLoadIdentity() ;
-			GL.SetFCR();
-				GL.gluPerspective(60.0,ratio,1.0,30.0) ;
-			GL.DelFCR();
+			GL.MatrixMode(GLC.GL_PROJECTION) ;
+			GL.LoadIdentity() ;
 
-			GL.glMatrixMode(GLC.GL_MODELVIEW) ;
-			GL.glLoadIdentity() ;
-			GL.SetFCR();
-				GL.glTranslatef(0.0,0.0, transdz) ;
-   			GL.DelFCR();
+				GLU.Perspective(60.0,ratio,1.0,30.0) ;
+
+
+			GL.MatrixMode(GLC.GL_MODELVIEW) ;
+			GL.LoadIdentity() ;
+
+				GL.Translatef(0.0,0.0, transdz) ;
+
 		END Reshape;
 
 

@@ -4,7 +4,7 @@ IMPORT
   X11 , Unix, SYSTEM, Modules, Trace;
 
 CONST
-  libXxf86vm = 'libXxf86vm.so';
+  libXxf86vm = 'libXxf86vm.so.1';
 
 TYPE
 	ADDRESS = SYSTEM.ADDRESS;

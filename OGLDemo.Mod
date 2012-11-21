@@ -33,15 +33,15 @@ TYPE
 	(* OpenGL display procedure *)
 	PROCEDURE Display;
 	BEGIN
-		GL.glClear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT) ;
+		GL.Clear(GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT) ;
 		SwapBuffers();
 	END Display;
 
 	(* reshape OpenGL window *)
 	PROCEDURE Reshape(w, h: LONGINT);
 	BEGIN
-		GL.glViewport(0, 0, w, h) ;
-		GL.glClearColor(0.8, 0.1 ,0.8, 1.0) ;
+		GL.Viewport(0, 0, w, h) ;
+		GL.ClearColor(0.8, 0.1 ,0.8, 1.0) ;
 	END Reshape;
 
 	BEGIN

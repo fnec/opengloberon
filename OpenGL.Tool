@@ -1,9 +1,9 @@
  OpenGL Framework for A2- WinAos and LinuxAos versions
 
 # =================================================
-#        OpenGL 4.2 - Headertranslation
-#        Version 4.2
-#        Date : 08.08.2011
+#        OpenGL 4.3 - Headertranslation
+#        Version 4.3
+#        Date : 22.11.2012
 #        Works with : LinuxAos and WinAos
 #
 #        All contributions and corrections are welcome ...
@@ -15,13 +15,14 @@
 # LinuxAos:
 
 Compiler.Compile
-	OpenGLConst.Mod
-	Unix.OpenGL.Mod
-	Unix.GLContext.Mod
-	Unix.GLContextFB.Mod
-	Unix.OGLWindow.Mod
-	Unix.WMGLWindow.Mod
-	Unix.GLXinfo.Mod
+	 opengloberon/OpenGLConst.Mod
+	 opengloberon/Unix.OpenGL.Mod
+	 opengloberon/Unix.GLU.Mod
+	 opengloberon/Unix.GLContext.Mod
+	 opengloberon/Unix.GLContextFB.Mod
+	 opengloberon/Unix.OGLWindow.Mod
+	 opengloberon/Unix.WMGLWindow.Mod
+	 opengloberon/Unix.GLXinfo.Mod
 	~
 	
 	GLXinfo.Do~  # display opengl info
@@ -29,49 +30,59 @@ Compiler.Compile
 # WinAos:
 
 Compiler.Compile
-	OpenGLConst.Mod
-	WinApi.Mod
-	Win32.OpenGL.Mod
-	Win32.GLContext.Mod
-	Win32.OGLWindow.Mod
-	Win32.WMGLWindow.Mod
+	opengloberon/OpenGLConst.Mod
+	opengloberon/WinApi.Mod
+	
+	opengloberon/Win32.OpenGL.Mod
+	opengloberon/Win32.GLU.Mod
+	
+	opengloberon/Win32.GLContext.Mod
+	opengloberon/Win32.OGLWindow.Mod
+	opengloberon/Win32.WMGLWindow.Mod
+	opengloberon/Win32.WGLinfo.Mod
 	 ~
 
+	WGLinfo.Do ~ 
+	
 # 2- Compile platform independent demo examples of GLContext :
 
 Compiler.Compile
-	GLTest.Mod GLinfo.Mod
-	GLLib.Mod
-	GLShaderUtils.Mod
-	WMGLDemo.Mod
-	WMGLDemo1.Mod
-	WMGLDemo2.Mod
-	WMGLDemo3.Mod
-	WMGLDemo4.Mod
-	WMGLDemo6.Mod
-	WMGLDemo7.Mod
-	WMGLDemo9.Mod
-	WMGLDemoFlags.Mod
-	WMGLDemoLorenz.Mod
-	WMGLPlotSurface.Mod
-	WMGLSteamEngine.Mod
-	WMGLPolyStipple.Mod
-	WMGLSLBricks.Mod
+	 opengloberon/GLTest.Mod 
+	 opengloberon/GLLib.Mod
+	 opengloberon/GLShaderUtils.Mod
+	 opengloberon/WMGLDemo.Mod
+	 opengloberon/WMGLDemo1.Mod
+	 opengloberon/WMGLDemo2.Mod
+	 opengloberon/WMGLDemo3.Mod
+	 opengloberon/WMGLDemo4.Mod
+	 opengloberon/WMGLDemo6.Mod
+	 opengloberon/WMGLDemo7.Mod
+	 opengloberon/WMGLDemo9.Mod
+	 opengloberon/WMGLDemoFlags.Mod
+	 opengloberon/WMGLDemoLorenz.Mod
+	 opengloberon/WMGLPlotSurface.Mod
+	 opengloberon/WMGLSteamEngine.Mod
+	 opengloberon/WMGLPolyStipple.Mod
+	 opengloberon/WMGLSLBricks.Mod
 	~
 
 
 
 # LinuxAos specific demos (using linux native X11-Window ):
 Compiler.Compile
-	Unix.X11KeySymDef.Mod Unix.XF86VMode.Mod MyXGear.Mod  MyXGear1.Mod MyXGear2.Mod ~
+	opengloberon/Unix.X11KeySymDef.Mod
+	opengloberon/Unix.XF86VMode.Mod
+	opengloberon/MyXGear.Mod
+	opengloberon/MyXGear1.Mod
+	opengloberon/MyXGear2.Mod
+	~
 
 
 # WinAos specific version of WMGLDemo7.Mod by tobj..@ .., thanks :
 Compiler.Compile  Win32.WMGLDemo7b.Mod ~  WMGLDemo7b.Open ~
 
 # Run the following commands,  click Midle Mouse (MM) on the following commands
-
-	GLinfo.Do ~ # display opengl info
+	
 	WMGLDemo.Open ~
 	WMGLDemo1.Open ~
 	WMGLDemo2.Open ~
@@ -88,16 +99,17 @@ Compiler.Compile  Win32.WMGLDemo7b.Mod ~  WMGLDemo7b.Open ~
 	WMGLPolyStipple.Open ~
 	WMGLSLBricks.Open ~
 
+ 
 # ***************************************
 # 3- Compile demo examples of OGLWindow:
 
 Compiler.Compile
-	GLLib.Mod
-	OGLDemo.Mod
-	OGLDemo1.Mod
-	OGLDemo2.Mod
 
-	OGLDemoFonts.Mod
+	opengloberon/OGLDemo.Mod
+	opengloberon/OGLDemo1.Mod
+	opengloberon/OGLDemo2.Mod
+
+	opengloberon/OGLDemoFonts.Mod
 	~
 
 # Run Demos, click Midle Mouse (MM) on the following commands
@@ -110,10 +122,15 @@ Compiler.Compile
 # **********************
 # **********************
 # A 3DS model Loader example
-	Compiler.Compile Lists.Mod Decoder3DS.Mod SpaceSim3.Mod WMSpaceSim3.Mod~
+	Compiler.Compile 
+		opengloberon/Lists.Mod 
+		opengloberon/Decoder3DS.Mod 
+		opengloberon/SpaceSim3.Mod 
+		opengloberon/WMSpaceSim3.Mod
+		~
 
 	SpaceSim3.Open ~
-	WMSpaceSim3.Open ~ 
+	WMSpaceSimq3.Open ~ 
 # **********************
 # **********************
 
@@ -220,15 +237,21 @@ VAR
 	  	
 	  	PROCEDURE Reshape(w, h: LONGINT);
 		BEGIN
-			GL.glViewport(0,0,w, h);
+			MakeCurrent();
+				(* GL codes *)
+				GL.Viewport(0,0,w, h);
+				
+			DeActivate();
 	  	END Reshape;
 	  	
 	  	PROCEDURE UpdateImage;
 	  	BEGIN
-	  		context.MakeCurrent();
-	  			(* your GL codes *)
-	  			context.RenderInto(backImg);  (* render into back image *)
-	  		context.DeActivate();
+	  		MakeCurrent();
+	  			(* your GL codes ... *)
+	  			
+	  			SwapGLBuffer();  (* render into back image *)
+	  			
+	  		DeActivate();
 	  		Swap(); (* swap double buffered window *)
 	  		Invalidate(WMRectangles.MakeRect(0, 0, GetWidth(), GetHeight()));	
 	  	END UpdateImage;
@@ -301,8 +324,6 @@ NOTE:
  with the Oberons' floating operations and may produce unpredictable results. In the OpenGL binding module,
  SetFCR and DelFCR functions may be used to set Floating Point Control Register and recover this problem just
  before the these OpenGL functions and after respectively. See the provided examples for usage.
- This problem exists in LinuxAos version only, WinAos version do not have but, for interoperation reasons
- SetFCR and DelFCR functions are also used as they are set empty in OpenGL biding module of WinAos version.
 
  While using OpenGL with WMWindowManager.Window care should be taken. The OpenGL contexts
  is process and thread sensitive. One context to one one thread. If more than one available, as in Active objects,
