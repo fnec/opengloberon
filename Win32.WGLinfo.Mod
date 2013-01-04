@@ -11,7 +11,9 @@ BEGIN
 	NEW(context);
 	context.Init(100, 100);
 	context.MakeCurrent;
-
+	GL.Read_WGL_EXT_extensions_string();
+	GL.Read_WGL_ARB_extensions_string();
+	
 	(* WGL info *)
 	KernelLog.Ln;
 	s := GL.wglEXTStrings();  KernelLog.String("WGL EXTString: ");  KernelLog.String(s^); KernelLog.Ln;

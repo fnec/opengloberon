@@ -62,7 +62,7 @@ TYPE Context* = OBJECT
 		att[12] := 0 ;
 
 		doublebuffered := TRUE;
-		glWin.visualInfoPtr := GL.glXChooseVisual(glWin.display, 0, SYSTEM.ADR(att[0]));
+		glWin.visualInfoPtr := GL.glXChooseVisual(glWin.display, 0, ADDRESSOF(att[0]));
 
 		IF glWin.visualInfoPtr = NIL THEN
 			Machine.Release( Machine.X11 );
@@ -275,7 +275,7 @@ TYPE Context* = OBJECT
 		h := image.height;
 		Machine.Acquire( Machine.X11 );
 		GL.glXWaitGL();
-		GL.ReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, SYSTEM.ADR(buffer^[0]));
+		GL.ReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, ADDRESSOF(buffer^[0]));
 		Machine.Release( Machine.X11 );
 
 		(* flip vertical, y *)

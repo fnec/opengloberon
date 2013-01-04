@@ -421,7 +421,7 @@ BEGIN
 
 
 	(* try to find a visual with this attribs *)
-	visinfoptr := GL.glXChooseVisual(display, screen , SYSTEM.ADR(att[0]));
+	visinfoptr := GL.glXChooseVisual(display, screen , ADDRESSOF(att[0]));
 	 IF visinfoptr = NIL THEN
 		IF debug THEN context.out.String(" NO appropriate visual found"); context.out.Ln; context.out.Update; END;
 		Close;
@@ -504,7 +504,7 @@ BEGIN
 
 		(* only set window title and handle wm_delete_events if in windowed mode *)
 		wmDelete := Api.InternAtom(display, "WM_DELETE_WINDOW", Api.True);
-		res := Api.SetWMProtocols(display, win, SYSTEM.ADR(wmDelete), 1);
+		res := Api.SetWMProtocols(display, win, ADDRESSOF(wmDelete), 1);
 		Api.SetStandardProperties(display, win, TITLE, TITLE, Api.None, 0, 0, dumysize);
 		Api.MapWindow(display, win);
 	END;
@@ -542,7 +542,7 @@ BEGIN
  		IF windecorations THEN hints.decorations := 0; ELSE hints.decorations := 1; END;
  		X11.Lock;
 		property := Api.InternAtom(display, "_MOTIF_WM_HINTS", Api.True);
-		X11.ChangeProperty(display, win, property, property, 32, Api.PropModeReplace, SYSTEM.ADR(hints), 5);
+		X11.ChangeProperty(display, win, property, property, 32, Api.PropModeReplace, ADDRESSOF(hints), 5);
 		X11.Unlock;
 	END;
 
@@ -640,7 +640,7 @@ END SaveImage;
 	cm.data:=SYSTEM.VAL(Api.Data40, dl);
 	xev := SYSTEM.VAL(Api.XEvent, cm);
 
-	res := Api.SendEvent(display, X11.DefaultRootWindow(display), Api.False, Api.SubstructureNotifyMask, SYSTEM.ADR(xev));
+	res := Api.SendEvent(display, X11.DefaultRootWindow(display), Api.False, Api.SubstructureNotifyMask, ADDRESSOF(xev));
 
 	END ToggleFullWindow;
 

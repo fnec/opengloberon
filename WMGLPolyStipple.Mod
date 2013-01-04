@@ -194,7 +194,7 @@ TYPE
 			GL.PushMatrix();
 				GL.Color3f (0.0, 1.0, 0.0);
 				GL.Translatef(0.5, 0.0, 0);
-				GL.PolygonStipple (SYSTEM.ADR(fly[0])); (* pass the fly stipple array *)
+				GL.PolygonStipple (ADDRESSOF(fly[0])); (* pass the fly stipple array *)
 				Square();
 			GL.PopMatrix();
 
@@ -206,7 +206,7 @@ TYPE
 
 							GL.Rotatef(ianglez, 0.0, 0.0, 1.0);
 
-						GL.PolygonStipple (SYSTEM.ADR(halftone[0]));
+						GL.PolygonStipple (ADDRESSOF(halftone[0]));
 						Square();
 					GL.PopMatrix();
 			GL.PopMatrix();
@@ -217,7 +217,7 @@ TYPE
 
 					GL.Rotatef(anglez, 0.0, 0.0, 1.0);
 
-				GL.PolygonStipple (SYSTEM.ADR(fly[0]));
+				GL.PolygonStipple (ADDRESSOF(fly[0]));
 			    	GL.Rectd (-1.9, 1.9, -0.1, 0.1);
 			GL.PopMatrix();
 

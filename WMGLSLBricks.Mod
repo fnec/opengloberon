@@ -3,7 +3,8 @@ MODULE WMGLSLBricks; (** AUTHOR "fnecati"; PURPOSE "opengl GLSL bricks shading e
 IMPORT
 	WMRectangles, WMGraphics, Strings,  Inputs,
 	WM := WMWindowManager,  WMMessages, WMDialogs, KernelLog,
-	GL := OpenGL, GLC := OpenGLConst, GLU, WMGL := WMGLWindow, GLLib, GLSUtil := GLShaderUtils;
+	GL := OpenGL, GLC := OpenGLConst, GLU, WMGL := WMGLWindow, 
+	GLLib, GLSUtil := GLShaderUtils;
 
 TYPE
 	PChar = GLSUtil.PChar;
@@ -307,13 +308,13 @@ TYPE
 		BEGIN
 		    (* Create a vertex shader object and a fragment shader object *)
 
-			vss := GLSUtil.TextFileRead("brick.vert");
-			fss := GLSUtil.TextFileRead("brick.frag");
+			vss := GLSUtil.TextFileRead("opengloberon/brick.vert");
+			fss := GLSUtil.TextFileRead("opengloberon/brick.frag");
 			IF (fss = NIL) OR (vss = NIL ) THEN RETURN FALSE END;
 
 		    (* Install program object as part of current state *)
 
-			IF ~ GLSUtil.LoadShaders(vss, fss, brickProg) THEN
+			IF ~ GLSUtil.LoadTheseShaders(vss, fss, brickProg) THEN
 				KernelLog.String("LoadShader Error"); KernelLog.Ln;
 				RETURN FALSE;
 			END;

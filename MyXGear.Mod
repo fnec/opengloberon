@@ -318,7 +318,7 @@ END;
   attrib[12] := 0 ;
 
  (* try to find a visual with this attribs *)
- visinfoptr := GL.glXChooseVisual(display, 0 , SYSTEM.ADR(attrib[0]));
+ visinfoptr := GL.glXChooseVisual(display, 0 , ADDRESSOF(attrib[0]));
 
  IF visinfoptr = NIL THEN
   	IF debug THEN context.out.String(" NO appropriate visual found"); context.out.Ln; context.out.Update; END;

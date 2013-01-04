@@ -391,12 +391,12 @@ BEGIN {ACTIVE}
 
 	Kernel.SetTimer(timer, waittime);
 	WHILE alive DO
-		IF animated THEN
+		BEGIN {EXCLUSIVE}  AWAIT(animated)  END;
 			IF Kernel.Expired(timer) THEN
 				ChangeAngle();
 				Kernel.SetTimer(timer, waittime);
 			END;
-		END;
+		(* END;*)
 	END;
 
 END GLWindow;

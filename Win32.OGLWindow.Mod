@@ -210,7 +210,7 @@ TYPE
 		pixelformat : LONGINT;
 		res: LONGINT;
 	BEGIN
-		pfd.nSize := SYSTEM.SIZEOF(WinApi.PIXELFORMATDESCRIPTOR);
+		pfd.nSize := SIZEOF(WinApi.PIXELFORMATDESCRIPTOR);
 		pfd.nVersion := 1;
 		pfd.dwFlags := WinApi.PFD_SUPPORT_OPENGL + WinApi.PFD_DRAW_TO_WINDOW + WinApi.PFD_DOUBLEBUFFER;
 
@@ -229,7 +229,7 @@ TYPE
 		END;
 
 		hDC := User32.GetDC( hWnd );
-		pixelformat := WinApi.ChoosePixelFormat(hDC, SYSTEM.ADR(pfd));
+		pixelformat := WinApi.ChoosePixelFormat(hDC, ADDRESSOF(pfd));
 		IF pixelformat = 0 THEN
 			IF debug THEN
 				KernelLog.String("pixelformat= "); KernelLog.Int(pixelformat, 0); KernelLog.Ln;
@@ -238,7 +238,7 @@ TYPE
 			RETURN FALSE;
 		END;
 
-		res := WinApi.SetPixelFormat(hDC, pixelformat, SYSTEM.ADR(pfd));
+		res := WinApi.SetPixelFormat(hDC, pixelformat, ADDRESSOF(pfd));
 		IF res =0 THEN
 			IF debug THEN
 				KernelLog.String("ERROR: SetpixelFormat: "); KernelLog.Int(Kernel32.GetLastError(), 0); KernelLog.Ln;
@@ -502,7 +502,7 @@ TYPE
 	PROCEDURE GetMinMaxInfo(lParam: User32.LParam ): BOOLEAN;
 	VAR mm: User32.MinMaxInfo;
 	BEGIN
-		SYSTEM.MOVE( lParam, SYSTEM.ADR( mm ), SYSTEM.SIZEOF( User32.MinMaxInfo ) );  mm.ptMaxSize.x := width;
+		SYSTEM.MOVE( lParam, ADDRESSOF( mm ), SIZEOF( User32.MinMaxInfo ) );  mm.ptMaxSize.x := width;
 		mm.ptMaxSize.y := height;  mm.ptMaxTrackSize := mm.ptMaxSize;  RETURN TRUE;
 	END GetMinMaxInfo;
 
@@ -524,7 +524,7 @@ TYPE
 	PROCEDURE PosChanging(  lParam: User32.LParam );
 	VAR pos: User32.WindowPos;
 	BEGIN
-		SYSTEM.MOVE( lParam, SYSTEM.ADR( pos ), SYSTEM.SIZEOF( User32.WindowPos ) );
+		SYSTEM.MOVE( lParam, ADDRESSOF( pos ), SIZEOF( User32.WindowPos ) );
 		IF ~(User32.SWPNoMove IN pos.flags) THEN
 			IF (pos.x < -width) & (pos.y < -height) THEN Minimize()
 			ELSIF (pos.x >= 0) & (pos.y >= 0) THEN Restore()
@@ -608,13 +608,13 @@ TYPE
 		ret: Kernel32.ATOM;
 		windowClass: User32.WndClassEx;
 	BEGIN
-		windowClass.cbSize := SYSTEM.SIZEOF( User32.WndClassEx );
+		windowClass.cbSize := SIZEOF( User32.WndClassEx );
 		windowClass.style := WinApi.CS_OWNDC + WinApi.CS_VREDRAW + WinApi.CS_HREDRAW;   (* Cs_parentdc: INTEGER is 128  = 2^7 *)
 		windowClass.lpfnWndProc := WindowProc;  windowClass.cbClsExtra := 0;  windowClass.cbWndExtra := 4;
 		windowClass.hInstance := Machine.hInstance;  str := "Console";  windowClass.hIcon := User32.LoadIcon( Machine.hInstance, str );
 		str := "Console.Small";  windowClass.hIconSm := User32.LoadIcon( Machine.hInstance, str );  windowClass.hCursor := Kernel32.NULL;
 		windowClass.hbrBackground := Kernel32.NULL;  windowClass.lpszMenuName := Kernel32.NULL;
-		windowClass.lpszClassName := SYSTEM.VAL( Kernel32.LPSTR, SYSTEM.ADR(className ) );
+		windowClass.lpszClassName := SYSTEM.VAL( Kernel32.LPSTR, ADDRESSOF(className ) );
 		ret := User32.RegisterClassEx( windowClass );
 
 	END RegisterClasses;

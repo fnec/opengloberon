@@ -10,8 +10,6 @@ CONST
    	libname = 'glu32.dll';
 
 TYPE
-  ADDRESS = GL.ADDRESS;
-
 
   Enum = GL.Enum;
   Boolean = GL.Boolean;

@@ -3,7 +3,7 @@ MODULE WMGLDemo1; (** AUTHOR "fnecati"; PURPOSE "a demo for Vertex Arrays, and l
 IMPORT
 	WMRectangles, WMGraphics, Strings, Kernel, KernelLog,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
-	SYSTEM, GL := OpenGL, GLC := OpenGLConst, GLU, WMGL := WMGLWindow;
+	GL := OpenGL, GLC := OpenGLConst, GLU, WMGL := WMGLWindow;
 
 CONST waittime=50;
 TYPE
@@ -190,20 +190,20 @@ TYPE
 
 
 		(* create buffers *)
-		GL.GenBuffersARB(1, SYSTEM.ADR(vboId));
-		GL.GenBuffersARB(1, SYSTEM.ADR(colorId));
-		GL.GenBuffersARB(1, SYSTEM.ADR(normalId));
+		GL.GenBuffersARB(1, ADDRESSOF(vboId));
+		GL.GenBuffersARB(1, ADDRESSOF(colorId));
+		GL.GenBuffersARB(1, ADDRESSOF(normalId));
 
 		GL.BindBufferARB(GLC.GL_ARRAY_BUFFER, vboId);
-		GL.BufferDataARB(GLC.GL_ARRAY_BUFFER, LEN(vertices,0)*4, SYSTEM.ADR(vertices[0]), GLC.GL_STATIC_DRAW);
+		GL.BufferDataARB(GLC.GL_ARRAY_BUFFER, LEN(vertices,0)*4, ADDRESSOF(vertices[0]), GLC.GL_STATIC_DRAW);
 		GL.VertexPointer(3, GLC.GL_FLOAT, 0, 0);
 
 		GL.BindBufferARB(GLC.GL_ARRAY_BUFFER, colorId);
-		GL.BufferDataARB(GLC.GL_ARRAY_BUFFER, LEN(colors,0)*4, SYSTEM.ADR(colors[0]), GLC.GL_STATIC_DRAW);
+		GL.BufferDataARB(GLC.GL_ARRAY_BUFFER, LEN(colors,0)*4, ADDRESSOF(colors[0]), GLC.GL_STATIC_DRAW);
 		GL.ColorPointer(3, GLC.GL_FLOAT, 0, 0);
 
 		GL.BindBufferARB(GLC.GL_ARRAY_BUFFER, normalId);
-		GL.BufferDataARB(GLC.GL_ARRAY_BUFFER, LEN(normals,0)*4, SYSTEM.ADR(normals[0]), GLC.GL_STATIC_DRAW);
+		GL.BufferDataARB(GLC.GL_ARRAY_BUFFER, LEN(normals,0)*4, ADDRESSOF(normals[0]), GLC.GL_STATIC_DRAW);
 		GL.NormalPointer(GLC.GL_FLOAT, 0, 0);
 
 		GL.ClearColor(0.2, 0.1, 0.4, 1.0);                   (*  background color *)

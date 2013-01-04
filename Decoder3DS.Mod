@@ -937,7 +937,7 @@ BEGIN
 	img := TransposeImage(img0);
 
 	writer.String(filename); writer.String("  loaded.."); writer.Ln;  writer.Update;
-  	GL.GenTextures(1, SYSTEM.ADR(textureNumber));
+  	GL.GenTextures(1, ADDRESSOF(textureNumber));
 
 	GL.BindTexture(GLC.GL_TEXTURE_2D, textureNumber);  (* Bind the ID texture specified by the 2nd parameter *)
 

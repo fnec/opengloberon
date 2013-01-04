@@ -204,8 +204,7 @@ CONST
 		WM_SIZING* = 532 (* {2, 4, 9} *);
 
   TYPE
-
-		ADDRESS* = Kernel32.ADDRESS;
+  
 		HANDLE* = Kernel32.HANDLE;
 		HINSTANCE* = Kernel32.HINSTANCE;
 		HMENU* = User32.HMenu;

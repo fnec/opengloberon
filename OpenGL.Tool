@@ -130,7 +130,7 @@ Compiler.Compile
 		~
 
 	SpaceSim3.Open ~
-	WMSpaceSimq3.Open ~ 
+	WMSpaceSim3.Open ~ 
 # **********************
 # **********************
 

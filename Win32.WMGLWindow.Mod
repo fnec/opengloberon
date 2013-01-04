@@ -104,7 +104,7 @@ TYPE
 		w, h: LONGINT;
 	BEGIN
 			w := image.width; h := image.height;
-			GL.ReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, SYSTEM.ADR(buffer^[0]));
+			GL.ReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, ADDRESSOF(buffer^[0]));
 			(* flip vertical, y *)
 			FOR i := 0 TO h - 1 DO
 				Raster.PutPixels(image, 0, h-1-i, w, Raster.BGRA8888, buffer^, i * w * 4, mode)
@@ -242,7 +242,7 @@ VAR
 		Strings.Append(glWin.windowClassName, scnt);
 		IF debug THEN KernelLog.String("glWin.windowClassName= "); KernelLog.String(glWin.windowClassName); KernelLog.Ln; END;
 
-		windowClass.cbSize := SYSTEM.SIZEOF( User32.WndClassEx );
+		windowClass.cbSize := SIZEOF( User32.WndClassEx );
 		windowClass.style := WinApi.CS_OWNDC + WinApi.CS_VREDRAW + WinApi.CS_HREDRAW;
 		windowClass.lpfnWndProc := WindowProc; (* Message handler *)
 		windowClass.cbClsExtra := 0;
@@ -253,7 +253,7 @@ VAR
 		windowClass.hCursor := Kernel32.NULL;
 		windowClass.hbrBackground := Kernel32.NULL;
 		windowClass.lpszMenuName := Kernel32.NULL;
-		windowClass.lpszClassName := SYSTEM.VAL( Kernel32.LPSTR, SYSTEM.ADR( glWin.windowClassName ) );
+		windowClass.lpszClassName := SYSTEM.VAL( Kernel32.LPSTR, ADDRESSOF( glWin.windowClassName ) );
 
 		(* register window class *)
 		res := User32.RegisterClassEx( windowClass );
@@ -351,7 +351,7 @@ VAR
 
 BEGIN
 
-    pfd.nSize := SYSTEM.SIZEOF(WinApi.PIXELFORMATDESCRIPTOR);
+    pfd.nSize := SIZEOF(WinApi.PIXELFORMATDESCRIPTOR);
     pfd.nVersion := 1;
     pfd.dwFlags := WinApi.PFD_SUPPORT_OPENGL + WinApi.PFD_DRAW_TO_WINDOW + WinApi.PFD_DOUBLEBUFFER;
 
@@ -374,7 +374,7 @@ BEGIN
 		pfd.iLayerType := CHR(WinApi.PFD_UNDERLAY_PLANE);
 	END;
 
-	pixelformat := WinApi.ChoosePixelFormat(glWin.hDC, SYSTEM.ADR(pfd));
+	pixelformat := WinApi.ChoosePixelFormat(glWin.hDC, ADDRESSOF(pfd));
 	IF pixelformat = 0 THEN
 		IF debug THEN
 			KernelLog.String("pixelformat= "); KernelLog.Int(pixelformat, 0); KernelLog.Ln;
@@ -384,7 +384,7 @@ BEGIN
 	END;
   (*    ASSERT(pixelformat # 0, 201); *)
 
-	res := WinApi.DescribePixelFormat(glWin.hDC, pixelformat, SYSTEM.SIZEOF(WinApi.PIXELFORMATDESCRIPTOR), SYSTEM.ADR(pfd));
+	res := WinApi.DescribePixelFormat(glWin.hDC, pixelformat, SIZEOF(WinApi.PIXELFORMATDESCRIPTOR), ADDRESSOF(pfd));
 	IF res = 0 THEN
 		IF debug THEN
 			KernelLog.String("ERROR: Describepixelformat Kernel32.GetLastError()= "); KernelLog.Int(Kernel32.GetLastError(), 0); KernelLog.Ln;
@@ -392,7 +392,7 @@ BEGIN
    		RETURN FALSE;
    	END;
 
-	res := WinApi.SetPixelFormat(glWin.hDC, pixelformat, SYSTEM.ADR(pfd));
+	res := WinApi.SetPixelFormat(glWin.hDC, pixelformat, ADDRESSOF(pfd));
 	IF res =0 THEN
 		IF debug THEN
 			KernelLog.String("ERROR: SetpixelFormat: "); KernelLog.Int(Kernel32.GetLastError(), 0); KernelLog.Ln;

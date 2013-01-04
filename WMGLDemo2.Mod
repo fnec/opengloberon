@@ -4,7 +4,7 @@ MODULE WMGLDemo2; (** AUTHOR "fnecati"; PURPOSE " axolotl-felix opengl implemeta
 IMPORT
 	Raster, WMRectangles, WMGraphics, Strings,
 	WM := WMWindowManager,  WMMessages, KernelLog, WMDialogs,
-	SYSTEM, GL := OpenGL, GLC := OpenGLConst, GLU, WMGL:=WMGLWindow;
+	GL := OpenGL, GLC := OpenGLConst, GLU, WMGL:=WMGLWindow;
 
 TYPE
 	KillerMsg = OBJECT
@@ -126,7 +126,7 @@ BEGIN
 
 
   (* Create The Texture *)
-    GL.GenTextures( 3, SYSTEM.ADR(texture[0]) );
+    GL.GenTextures( 3, ADDRESSOF(texture[0]) );
 
   (* Typical Texture Generation Using Data From The Bitmap *)
   GL.BindTexture( GLC.GL_TEXTURE_2D, texture[0] );
@@ -242,7 +242,7 @@ LightPosition[0]:= 0.0; LightPosition[1]:= 0.0; LightPosition[2]:= 0.2; LightPos
   GL.BlendFunc( GLC.GL_SRC_ALPHA, GLC.GL_ONE );
 
 
-  IF ~LoadGLTextures("axolotl.png") THEN Close; END;
+  IF ~LoadGLTextures("opengloberon/axolotl.png") THEN Close; END;
 
  DeActivate();
 END InitGL;

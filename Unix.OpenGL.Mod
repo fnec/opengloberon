@@ -15,7 +15,7 @@ IMPORT SYSTEM, Unix, Modules, X11Api, Strings, GLC := OpenGLConst, KernelLog, St
  ==============================================================================
         OpenGL 4.3 - Headertranslation
         Version 4.3
-        Date : 08.08.2012
+        Date : 22.11.2012
         Works with : LinuxAos
  ==============================================================================
   *)
@@ -33,7 +33,6 @@ CONST
 
 TYPE
 
-	ADDRESS* = X11Api.ADDRESS;
 	AnsiChar* = POINTER TO ARRAY OF CHAR;
 	PAnsiChar* = ADDRESS;
 	THandle* = LONGINT;
@@ -3977,16 +3976,16 @@ TYPE
 	Uniform3i- : TglUniform3i;
 	Uniform4i- : TglUniform4i;
 	Uniform1fv- : TglUniform1fv;
-	Uniform2fv- : TglUniform2fv;
-	Uniform3fv- : TglUniform3fv;
-	Uniform4fv- : TglUniform4fv;
+	XglUniform2fv- : TglUniform2fv;
+	XglUniform3fv- : TglUniform3fv;
+	XglUniform4fv- : TglUniform4fv;
 	Uniform1iv- : TglUniform1iv;
 	Uniform2iv- : TglUniform2iv;
 	Uniform3iv- : TglUniform3iv;
 	Uniform4iv- : TglUniform4iv;
 	UniformMatrix2fv- : TglUniformMatrix2fv;
-	UniformMatrix3fv- : TglUniformMatrix3fv;
-	UniformMatrix4fv- : TglUniformMatrix4fv;
+	XglUniformMatrix3fv- : TglUniformMatrix3fv;
+	XglUniformMatrix4fv- : TglUniformMatrix4fv;
 	ValidateProgram- : TglValidateProgram;
 	VertexAttrib1d- : TglVertexAttrib1d;
 	VertexAttrib1dv- : TglVertexAttrib1dv;
@@ -4362,16 +4361,16 @@ TYPE
 	Uniform3iARB- : TglUniform3iARB;
 	Uniform4iARB- : TglUniform4iARB;
 	Uniform1fvARB- : TglUniform1fvARB;
-	Uniform2fvARB- : TglUniform2fvARB;
-	Uniform3fvARB- : TglUniform3fvARB;
-	Uniform4fvARB- : TglUniform4fvARB;
+	XglUniform2fvARB- : TglUniform2fvARB;
+	XglUniform3fvARB- : TglUniform3fvARB;
+	XglUniform4fvARB- : TglUniform4fvARB;
 	Uniform1ivARB- : TglUniform1ivARB;
 	Uniform2ivARB- : TglUniform2ivARB;
 	Uniform3ivARB- : TglUniform3ivARB;
 	Uniform4ivARB- : TglUniform4ivARB;
 	UniformMatrix2fvARB- : TglUniformMatrix2fvARB;
-	UniformMatrix3fvARB- : TglUniformMatrix3fvARB;
-	UniformMatrix4fvARB- : TglUniformMatrix4fvARB;
+	XglUniformMatrix3fvARB- : TglUniformMatrix3fvARB;
+	XglUniformMatrix4fvARB- : TglUniformMatrix4fvARB;
 	GetObjectParameterfvARB- : TglGetObjectParameterfvARB;
 	GetObjectParameterivARB- : TglGetObjectParameterivARB;
 	GetInfoLogARB- : TglGetInfoLogARB;
@@ -6160,9 +6159,9 @@ VAR address: ADDRESS;
 BEGIN
 	address := 0;
 	IF glXGetProcAddress # NIL THEN
-	  	address := glXGetProcAddress(SYSTEM.ADR(funcName[0]));
+	  	address := glXGetProcAddress(ADDRESSOF(funcName[0]));
 	ELSIF glXGetProcAddressARB # NIL THEN
-		address := glXGetProcAddressARB(SYSTEM.ADR(funcName[0]));
+		address := glXGetProcAddressARB(ADDRESSOF(funcName[0]));
 	END;
 
 	IF debug THEN
@@ -6184,11 +6183,11 @@ BEGIN
 	(* load GL functions *)
 	IF (GL_LibHandle # 0) THEN
 		(* GLX_VERSION_1_4 (needs to be first) *)
-		Unix.Dlsym(GL_LibHandle, 'glXGetProcAddress', SYSTEM.VAL(ADDRESS, glXGetProcAddress));
+		Unix.Dlsym(GL_LibHandle, 'glXGetProcAddress', ADDRESSOF( glXGetProcAddress));
 
 		(* GLX_ARB_get_proc_address  (also needs to be first)  *)
 		glXGetProcAddressARB := SYSTEM.VAL(TglXGetProcAddressARB , GetProcAddress("glXGetProcAddressARB"));
-		(*   Unix.Dlsym(GL_LibHandle, 'glXGetProcAddressARB', SYSTEM.VAL(ADDRESS, glXGetProcAddressARB));  *)
+		(*   Unix.Dlsym(GL_LibHandle, 'glXGetProcAddressARB', ADDRESSOF( glXGetProcAddressARB));  *)
 
 		 glXChooseVisual := SYSTEM.VAL(TglXChooseVisual , GetProcAddress("glXChooseVisual"));
 		 glXCopyContext := SYSTEM.VAL(TglXCopyContext , GetProcAddress("glXCopyContext"));
@@ -6685,16 +6684,16 @@ BEGIN
 	Uniform3i := SYSTEM.VAL(TglUniform3i, GetProcAddress('glUniform3i'));
 	Uniform4i := SYSTEM.VAL(TglUniform4i, GetProcAddress('glUniform4i'));
 	Uniform1fv := SYSTEM.VAL(TglUniform1fv, GetProcAddress('glUniform1fv'));
-	Uniform2fv := SYSTEM.VAL(TglUniform2fv, GetProcAddress('glUniform2fv'));
-	Uniform3fv := SYSTEM.VAL(TglUniform3fv, GetProcAddress('glUniform3fv'));
-	Uniform4fv := SYSTEM.VAL(TglUniform4fv, GetProcAddress('glUniform4fv'));
+	XglUniform2fv := SYSTEM.VAL(TglUniform2fv, GetProcAddress('glUniform2fv'));
+	XglUniform3fv := SYSTEM.VAL(TglUniform3fv, GetProcAddress('glUniform3fv'));
+	XglUniform4fv := SYSTEM.VAL(TglUniform4fv, GetProcAddress('glUniform4fv'));
 	Uniform1iv := SYSTEM.VAL(TglUniform1iv, GetProcAddress('glUniform1iv'));
 	Uniform2iv := SYSTEM.VAL(TglUniform2iv, GetProcAddress('glUniform2iv'));
 	Uniform3iv := SYSTEM.VAL(TglUniform3iv, GetProcAddress('glUniform3iv'));
 	Uniform4iv := SYSTEM.VAL(TglUniform4iv, GetProcAddress('glUniform4iv'));
 	UniformMatrix2fv := SYSTEM.VAL(TglUniformMatrix2fv, GetProcAddress('glUniformMatrix2fv'));
-	UniformMatrix3fv := SYSTEM.VAL(TglUniformMatrix3fv, GetProcAddress('glUniformMatrix3fv'));
-	UniformMatrix4fv := SYSTEM.VAL(TglUniformMatrix4fv, GetProcAddress('glUniformMatrix4fv'));
+	XglUniformMatrix3fv := SYSTEM.VAL(TglUniformMatrix3fv, GetProcAddress('glUniformMatrix3fv'));
+	XglUniformMatrix4fv := SYSTEM.VAL(TglUniformMatrix4fv, GetProcAddress('glUniformMatrix4fv'));
 	ValidateProgram := SYSTEM.VAL(TglValidateProgram, GetProcAddress('glValidateProgram'));
 	VertexAttrib1d := SYSTEM.VAL(TglVertexAttrib1d, GetProcAddress('glVertexAttrib1d'));
 	VertexAttrib1dv := SYSTEM.VAL(TglVertexAttrib1dv, GetProcAddress('glVertexAttrib1dv'));
@@ -7205,16 +7204,16 @@ BEGIN
 	Uniform3iARB := SYSTEM.VAL(TglUniform3iARB, GetProcAddress('glUniform3iARB'));
 	Uniform4iARB := SYSTEM.VAL(TglUniform4iARB, GetProcAddress('glUniform4iARB'));
 	Uniform1fvARB := SYSTEM.VAL(TglUniform1fvARB, GetProcAddress('glUniform1fvARB'));
-	Uniform2fvARB := SYSTEM.VAL(TglUniform2fvARB, GetProcAddress('glUniform2fvARB'));
-	Uniform3fvARB := SYSTEM.VAL(TglUniform3fvARB, GetProcAddress('glUniform3fvARB'));
-	Uniform4fvARB := SYSTEM.VAL(TglUniform4fvARB, GetProcAddress('glUniform4fvARB'));
+	XglUniform2fvARB := SYSTEM.VAL(TglUniform2fvARB, GetProcAddress('glUniform2fvARB'));
+	XglUniform3fvARB := SYSTEM.VAL(TglUniform3fvARB, GetProcAddress('glUniform3fvARB'));
+	XglUniform4fvARB := SYSTEM.VAL(TglUniform4fvARB, GetProcAddress('glUniform4fvARB'));
 	Uniform1ivARB := SYSTEM.VAL(TglUniform1ivARB, GetProcAddress('glUniform1ivARB'));
 	Uniform2ivARB := SYSTEM.VAL(TglUniform2ivARB, GetProcAddress('glUniform2ivARB'));
 	Uniform3ivARB := SYSTEM.VAL(TglUniform3ivARB, GetProcAddress('glUniform3ivARB'));
 	Uniform4ivARB := SYSTEM.VAL(TglUniform4ivARB, GetProcAddress('glUniform4ivARB'));
 	UniformMatrix2fvARB := SYSTEM.VAL(TglUniformMatrix2fvARB, GetProcAddress('glUniformMatrix2fvARB'));
-	UniformMatrix3fvARB := SYSTEM.VAL(TglUniformMatrix3fvARB, GetProcAddress('glUniformMatrix3fvARB'));
-	UniformMatrix4fvARB := SYSTEM.VAL(TglUniformMatrix4fvARB, GetProcAddress('glUniformMatrix4fvARB'));
+	XglUniformMatrix3fvARB := SYSTEM.VAL(TglUniformMatrix3fvARB, GetProcAddress('glUniformMatrix3fvARB'));
+	XglUniformMatrix4fvARB := SYSTEM.VAL(TglUniformMatrix4fvARB, GetProcAddress('glUniformMatrix4fvARB'));
 	(* GL_ARB_vertex_shader  *)
 	GetActiveAttribARB := SYSTEM.VAL(TglGetActiveAttribARB, GetProcAddress('glGetActiveAttribARB'));
 	XglGetAttribLocationARB := SYSTEM.VAL(TglGetAttribLocationARB, GetProcAddress('glGetAttribLocationARB'));
@@ -9799,7 +9798,7 @@ VAR
 BEGIN
   (* determine version of implementation GL  *)
   IF XglGetString = NIL THEN
-    Unix.Dlsym(GL_LibHandle, "glGetString", SYSTEM.VAL(ADDRESS, XglGetString));
+    Unix.Dlsym(GL_LibHandle, "glGetString", ADDRESSOF( XglGetString));
   END;
    Buffer := GetString(GLC.GL_VERSION );
   TrimAndSplitVersionString(Buffer^, MajorVersion, MinorVersion);
@@ -9872,7 +9871,7 @@ VAR
 BEGIN
 	(* general extension string  *)
 	IF XglGetString = NIL THEN
-		Unix.Dlsym(GL_LibHandle, "glGetString", SYSTEM.VAL(ADDRESS, XglGetString));
+		Unix.Dlsym(GL_LibHandle, "glGetString", ADDRESSOF( XglGetString));
 	END;
 
 	IF XglGetString # NIL THEN
@@ -10411,148 +10410,148 @@ END ReadImplementationProperties;
 (*! wrapper procedures for darwin compatibility  *)
 PROCEDURE BindAttribLocation*(programObj: Handle; index: Uint; CONST name: ARRAY OF CHAR);
 BEGIN
-	XglBindAttribLocation(programObj, index, SYSTEM.ADR(name[0]));
+	XglBindAttribLocation(programObj, index, ADDRESSOF(name[0]));
 END BindAttribLocation;
 
 PROCEDURE GetAttribLocation* (programObj: Handle; CONST chars: ARRAY OF CHAR): Int;
 BEGIN
-	RETURN XglGetAttribLocation(programObj, SYSTEM.ADR(chars[0]));
+	RETURN XglGetAttribLocation(programObj, ADDRESSOF(chars[0]));
 END GetAttribLocation;
 
 PROCEDURE GetUniformLocation* (programObj: Handle; CONST chars: ARRAY OF CHAR): Int;
 BEGIN
-	RETURN XglGetUniformLocation (programObj, SYSTEM.ADR(chars[0]));
+	RETURN XglGetUniformLocation (programObj, ADDRESSOF(chars[0]));
 END GetUniformLocation;
 
 PROCEDURE BindFragDataLocation* (xprogram: Uint; color: Uint; CONST name: ARRAY OF CHAR);
 BEGIN
-	XglBindFragDataLocation(xprogram,color, SYSTEM.ADR(name[0]));
+	XglBindFragDataLocation(xprogram,color, ADDRESSOF(name[0]));
 END BindFragDataLocation;
 
 PROCEDURE GetFragDataLocation*(xprogram: Uint; CONST name: ARRAY OF CHAR): Int;
 BEGIN
-	RETURN XglGetFragDataLocation(xprogram, SYSTEM.ADR(name[0]));
+	RETURN XglGetFragDataLocation(xprogram, ADDRESSOF(name[0]));
 END GetFragDataLocation;
 
 PROCEDURE GetAttribLocationARB*(programObj: HandleARB; CONST chars: ARRAY OF CHAR): Int;
 BEGIN
-	RETURN XglGetAttribLocationARB(programObj, SYSTEM.ADR(chars[0]));
+	RETURN XglGetAttribLocationARB(programObj, ADDRESSOF(chars[0]));
 END GetAttribLocationARB;
 
 PROCEDURE BindAttribLocationARB*(programObj: HandleARB; index: Uint; CONST name: ARRAY OF CHAR);
 BEGIN
-	XglBindAttribLocationARB(programObj, index,  SYSTEM.ADR(name[0]));
+	XglBindAttribLocationARB(programObj, index,  ADDRESSOF(name[0]));
 END BindAttribLocationARB;
 
 PROCEDURE GetUniformLocationARB*(programObj: HandleARB; CONST chars: ARRAY OF CHAR): Int;
 BEGIN
-	RETURN XglGetUniformLocationARB(programObj, SYSTEM.ADR(chars[0]));
+	RETURN XglGetUniformLocationARB(programObj, ADDRESSOF(chars[0]));
 END GetUniformLocationARB;
 
 PROCEDURE GetUniformBlockIndex* (xprogram: Uint; CONST uniformBlockName: ARRAY OF CHAR): Uint;
 BEGIN
-	RETURN XglGetUniformBlockIndex(xprogram, SYSTEM.ADR(uniformBlockName[0]));
+	RETURN XglGetUniformBlockIndex(xprogram, ADDRESSOF(uniformBlockName[0]));
 END GetUniformBlockIndex;
 
 PROCEDURE NamedStringARB*(xtype: Enum; namelen: Int; CONST name: ARRAY OF CHAR; stringlen: Int; CONST xstring: ARRAY OF CHAR);
 BEGIN
-	XglNamedStringARB(xtype, namelen, SYSTEM.ADR(name[0]), stringlen, SYSTEM.ADR(xstring[0]));
+	XglNamedStringARB(xtype, namelen, ADDRESSOF(name[0]), stringlen, ADDRESSOF(xstring[0]));
 END NamedStringARB;
 
 PROCEDURE DeleteNamedStringARB*(namelen: Int; CONST name: ARRAY OF CHAR);
 BEGIN
-	XglDeleteNamedStringARB(namelen, SYSTEM.ADR(name[0]));
+	XglDeleteNamedStringARB(namelen, ADDRESSOF(name[0]));
 END DeleteNamedStringARB;
 
 PROCEDURE IsNamedStringARB*(namelen: Int; CONST name: ARRAY OF CHAR): Boolean;
 BEGIN
-	RETURN XglIsNamedStringARB(namelen, SYSTEM.ADR(name[0]));
+	RETURN XglIsNamedStringARB(namelen, ADDRESSOF(name[0]));
 END IsNamedStringARB;
 
 PROCEDURE GetNamedStringARB*(namelen: Int; CONST name: ARRAY OF CHAR; bufSize: Sizei; stringlen: Int; xstring: PChar);
 BEGIN
-	XglGetNamedStringARB(namelen, SYSTEM.ADR(name[0]), bufSize, stringlen, xstring);
+	XglGetNamedStringARB(namelen, ADDRESSOF(name[0]), bufSize, stringlen, xstring);
 END GetNamedStringARB;
 
 PROCEDURE GetNamedStringivARB*(namelen: Int; CONST name: ARRAY OF CHAR; pname: Enum; params: Pint);
 BEGIN
-	XglGetNamedStringivARB(namelen, SYSTEM.ADR(name[0]), pname, params);
+	XglGetNamedStringivARB(namelen, ADDRESSOF(name[0]), pname, params);
 END GetNamedStringivARB;
 
 (* GL_ARB_blend_func_extended *)
 PROCEDURE BindFragDataLocationIndexed*(xprogram: Uint; colorNumber: Uint; index: Uint; CONST name: ARRAY OF CHAR);
 BEGIN
-	XglBindFragDataLocationIndexed(xprogram, colorNumber, index, SYSTEM.ADR(name[0]));
+	XglBindFragDataLocationIndexed(xprogram, colorNumber, index, ADDRESSOF(name[0]));
 END BindFragDataLocationIndexed;
 
 PROCEDURE GetFragDataIndex*(xprogram: Uint; CONST name: ARRAY OF CHAR): Int;
 BEGIN
-	RETURN XglGetFragDataIndex(xprogram, SYSTEM.ADR(name[0]));
+	RETURN XglGetFragDataIndex(xprogram, ADDRESSOF(name[0]));
 END GetFragDataIndex;
 
 PROCEDURE GetSubroutineUniformLocation*(xprogram: Uint; shadertype: Enum; CONST name: ARRAY OF CHAR): Int;
 BEGIN
-	RETURN XglGetSubroutineUniformLocation(xprogram, shadertype, SYSTEM.ADR(name[0]));
+	RETURN XglGetSubroutineUniformLocation(xprogram, shadertype, ADDRESSOF(name[0]));
 END GetSubroutineUniformLocation;
 
 PROCEDURE GetSubroutineIndex*(xprogram: Uint; shadertype: Enum; CONST name: ARRAY OF CHAR): Uint;
 BEGIN
-	RETURN XglGetSubroutineIndex (xprogram, shadertype, SYSTEM.ADR(name[0]));
+	RETURN XglGetSubroutineIndex (xprogram, shadertype, ADDRESSOF(name[0]));
 END GetSubroutineIndex;
 
 PROCEDURE BindFragDataLocationEXT*(xprogram: Uint; colorNumber: Uint; CONST name: ARRAY OF CHAR);
 BEGIN
-	XglBindFragDataLocationEXT(xprogram, colorNumber, SYSTEM.ADR(name[0]));
+	XglBindFragDataLocationEXT(xprogram, colorNumber, ADDRESSOF(name[0]));
 END BindFragDataLocationEXT;
 
 PROCEDURE GetFragDataLocationEXT*(xprogram: Uint; CONST name: ARRAY OF CHAR): Int;
 BEGIN
-	RETURN XglGetFragDataLocationEXT(xprogram, SYSTEM.ADR(name[0]));
+	RETURN XglGetFragDataLocationEXT(xprogram, ADDRESSOF(name[0]));
 END GetFragDataLocationEXT;
 
 PROCEDURE CreateShaderProgramEXT* (xtype: Enum; CONST xstring: ARRAY OF CHAR): Uint;
 BEGIN
-	RETURN XglCreateShaderProgramEXT(xtype, SYSTEM.ADR(xstring[0]));
+	RETURN XglCreateShaderProgramEXT(xtype, ADDRESSOF(xstring[0]));
 END CreateShaderProgramEXT;
 
 PROCEDURE ProgramNamedParameter4fNV* (id: Uint; len: Sizei; CONST name: ARRAY OF CHAR; x: Float; y: Float; z: Float; w: Float);
 BEGIN
-	XglProgramNamedParameter4fNV(id, len, SYSTEM.ADR(name[0]), x, y, z, w);
+	XglProgramNamedParameter4fNV(id, len, ADDRESSOF(name[0]), x, y, z, w);
 END ProgramNamedParameter4fNV;
 
 PROCEDURE ProgramNamedParameter4dNV* (id: Uint; len: Sizei; CONST name: ARRAY OF CHAR; x: Double; y: Double; z: Double; w: Double);
 BEGIN
-	XglProgramNamedParameter4dNV(id, len, SYSTEM.ADR(name[0]), x, y, z, w);
+	XglProgramNamedParameter4dNV(id, len, ADDRESSOF(name[0]), x, y, z, w);
 END ProgramNamedParameter4dNV;
 
 PROCEDURE ProgramNamedParameter4fvNV*(id: Uint; len: Sizei; CONST name: ARRAY OF CHAR;  v: PFloat);
 BEGIN
-	XglProgramNamedParameter4fvNV (id, len, SYSTEM.ADR(name[0]), v);
+	XglProgramNamedParameter4fvNV (id, len, ADDRESSOF(name[0]), v);
 END ProgramNamedParameter4fvNV;
 
 PROCEDURE ProgramNamedParameter4dvNV*(id: Uint; len: Sizei; CONST name: ARRAY OF CHAR;  v: PDouble);
 BEGIN
-	XglProgramNamedParameter4dvNV(id, len, SYSTEM.ADR(name[0]), v);
+	XglProgramNamedParameter4dvNV(id, len, ADDRESSOF(name[0]), v);
 END ProgramNamedParameter4dvNV;
 
 PROCEDURE GetProgramNamedParameterfvNV*(id: Uint; len: Sizei; CONST name: ARRAY OF CHAR; params: PFloat);
 BEGIN
-	XglGetProgramNamedParameterfvNV(id, len,  SYSTEM.ADR(name[0]), params);
+	XglGetProgramNamedParameterfvNV(id, len,  ADDRESSOF(name[0]), params);
 END GetProgramNamedParameterfvNV;
 
 PROCEDURE GetProgramNamedParameterdvNV* (id: Uint; len: Sizei; CONST name: ARRAY OF CHAR; params: PDouble);
 BEGIN
-	XglGetProgramNamedParameterdvNV (id, len, SYSTEM.ADR(name[0]), params);
+	XglGetProgramNamedParameterdvNV (id, len, ADDRESSOF(name[0]), params);
 END GetProgramNamedParameterdvNV;
 
 PROCEDURE ActiveVaryingNV* (xprogram: Uint; CONST name: ARRAY OF CHAR);
 BEGIN
-	XglActiveVaryingNV(xprogram, SYSTEM.ADR(name[0]));
+	XglActiveVaryingNV(xprogram, ADDRESSOF(name[0]));
 END ActiveVaryingNV;
 
 PROCEDURE GetVaryingLocationNV*(xprogram: Uint; CONST name: ARRAY OF CHAR): Int;
 BEGIN
-	RETURN XglGetVaryingLocationNV (xprogram, SYSTEM.ADR(name[0]));
+	RETURN XglGetVaryingLocationNV (xprogram, ADDRESSOF(name[0]));
 END GetVaryingLocationNV;
 
 (* ------------------  *)
@@ -10609,7 +10608,7 @@ END Scalef;
 PROCEDURE Materialfv*(face: Enum; pname: Enum;  CONST params:  ARRAY [4] OF Float);
 BEGIN
 
-	XglMaterialfv(face, pname, SYSTEM.ADR(params[0]));
+	XglMaterialfv(face, pname, ADDRESSOF(params[0]));
 END Materialfv;
 
 PROCEDURE Materialf*(face: Enum; pname: Enum; param: Float);
@@ -10621,61 +10620,61 @@ END Materialf;
 PROCEDURE Lightfv*(light: Enum; pname: Enum;   CONST params: ARRAY [4] OF Float);
 BEGIN
 
-	XglLightfv(light, pname, SYSTEM.ADR(params[0]));
+	XglLightfv(light, pname, ADDRESSOF(params[0]));
 END Lightfv;
 
 
 PROCEDURE Normal3fv*(CONST v: ARRAY [3] OF Float);
 BEGIN
-	(* SetFCR(); *)
-	XglNormal3fv(SYSTEM.ADR(v[0]));
+	SetFCR();
+	XglNormal3fv(ADDRESSOF(v[0]));
 END Normal3fv;
 
 PROCEDURE Normal3f*(nx, ny, nz: Float);
 BEGIN
-	(* SetFCR(); *)
+	SetFCR();
 	XglNormal3f(nx, ny, nz);
 END Normal3f;
 
 PROCEDURE Normal3dv*( CONST v: ARRAY [3] OF Double);
 BEGIN
-	(* SetFCR(); *)
-	XglNormal3dv(SYSTEM.ADR(v[0]));
+	SetFCR();
+	XglNormal3dv(ADDRESSOF(v[0]));
 END Normal3dv;
 
 PROCEDURE Normal3d*(nx, ny, nz: Double);
 BEGIN
-	(* SetFCR();  *)
+	SetFCR();
 	XglNormal3d(nx, ny, nz);
 END Normal3d;
 
 PROCEDURE Vertex3fv*( CONST v: ARRAY [3] OF Float);
 BEGIN
-	(* SetFCR(); *)
-	XglVertex3fv(SYSTEM.ADR(v[0]));
+	SetFCR();
+	XglVertex3fv(ADDRESSOF(v[0]));
 END Vertex3fv;
 
 PROCEDURE Vertex3f*( x, y, z: Float);
 BEGIN
-	(* SetFCR(); *)
+	SetFCR();
 	XglVertex3f(x, y, z);
 END Vertex3f;
 
 PROCEDURE Vertex3dv*( CONST v: ARRAY [3] OF Double);
 BEGIN
-	(* SetFCR(); *)
-	XglVertex3dv(SYSTEM.ADR(v[0]));
+	SetFCR();
+	XglVertex3dv(ADDRESSOF(v[0]));
 END Vertex3dv;
 
 PROCEDURE Vertex3d*( x, y, z: Double);
 BEGIN
-	(* SetFCR(); *)
+	SetFCR();
 	XglVertex3d(x, y, z);
 END Vertex3d;
 
 PROCEDURE LightModelfv*(pname: Enum;  CONST params: ARRAY [4] OF Float);
 BEGIN
-	XglLightModelfv(pname, SYSTEM.ADR(params[0]));
+	XglLightModelfv(pname, ADDRESSOF(params[0]));
 END LightModelfv;
 
 PROCEDURE LightModelf*(pname: Enum;  param: Float);
@@ -10685,14 +10684,66 @@ END LightModelf;
 
 PROCEDURE Color3fv*(CONST c: ARRAY [3] OF Float);
 BEGIN
-	XglColor3fv(SYSTEM.ADR(c[0]));
+	XglColor3fv(ADDRESSOF(c[0]));
 END Color3fv;
 
 PROCEDURE Color3dv* (CONST c: ARRAY [3] OF Double);
 BEGIN
-	XglColor3dv(SYSTEM.ADR(c[0]));
+	XglColor3dv(ADDRESSOF(c[0]));
 END Color3dv;
 
+PROCEDURE Uniform2fv*(location: Int; count: Sizei; CONST value: ARRAY [2] OF Float);
+BEGIN
+  XglUniform2fv(location, count, ADDRESSOF(value[0]));
+END Uniform2fv;
+
+PROCEDURE Uniform3fv*(location: Int; count: Sizei; CONST value: ARRAY [3] OF Float);
+BEGIN
+ XglUniform3fv(location, count, ADDRESSOF(value[0]));
+END Uniform3fv;
+
+PROCEDURE Uniform4fv*(location: Int; count: Sizei; CONST value: ARRAY [4] OF Float);
+BEGIN
+ XglUniform4fv(location, count, ADDRESSOF(value[0]));
+END Uniform4fv;
+
+PROCEDURE Uniform2fvARB*(location: Int; count: Sizei; CONST value: ARRAY [2] OF Float);
+BEGIN
+ XglUniform2fvARB(location, count, ADDRESSOF(value[0]));
+END Uniform2fvARB;
+
+PROCEDURE Uniform3fvARB*(location: Int; count: Sizei; CONST value: ARRAY [3] OF Float);
+BEGIN
+ XglUniform3fvARB(location, count, ADDRESSOF(value[0]));
+END Uniform3fvARB;
+
+PROCEDURE Uniform4fvARB*(location: Int; count: Sizei; CONST value: ARRAY [4] OF Float);
+BEGIN
+ XglUniform4fvARB(location, count, ADDRESSOF(value[0]));
+END Uniform4fvARB;
+
+PROCEDURE UniformMatrix3fv*(location: Int; count: Sizei; transpose: Boolean; CONST value: ARRAY [3,3] OF Float);
+BEGIN
+  XglUniformMatrix3fv(location, count, transpose, ADDRESSOF(value[0,0]));
+END UniformMatrix3fv;
+
+PROCEDURE UniformMatrix3fvARB*(location: Int; count: Sizei; transpose: Boolean; CONST value: ARRAY [3,3] OF Float);
+BEGIN
+  XglUniformMatrix3fvARB(location, count, transpose, ADDRESSOF(value[0,0]));
+END UniformMatrix3fvARB;
+
+
+PROCEDURE UniformMatrix4fv*(location: Int; count: Sizei; transpose: Boolean; CONST value: ARRAY [4,4] OF Float);
+BEGIN
+  XglUniformMatrix4fv(location, count, transpose, ADDRESSOF(value[0,0]));
+END UniformMatrix4fv;
+
+PROCEDURE UniformMatrix4fvARB*(location: Int; count: Sizei; transpose: Boolean; CONST value: ARRAY [4,4] OF Float);
+BEGIN
+  XglUniformMatrix4fvARB(location, count, transpose, ADDRESSOF(value[0,0]));
+END UniformMatrix4fvARB;
+
+(* ---------------------- *)
 PROCEDURE OnClose;
 BEGIN
 	IF GL_LibHandle # 0 THEN

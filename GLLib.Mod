@@ -46,7 +46,7 @@ PROCEDURE WriteProjMatrix*(CONST title: ARRAY OF CHAR);
 VAR i: LONGINT;
        v: Vector16f;
 BEGIN
-GL.GetFloatv(GLC.GL_PROJECTION_MATRIX, SYSTEM.ADR(v[0]));
+GL.GetFloatv(GLC.GL_PROJECTION_MATRIX, ADDRESSOF(v[0]));
 wr.String("-----------------"); wr.Ln;
 wr.String("PROJECTION_MATRIX: "); wr.String(title); wr.Ln;
 	FOR i:=0 TO 15 DO
@@ -60,7 +60,7 @@ PROCEDURE WriteModelViewMatrix*(CONST title: ARRAY OF CHAR);
 VAR i : LONGINT;
        v: Vector16f;
 BEGIN
-GL.GetFloatv(GLC.GL_MODELVIEW_MATRIX, SYSTEM.ADR(v[0]));
+GL.GetFloatv(GLC.GL_MODELVIEW_MATRIX, ADDRESSOF(v[0]));
 wr.String("-----------------"); wr.Ln;
 wr.String("GL_MODELVIEW_MATRIX: ");wr.String(title); wr.Ln;
 	FOR i:=0 TO 15 DO
@@ -359,16 +359,16 @@ BEGIN
 			END
 		END;
 
-		GL.Map2f(GLC.GL_MAP2_TEXTURE_COORD_2, 0, 1, 2, 2, 0, 1, 4, 2, SYSTEM.ADR(tex[0, 0, 0]));
-		GL.Map2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, SYSTEM.ADR(p[0, 0, 0]));
+		GL.Map2f(GLC.GL_MAP2_TEXTURE_COORD_2, 0, 1, 2, 2, 0, 1, 4, 2, ADDRESSOF(tex[0, 0, 0]));
+		GL.Map2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, ADDRESSOF(p[0, 0, 0]));
 		GL.MapGrid2f(grid, 0, 1, grid, 0, 1);
 		GL.EvalMesh2(type, 0, grid, 0, grid);
-		GL.Map2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, SYSTEM.ADR(q[0, 0, 0]));
+		GL.Map2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, ADDRESSOF(q[0, 0, 0]));
 		GL.EvalMesh2(type, 0, grid, 0, grid);
 		IF  i < 6 THEN
-			GL.Map2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, SYSTEM.ADR(r[0, 0, 0]));
+			GL.Map2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, ADDRESSOF(r[0, 0, 0]));
 			GL.EvalMesh2(type, 0, grid, 0, grid);
-			GL.Map2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, SYSTEM.ADR(s[0, 0, 0]));
+			GL.Map2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, ADDRESSOF(s[0, 0, 0]));
 			GL.EvalMesh2(type, 0, grid, 0, grid)
 		END
 	END;

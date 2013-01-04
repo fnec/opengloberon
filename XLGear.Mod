@@ -203,7 +203,7 @@ END;
   attrib[12] := 0 ;
 
  (* try to find a visual with this attribs *)
- visinfoptr := GL.glXChooseVisual(display, 0 , SYSTEM.ADR(attrib[0]));
+ visinfoptr := GL.glXChooseVisual(display, 0 , ADDRESSOF(attrib[0]));
 
  IF visinfoptr = NIL THEN
   	IF debug THEN Trace.String(" NO appropriate visual found"); Trace.Ln; END;
@@ -238,7 +238,7 @@ END;
  masks := { Api.CWBackPixel, Api.CWBorderPixel, Api.CWColormap, Api.CWEventMask};
 
  win := Api.CreateWindow(display, X11.DefaultRootWindow(display), 0, 0, w, h,
-		        0, visinfoptr.depth, Api.InputOutput,  visinfoptr.visual, masks, SYSTEM.ADR(swa));
+		        0, visinfoptr.depth, Api.InputOutput,  visinfoptr.visual, masks, ADDRESSOF(swa));
 
   Api.MapWindow(display, win);
 
@@ -267,7 +267,7 @@ BEGIN
 	X11.NextEvent(display, xev);
 			CASE xev.typ OF
 			X11.Expose:
-					res := Api.GetWindowAttributes(display, win, SYSTEM.ADR(gwa));
+					res := Api.GetWindowAttributes(display, win, ADDRESSOF(gwa));
 					Reshape(gwa.width, gwa.height);
 					Wr("Expose");
 			| X11.KeyPress:	Wr("KeyPressed");

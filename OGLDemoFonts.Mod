@@ -2,7 +2,7 @@ MODULE OGLDemoFonts; (** AUTHOR "fnecati"; PURPOSE "simple demo for Fonts suppor
  (* uses A2 Fonts in OpenGL Window using glBitmaps *)
 
 IMPORT
-	Strings,  S := SYSTEM, KernelLog,  Streams,
+	Strings, KernelLog,  Streams,
 	Raster, WMGraphics, Inputs,
 	GL := OpenGL, GLC := OpenGLConst, GLU, OGW:=OGLWindow;
 
@@ -130,7 +130,7 @@ TYPE
 	BEGIN
 		GL.PushAttrib (GLC.GL_LIST_BIT);
 		GL.ListBase(fontOffset);
-		GL.CallLists(Strings.Length(s), GLC.GL_UNSIGNED_BYTE, S.ADR(s[0]));
+		GL.CallLists(Strings.Length(s), GLC.GL_UNSIGNED_BYTE, ADDRESSOF(s[0]));
 		GL.PopAttrib ();
 	END DrawString;
 
@@ -140,7 +140,7 @@ TYPE
 		GL.RasterPos3f(x, y, z);
 
 		GL.ListBase(fontOffset);
-		GL.CallLists(Strings.Length(s), GLC.GL_UNSIGNED_BYTE, S.ADR(s[0]));
+		GL.CallLists(Strings.Length(s), GLC.GL_UNSIGNED_BYTE, ADDRESSOF(s[0]));
 		GL.PopAttrib ();
 	END DrawStringAt;
 

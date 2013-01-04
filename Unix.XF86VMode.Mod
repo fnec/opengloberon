@@ -7,7 +7,7 @@ CONST
   libXxf86vm = 'libXxf86vm.so.1';
 
 TYPE
-	ADDRESS = SYSTEM.ADDRESS;
+
 	PChar = POINTER TO ARRAY OF CHAR;
 	cuchar = CHAR; (* int8 *)
 	Pcushort = POINTER TO ARRAY OF INTEGER;
@@ -191,7 +191,7 @@ BEGIN
 X11.Lock;
 
 (* get  TXF86VidModeModeInfo*** info   C structure array  *)
-res := XF86VidModeGetAllModeLines(display, screen, mcount, SYSTEM.ADR(mlinesadr));
+res := XF86VidModeGetAllModeLines(display, screen, mcount, ADDRESSOF(mlinesadr));
 
 mlines1 := SYSTEM.VAL(PPXF86VidModeModeInfo, mlinesadr-16); (*  ????  *)
  IF mlines1 = NIL THEN
@@ -214,28 +214,28 @@ BEGIN {EXCLUSIVE}
 	xlib := Unix.Dlopen( libXxf86vm, 2 );
 	ASSERT(xlib # 0, 301);
 
-	Unix.Dlsym( xlib, "XF86VidModeQueryVersion", SYSTEM.VAL( ADDRESS, XF86VidModeQueryVersion));
-	Unix.Dlsym( xlib, "XF86VidModeQueryExtension", SYSTEM.VAL( ADDRESS, XF86VidModeQueryExtension));
-	Unix.Dlsym( xlib, "XF86VidModeSetClientVersion", SYSTEM.VAL( ADDRESS, XF86VidModeSetClientVersion));
-	Unix.Dlsym( xlib, "XF86VidModeGetModeLine", SYSTEM.VAL( ADDRESS, XF86VidModeGetModeLine));
-	Unix.Dlsym( xlib, "XF86VidModeGetAllModeLines", SYSTEM.VAL( ADDRESS, XF86VidModeGetAllModeLines));
-	Unix.Dlsym( xlib, "XF86VidModeAddModeLine", SYSTEM.VAL( ADDRESS, XF86VidModeAddModeLine));
-	Unix.Dlsym( xlib, "XF86VidModeDeleteModeLine", SYSTEM.VAL( ADDRESS, XF86VidModeDeleteModeLine));
-	Unix.Dlsym( xlib, "XF86VidModeModModeLine", SYSTEM.VAL( ADDRESS, XF86VidModeModModeLine));
-	Unix.Dlsym( xlib, "XF86VidModeValidateModeLine", SYSTEM.VAL( ADDRESS, XF86VidModeValidateModeLine));
-	Unix.Dlsym( xlib, "XF86VidModeSwitchMode", SYSTEM.VAL( ADDRESS, XF86VidModeSwitchMode));
-	Unix.Dlsym( xlib, "XF86VidModeSwitchToMode", SYSTEM.VAL( ADDRESS, XF86VidModeSwitchToMode));
-	Unix.Dlsym( xlib, "XF86VidModeLockModeSwitch", SYSTEM.VAL( ADDRESS, XF86VidModeLockModeSwitch));
-	Unix.Dlsym( xlib, "XF86VidModeGetMonitor", SYSTEM.VAL( ADDRESS, XF86VidModeGetMonitor));
-	Unix.Dlsym( xlib, "XF86VidModeGetViewPort", SYSTEM.VAL( ADDRESS, XF86VidModeGetViewPort));
-	Unix.Dlsym( xlib, "XF86VidModeSetViewPort", SYSTEM.VAL( ADDRESS, XF86VidModeSetViewPort));
-	Unix.Dlsym( xlib, "XF86VidModeGetDotClocks", SYSTEM.VAL( ADDRESS, XF86VidModeGetDotClocks));
-	Unix.Dlsym( xlib, "XF86VidModeGetGamma", SYSTEM.VAL( ADDRESS, XF86VidModeGetGamma));
-	Unix.Dlsym( xlib, "XF86VidModeSetGamma", SYSTEM.VAL( ADDRESS, XF86VidModeSetGamma));
-	Unix.Dlsym( xlib, "XF86VidModeSetGammaRamp", SYSTEM.VAL( ADDRESS, XF86VidModeSetGammaRamp));
-	Unix.Dlsym( xlib, "XF86VidModeGetGammaRamp", SYSTEM.VAL( ADDRESS, XF86VidModeGetGammaRamp));
-	Unix.Dlsym( xlib, "XF86VidModeGetGammaRampSize", SYSTEM.VAL( ADDRESS, XF86VidModeGetGammaRampSize));
-	Unix.Dlsym( xlib, "XF86VidModeGetPermissions", SYSTEM.VAL( ADDRESS, XF86VidModeGetPermissions));
+	Unix.Dlsym( xlib, "XF86VidModeQueryVersion", ADDRESSOF( XF86VidModeQueryVersion));
+	Unix.Dlsym( xlib, "XF86VidModeQueryExtension", ADDRESSOF( XF86VidModeQueryExtension));
+	Unix.Dlsym( xlib, "XF86VidModeSetClientVersion", ADDRESSOF( XF86VidModeSetClientVersion));
+	Unix.Dlsym( xlib, "XF86VidModeGetModeLine", ADDRESSOF( XF86VidModeGetModeLine));
+	Unix.Dlsym( xlib, "XF86VidModeGetAllModeLines", ADDRESSOF( XF86VidModeGetAllModeLines));
+	Unix.Dlsym( xlib, "XF86VidModeAddModeLine", ADDRESSOF( XF86VidModeAddModeLine));
+	Unix.Dlsym( xlib, "XF86VidModeDeleteModeLine", ADDRESSOF( XF86VidModeDeleteModeLine));
+	Unix.Dlsym( xlib, "XF86VidModeModModeLine", ADDRESSOF( XF86VidModeModModeLine));
+	Unix.Dlsym( xlib, "XF86VidModeValidateModeLine", ADDRESSOF( XF86VidModeValidateModeLine));
+	Unix.Dlsym( xlib, "XF86VidModeSwitchMode", ADDRESSOF( XF86VidModeSwitchMode));
+	Unix.Dlsym( xlib, "XF86VidModeSwitchToMode", ADDRESSOF( XF86VidModeSwitchToMode));
+	Unix.Dlsym( xlib, "XF86VidModeLockModeSwitch", ADDRESSOF( XF86VidModeLockModeSwitch));
+	Unix.Dlsym( xlib, "XF86VidModeGetMonitor", ADDRESSOF( XF86VidModeGetMonitor));
+	Unix.Dlsym( xlib, "XF86VidModeGetViewPort", ADDRESSOF( XF86VidModeGetViewPort));
+	Unix.Dlsym( xlib, "XF86VidModeSetViewPort", ADDRESSOF( XF86VidModeSetViewPort));
+	Unix.Dlsym( xlib, "XF86VidModeGetDotClocks", ADDRESSOF( XF86VidModeGetDotClocks));
+	Unix.Dlsym( xlib, "XF86VidModeGetGamma", ADDRESSOF( XF86VidModeGetGamma));
+	Unix.Dlsym( xlib, "XF86VidModeSetGamma", ADDRESSOF( XF86VidModeSetGamma));
+	Unix.Dlsym( xlib, "XF86VidModeSetGammaRamp", ADDRESSOF( XF86VidModeSetGammaRamp));
+	Unix.Dlsym( xlib, "XF86VidModeGetGammaRamp", ADDRESSOF( XF86VidModeGetGammaRamp));
+	Unix.Dlsym( xlib, "XF86VidModeGetGammaRampSize", ADDRESSOF( XF86VidModeGetGammaRampSize));
+	Unix.Dlsym( xlib, "XF86VidModeGetPermissions", ADDRESSOF( XF86VidModeGetPermissions));
 
 	Trace.String(libXxf86vm); Trace.StringLn(' loaded.');
 END LoadX11Functions;

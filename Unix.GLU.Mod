@@ -1,6 +1,6 @@
 MODULE GLU; (** AUTHOR ""; PURPOSE "UnixAos GLU binding"; *)
 
-IMPORT Unix, Modules, GL := OpenGL, SYSTEM, Strings, KernelLog;
+IMPORT Unix, Modules, GL := OpenGL, Strings, KernelLog;
 
 VAR
 	 (* handle to library *)
@@ -10,7 +10,6 @@ CONST
    	libname = 'libGLU.so.1';
 
 TYPE
-  ADDRESS = GL.ADDRESS;
 
   Enum = GL.Enum;
   Boolean = GL.Boolean;
@@ -617,57 +616,57 @@ BEGIN
   (* load GLU functions *)
   IF lib # 0 THEN
     (* GLU ======================================================================== *)
-     Unix.Dlsym(lib,  'gluBeginCurve', SYSTEM.VAL(ADDRESS, XgluBeginCurve ));
-     Unix.Dlsym(lib,  'gluBeginPolygon', SYSTEM.VAL(ADDRESS, XgluBeginPolygon ));
-     Unix.Dlsym(lib,  'gluBeginSurface', SYSTEM.VAL(ADDRESS, XgluBeginSurface ));
-     Unix.Dlsym(lib,  'gluBeginTrim', SYSTEM.VAL(ADDRESS,  XgluBeginTrim));
-     Unix.Dlsym(lib,  'gluBuild1DMipmaps', SYSTEM.VAL(ADDRESS, XgluBuild1DMipmaps ));
-     Unix.Dlsym(lib,  'gluBuild2DMipmaps', SYSTEM.VAL(ADDRESS, XgluBuild2DMipmaps ));
-     Unix.Dlsym(lib,  'gluCylinder', SYSTEM.VAL(ADDRESS, XgluCylinder ));
-     Unix.Dlsym(lib,  'gluDeleteNurbsRenderer', SYSTEM.VAL(ADDRESS, XgluDeleteNurbsRenderer ));
-     Unix.Dlsym(lib,  'gluDeleteQuadric', SYSTEM.VAL(ADDRESS, XgluDeleteQuadric ));
-     Unix.Dlsym(lib,  'gluDeleteTess', SYSTEM.VAL(ADDRESS, XgluDeleteTess ));
-     Unix.Dlsym(lib,  'gluDisk', SYSTEM.VAL(ADDRESS, XgluDisk ));
-     Unix.Dlsym(lib,  'gluEndCurve', SYSTEM.VAL(ADDRESS, XgluEndCurve ));
-     Unix.Dlsym(lib,  'gluEndPolygon', SYSTEM.VAL(ADDRESS, XgluEndPolygon ));
-     Unix.Dlsym(lib,  'gluEndSurface', SYSTEM.VAL(ADDRESS, XgluEndSurface ));
-     Unix.Dlsym(lib,  'gluEndTrim', SYSTEM.VAL(ADDRESS, XgluEndTrim ));
-     Unix.Dlsym(lib,  'gluErrorString', SYSTEM.VAL(ADDRESS, XgluErrorString ));
-     Unix.Dlsym(lib,  'gluGetNurbsProperty', SYSTEM.VAL(ADDRESS, XgluGetNurbsProperty ));
-     Unix.Dlsym(lib,  'gluGetString', SYSTEM.VAL(ADDRESS, XgluGetString ));
-     Unix.Dlsym(lib,  'gluGetTessProperty', SYSTEM.VAL(ADDRESS, XgluGetTessProperty ));
-     Unix.Dlsym(lib,  'gluLoadSamplingMatrices', SYSTEM.VAL(ADDRESS, XgluLoadSamplingMatrices ));
-     Unix.Dlsym(lib,  'gluLookAt', SYSTEM.VAL(ADDRESS, XgluLookAt ));
-     Unix.Dlsym(lib,  'gluNewNurbsRenderer', SYSTEM.VAL(ADDRESS, XgluNewNurbsRenderer ));
-     Unix.Dlsym(lib,  'gluNewQuadric', SYSTEM.VAL(ADDRESS, XgluNewQuadric ));
-     Unix.Dlsym(lib,  'gluNewTess', SYSTEM.VAL(ADDRESS, XgluNewTess ));
-     Unix.Dlsym(lib,  'gluNextContour', SYSTEM.VAL(ADDRESS, XgluNextContour ));
-     Unix.Dlsym(lib,  'gluNurbsCallback', SYSTEM.VAL(ADDRESS, XgluNurbsCallback ));
-     Unix.Dlsym(lib,  'gluNurbsCurve', SYSTEM.VAL(ADDRESS, XgluNurbsCurve ));
-     Unix.Dlsym(lib,  'gluNurbsProperty', SYSTEM.VAL(ADDRESS, XgluNurbsProperty ));
-     Unix.Dlsym(lib,  'gluNurbsSurface', SYSTEM.VAL(ADDRESS, XgluNurbsSurface ));
-     Unix.Dlsym(lib,  'gluOrtho2D', SYSTEM.VAL(ADDRESS, XgluOrtho2D ));
-     Unix.Dlsym(lib,  'gluPartialDisk', SYSTEM.VAL(ADDRESS, XgluPartialDisk ));
-     Unix.Dlsym(lib,  'gluPerspective', SYSTEM.VAL(ADDRESS, XgluPerspective ));
-     Unix.Dlsym(lib,  'gluPickMatrix', SYSTEM.VAL(ADDRESS, XgluPickMatrix ));
-     Unix.Dlsym(lib,  'gluProject', SYSTEM.VAL(ADDRESS, XgluProject ));
-     Unix.Dlsym(lib,  'gluPwlCurve', SYSTEM.VAL(ADDRESS, XgluPwlCurve ));
-     Unix.Dlsym(lib,  'gluQuadricCallback', SYSTEM.VAL(ADDRESS, XgluQuadricCallback ));
-     Unix.Dlsym(lib,  'gluQuadricDrawStyle', SYSTEM.VAL(ADDRESS, XgluQuadricDrawStyle ));
-     Unix.Dlsym(lib,  'gluQuadricNormals', SYSTEM.VAL(ADDRESS, XgluQuadricNormals ));
-     Unix.Dlsym(lib,  'gluQuadricOrientation', SYSTEM.VAL(ADDRESS, XgluQuadricOrientation ));
-     Unix.Dlsym(lib,  'gluQuadricTexture', SYSTEM.VAL(ADDRESS, XgluQuadricTexture ));
-     Unix.Dlsym(lib,  'gluScaleImage', SYSTEM.VAL(ADDRESS, XgluScaleImage ));
-     Unix.Dlsym(lib,  'gluSphere', SYSTEM.VAL(ADDRESS, XgluSphere ));
-     Unix.Dlsym(lib,  'gluTessBeginContour', SYSTEM.VAL(ADDRESS, XgluTessBeginContour ));
-     Unix.Dlsym(lib,  'gluTessBeginPolygon', SYSTEM.VAL(ADDRESS, XgluTessBeginPolygon ));
-     Unix.Dlsym(lib,  'gluTessCallback', SYSTEM.VAL(ADDRESS, XgluTessCallback ));
-     Unix.Dlsym(lib,  'gluTessEndContour', SYSTEM.VAL(ADDRESS, XgluTessEndContour ));
-     Unix.Dlsym(lib,  'gluTessEndPolygon', SYSTEM.VAL(ADDRESS, XgluTessEndPolygon ));
-     Unix.Dlsym(lib,  'gluTessNormal', SYSTEM.VAL(ADDRESS, XgluTessNormal ));
-     Unix.Dlsym(lib,  'gluTessProperty', SYSTEM.VAL(ADDRESS, XgluTessProperty ));
-     Unix.Dlsym(lib,  'gluTessVertex', SYSTEM.VAL(ADDRESS, XgluTessVertex ));
-     Unix.Dlsym(lib,  'gluUnProject', SYSTEM.VAL(ADDRESS, XgluUnProject ));
+     Unix.Dlsym(lib,  'gluBeginCurve', ADDRESSOF( XgluBeginCurve ));
+     Unix.Dlsym(lib,  'gluBeginPolygon', ADDRESSOF( XgluBeginPolygon ));
+     Unix.Dlsym(lib,  'gluBeginSurface', ADDRESSOF( XgluBeginSurface ));
+     Unix.Dlsym(lib,  'gluBeginTrim', ADDRESSOF(  XgluBeginTrim));
+     Unix.Dlsym(lib,  'gluBuild1DMipmaps', ADDRESSOF( XgluBuild1DMipmaps ));
+     Unix.Dlsym(lib,  'gluBuild2DMipmaps', ADDRESSOF( XgluBuild2DMipmaps ));
+     Unix.Dlsym(lib,  'gluCylinder', ADDRESSOF( XgluCylinder ));
+     Unix.Dlsym(lib,  'gluDeleteNurbsRenderer', ADDRESSOF( XgluDeleteNurbsRenderer ));
+     Unix.Dlsym(lib,  'gluDeleteQuadric', ADDRESSOF( XgluDeleteQuadric ));
+     Unix.Dlsym(lib,  'gluDeleteTess', ADDRESSOF( XgluDeleteTess ));
+     Unix.Dlsym(lib,  'gluDisk', ADDRESSOF( XgluDisk ));
+     Unix.Dlsym(lib,  'gluEndCurve', ADDRESSOF( XgluEndCurve ));
+     Unix.Dlsym(lib,  'gluEndPolygon', ADDRESSOF( XgluEndPolygon ));
+     Unix.Dlsym(lib,  'gluEndSurface', ADDRESSOF( XgluEndSurface ));
+     Unix.Dlsym(lib,  'gluEndTrim', ADDRESSOF( XgluEndTrim ));
+     Unix.Dlsym(lib,  'gluErrorString', ADDRESSOF( XgluErrorString ));
+     Unix.Dlsym(lib,  'gluGetNurbsProperty', ADDRESSOF( XgluGetNurbsProperty ));
+     Unix.Dlsym(lib,  'gluGetString', ADDRESSOF( XgluGetString ));
+     Unix.Dlsym(lib,  'gluGetTessProperty', ADDRESSOF( XgluGetTessProperty ));
+     Unix.Dlsym(lib,  'gluLoadSamplingMatrices', ADDRESSOF( XgluLoadSamplingMatrices ));
+     Unix.Dlsym(lib,  'gluLookAt', ADDRESSOF( XgluLookAt ));
+     Unix.Dlsym(lib,  'gluNewNurbsRenderer', ADDRESSOF( XgluNewNurbsRenderer ));
+     Unix.Dlsym(lib,  'gluNewQuadric', ADDRESSOF( XgluNewQuadric ));
+     Unix.Dlsym(lib,  'gluNewTess', ADDRESSOF( XgluNewTess ));
+     Unix.Dlsym(lib,  'gluNextContour', ADDRESSOF( XgluNextContour ));
+     Unix.Dlsym(lib,  'gluNurbsCallback', ADDRESSOF( XgluNurbsCallback ));
+     Unix.Dlsym(lib,  'gluNurbsCurve', ADDRESSOF( XgluNurbsCurve ));
+     Unix.Dlsym(lib,  'gluNurbsProperty', ADDRESSOF( XgluNurbsProperty ));
+     Unix.Dlsym(lib,  'gluNurbsSurface', ADDRESSOF( XgluNurbsSurface ));
+     Unix.Dlsym(lib,  'gluOrtho2D', ADDRESSOF( XgluOrtho2D ));
+     Unix.Dlsym(lib,  'gluPartialDisk', ADDRESSOF( XgluPartialDisk ));
+     Unix.Dlsym(lib,  'gluPerspective', ADDRESSOF( XgluPerspective ));
+     Unix.Dlsym(lib,  'gluPickMatrix', ADDRESSOF( XgluPickMatrix ));
+     Unix.Dlsym(lib,  'gluProject', ADDRESSOF( XgluProject ));
+     Unix.Dlsym(lib,  'gluPwlCurve', ADDRESSOF( XgluPwlCurve ));
+     Unix.Dlsym(lib,  'gluQuadricCallback', ADDRESSOF( XgluQuadricCallback ));
+     Unix.Dlsym(lib,  'gluQuadricDrawStyle', ADDRESSOF( XgluQuadricDrawStyle ));
+     Unix.Dlsym(lib,  'gluQuadricNormals', ADDRESSOF( XgluQuadricNormals ));
+     Unix.Dlsym(lib,  'gluQuadricOrientation', ADDRESSOF( XgluQuadricOrientation ));
+     Unix.Dlsym(lib,  'gluQuadricTexture', ADDRESSOF( XgluQuadricTexture ));
+     Unix.Dlsym(lib,  'gluScaleImage', ADDRESSOF( XgluScaleImage ));
+     Unix.Dlsym(lib,  'gluSphere', ADDRESSOF( XgluSphere ));
+     Unix.Dlsym(lib,  'gluTessBeginContour', ADDRESSOF( XgluTessBeginContour ));
+     Unix.Dlsym(lib,  'gluTessBeginPolygon', ADDRESSOF( XgluTessBeginPolygon ));
+     Unix.Dlsym(lib,  'gluTessCallback', ADDRESSOF( XgluTessCallback ));
+     Unix.Dlsym(lib,  'gluTessEndContour', ADDRESSOF( XgluTessEndContour ));
+     Unix.Dlsym(lib,  'gluTessEndPolygon', ADDRESSOF( XgluTessEndPolygon ));
+     Unix.Dlsym(lib,  'gluTessNormal', ADDRESSOF( XgluTessNormal ));
+     Unix.Dlsym(lib,  'gluTessProperty', ADDRESSOF( XgluTessProperty ));
+     Unix.Dlsym(lib,  'gluTessVertex', ADDRESSOF( XgluTessVertex ));
+     Unix.Dlsym(lib,  'gluUnProject', ADDRESSOF( XgluUnProject ));
 
       KernelLog.String(libname); KernelLog.String(" loaded."); KernelLog.Ln;
 

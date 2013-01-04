@@ -199,13 +199,13 @@ BEGIN
         (* Set up light1 *)
         GL.glEnable (GLC.GL_LIGHTING);
         GL.glEnable (GLC.GL_LIGHT1);
-        GL.glLightfv (GLC.GL_LIGHT1, GLC.GL_DIFFUSE, SYSTEM.ADR(white[0]));
-        GL.glLightfv (GLC.GL_LIGHT1, GLC.GL_SPECULAR, SYSTEM.ADR(white[0]));
+        GL.glLightfv (GLC.GL_LIGHT1, GLC.GL_DIFFUSE, ADDRESSOF(white[0]));
+        GL.glLightfv (GLC.GL_LIGHT1, GLC.GL_SPECULAR, ADDRESSOF(white[0]));
 
         (* ambient and diffuse will track glColor *)
         GL.glEnable (GLC.GL_COLOR_MATERIAL);
         GL.glColorMaterial (GLC.GL_FRONT, GLC.GL_AMBIENT_AND_DIFFUSE);
-        GL.glMaterialfv (GLC.GL_FRONT, GLC.GL_SPECULAR, SYSTEM.ADR(white[0]));
+        GL.glMaterialfv (GLC.GL_FRONT, GLC.GL_SPECULAR, ADDRESSOF(white[0]));
 	   GL.glMaterialf (GLC.GL_FRONT, GLC.GL_SHININESS, 20.);
 	quad := GL.gluNewQuadric ();
 END initGL;
@@ -217,7 +217,7 @@ VAR pos: ARRAY [4] OF GL.GLfloat;
 BEGIN
     pos[0] := -2.8; pos[1] := 5.0; pos[2] := 1.8; pos[3] := 1.0;
 
-    GL.glLightfv (GLC.GL_LIGHT1, GLC.GL_POSITION, SYSTEM.ADR(pos[0]));
+    GL.glLightfv (GLC.GL_LIGHT1, GLC.GL_POSITION, ADDRESSOF(pos[0]));
 
 	GL.glPushMatrix();
 

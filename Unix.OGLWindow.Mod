@@ -97,7 +97,7 @@ VAR
 		res: LONGINT;
 	BEGIN
 		xev.typ := Api.Expose;
-		res := Api.SendEvent(display, win, Api.False, Api.ExposureMask, SYSTEM.ADR(xev));
+		res := Api.SendEvent(display, win, Api.False, Api.ExposureMask, ADDRESSOF(xev));
 	END ReDisplay;
 
 	(** abstract: called when window opened and GL context created *)
@@ -223,8 +223,8 @@ VAR
 		IF hidecursor THEN
 			fg.red := 0;  fg.green := 0;  fg.blue :=0;
 			FOR i:=0 TO 7 DO data[i] := 0X  END;
-			pixmap := X11.CreateBitmapFromData( display, win, SYSTEM.ADR( data[0] ), 8, 8 );
-			noCursor := X11.CreatePixmapCursor( display, pixmap, pixmap, SYSTEM.ADR( fg ), SYSTEM.ADR( fg ), 0, 0 );
+			pixmap := X11.CreateBitmapFromData( display, win, ADDRESSOF( data[0] ), 8, 8 );
+			noCursor := X11.CreatePixmapCursor( display, pixmap, pixmap, ADDRESSOF( fg ), ADDRESSOF( fg ), 0, 0 );
 			X11.DefineCursor( display, win, noCursor );
 			Api.FreeCursor(display, noCursor);
 			X11.FreePixmap(display, pixmap);
@@ -288,7 +288,7 @@ VAR
 			hints.flags := {1};
 	 		IF ~decor THEN hints.decorations := 0; ELSE hints.decorations := 1; END;
 			property := Api.InternAtom(display, "_MOTIF_WM_HINTS", Api.True);
-			X11.ChangeProperty(display, win, property, property, 32, Api.PropModeReplace, SYSTEM.ADR(hints), 5);
+			X11.ChangeProperty(display, win, property, property, 32, Api.PropModeReplace, ADDRESSOF(hints), 5);
 		END;
 	END SetDecorations;
 
@@ -310,7 +310,7 @@ VAR
 		dl[1] := wmfullscreen;  dl[2] := 0;
 		cm.data:=SYSTEM.VAL(Api.Data40, dl);  xev := SYSTEM.VAL(Api.XEvent, cm);
 
-		res := Api.SendEvent(display, X11.DefaultRootWindow(display), Api.False, Api.SubstructureNotifyMask, SYSTEM.ADR(xev));
+		res := Api.SendEvent(display, X11.DefaultRootWindow(display), Api.False, Api.SubstructureNotifyMask, ADDRESSOF(xev));
 	END SetFullWindow;
 
 	(* create an X11 window, and GL context *)
@@ -342,7 +342,7 @@ VAR
 		attrib[12] := 0 ;
 
 		(* try to find a visual with this attribs *)
-		visinfoptr := GL.glXChooseVisual(display, 0 , SYSTEM.ADR(attrib[0]));
+		visinfoptr := GL.glXChooseVisual(display, 0 , ADDRESSOF(attrib[0]));
 
 		IF visinfoptr = NIL THEN
 			IF debug THEN KernelLog.String(" NO appropriate visual found"); KernelLog.Ln; END;
@@ -370,7 +370,7 @@ VAR
 
 		(* set wm_delete_events if in windowed mode *)
 		wmDelete := Api.InternAtom(display, "WM_DELETE_WINDOW", Api.True);
-		res := Api.SetWMProtocols(display, win, SYSTEM.ADR(wmDelete), 1);
+		res := Api.SetWMProtocols(display, win, ADDRESSOF(wmDelete), 1);
 
 		sizehints.flags := Api.PPosition + Api.PSize;
 		sizehints.x := l; sizehints.y := t;

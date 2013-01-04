@@ -554,7 +554,7 @@ BEGIN
 	(* Init View *)
 	ctx.MakeCurrent();
 
-	GL.Map2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, SYSTEM.ADR(ctrlPoints[0, 0, 0]));
+	GL.Map2f(GLC.GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, ADDRESSOF(ctrlPoints[0, 0, 0]));
 	GL.Enable(GLC.GL_MAP2_VERTEX_3);
 	GL.MapGrid2f(20, 0, 1, 20, 0, 1);
 	GL.Enable(GLC.GL_DEPTH_TEST);
@@ -889,7 +889,7 @@ ctx.MakeCurrent();
  *)
 	startList := GL.GenLists(4);
 	qObj := GLU.NewQuadric();
-	GLU.QuadricCallback(qObj, GLU.GLU_ERROR, 0 (* S.ADR(QuadricError)*));
+	GLU.QuadricCallback(qObj, GLU.GLU_ERROR, 0 (* ADDRESSOF(QuadricError)*));
 
 	GLU.QuadricDrawStyle(qObj, GLU.GLU_FILL); (* smooth shaded *)
 	GLU.QuadricNormals(qObj, GLU.GLU_SMOOTH);

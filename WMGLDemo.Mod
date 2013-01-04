@@ -20,7 +20,7 @@ TYPE
 		PROCEDURE &New(w, h: LONGINT);
 		BEGIN
 
-			Init(w, h, FALSE); (* use alpha, for 32bpp img *)
+			Init(w, h, TRUE); (* use alpha, for 32bpp img *)
 			WM.DefaultAddWindow(SELF);
 
 			SetTitle(Strings.NewString("WMGLDemo: Cube"));
@@ -102,7 +102,7 @@ BEGIN
 
  MakeCurrent();
   GL.Viewport(0, 0, w, h);
-  GL.ClearColor(0.3, 0.3, 0.0, 0.0);
+  GL.ClearColor(0.3, 0.3, 0.0, 1.0);
   GL.Enable(GLC.GL_DEPTH_TEST);
 
 

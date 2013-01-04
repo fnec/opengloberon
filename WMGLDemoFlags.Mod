@@ -1,9 +1,9 @@
 MODULE WMGLDemoFlags; (** AUTHOR "fnecati"; PURPOSE "Flags simulation demo"; *)
 (*  translation from HeNe lesson11a: *)
 IMPORT
-	WMRectangles, WMGraphics, Strings, Kernel, Raster, Math, KernelLog,
+	WMRectangles, WMGraphics, Strings, Kernel, Raster, Math,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
-	SYSTEM, GL := OpenGL, GLC := OpenGLConst, GLU, WMGL:=WMGLWindow;
+	GL := OpenGL, GLC := OpenGLConst, GLU, WMGL:=WMGLWindow;
 
 CONST
 		waittime=50;
@@ -111,9 +111,9 @@ TYPE
 	BEGIN
 		MakeCurrent();
 
-		texture := LoadTexture("europe.png");
+		texture := LoadTexture("opengloberon/europe.png");
 
-		texture2 := LoadTexture("turkiye.png");
+		texture2 := LoadTexture("opengloberon/turkiye.png");
 
 
 		GL.Enable(GLC.GL_TEXTURE_2D);                          (* Zapne mapov textur*)
@@ -151,7 +151,7 @@ TYPE
 		teximg := WMGraphics.LoadImage(fname, FALSE);
 		ASSERT(teximg # NIL, 220 );
 
-	 	GL.GenTextures(1, SYSTEM.ADR(tex));
+	 	GL.GenTextures(1, ADDRESSOF(tex));
 	 	GL.BindTexture(GLC.GL_TEXTURE_2D, tex);
 	 	GL.TexImage2D(GLC.GL_TEXTURE_2D, 0, GLC.GL_RGBA, teximg.width, teximg.height, 0, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, teximg.adr);
 	 	GL.TexParameteri(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_LINEAR);

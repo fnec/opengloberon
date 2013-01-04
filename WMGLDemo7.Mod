@@ -260,7 +260,7 @@ TYPE
 BEGIN  {ACTIVE}
 	Kernel.SetTimer(timer, 10);
 	WHILE alive DO
-		IF animated THEN
+		BEGIN {EXCLUSIVE} AWAIT(animated) END;
 	 		UpdateImage();
 	 		xrot := xrot + 1.0;
 
@@ -272,7 +272,7 @@ BEGIN  {ACTIVE}
 				frames := 0;
 			END;
 
-		END;
+(*		END; *)
 	END;
 END GLWindow;
 

@@ -1,6 +1,6 @@
 MODULE WMSpaceSim3;
 
-	IMPORT KernelLog := KernelLog, Inputs, Commands, Strings, WMRectangles,
+	IMPORT KernelLog := KernelLog, Inputs, Strings, WMRectangles,
 	WM := WMWindowManager, GLU,
 	GL:=OpenGL, GLC:=OpenGLConst, WMGL := WMGLWindow, ML := Decoder3DS;
 
@@ -33,7 +33,7 @@ TYPE
 		NEW(object);
 
 
-		fname := "spaceship.3ds";
+		fname := "opengloberon/spaceship.3ds";
 		SetTitle(Strings.NewString(fname));
 		OnLoad();
 		UpdateImage();
@@ -71,7 +71,7 @@ TYPE
 			Close;
 		END;
 
-		textureId:=ML.LoadImage('spaceshiptexture.bmp');  (* The Function LoadImage() return the current texture ID *)
+		textureId:=ML.LoadImage('opengloberon/spaceshiptexture.bmp');  (* The Function LoadImage() return the current texture ID *)
 
 		(* If the last function returns -1 it means the file was not found so we exit from the program *)
 		IF (textureId = -1) THEN

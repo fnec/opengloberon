@@ -1,7 +1,7 @@
 MODULE WMGLDemo4; (** AUTHOR "fnecati"; PURPOSE "opengl triangle using vertex arrays"; *)
 
 IMPORT
-	WMRectangles, WMGraphics, Strings, Kernel, SYSTEM, KernelLog,
+	WMRectangles, WMGraphics, Strings, Kernel, KernelLog,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
 	GL := OpenGL, GLC := OpenGLConst, GLU, WMGL := WMGLWindow;
 
@@ -82,9 +82,9 @@ TYPE
 		PROCEDURE DeleteBuffers*;
 		BEGIN
 			MakeCurrent();
-				GL.DeleteBuffersARB(1, SYSTEM.ADR(vertexVBOID));
-				GL.DeleteBuffersARB(1, SYSTEM.ADR(indexVBOID));
-				GL.DeleteBuffersARB(1, SYSTEM.ADR(vaoID));
+				GL.DeleteBuffersARB(1, ADDRESSOF(vertexVBOID));
+				GL.DeleteBuffersARB(1, ADDRESSOF(indexVBOID));
+				GL.DeleteBuffersARB(1, ADDRESSOF(vaoID));
 			DeActivate();
 		END DeleteBuffers;
 
@@ -188,11 +188,11 @@ TYPE
 		GL.ClearColor(0.9, 0.9, 0.9, 1.0);
 		GL.Color3f(0.2, 0.8, 0.5);
 
-		GL.GenVertexArrays(1, SYSTEM.ADR(vaoID));
+		GL.GenVertexArrays(1, ADDRESSOF(vaoID));
 		GL.BindVertexArray(vaoID);
-		GL.GenBuffers(1, SYSTEM.ADR(vertexVBOID));
+		GL.GenBuffers(1, ADDRESSOF(vertexVBOID));
 		GL.BindBuffer(GLC.GL_ARRAY_BUFFER, vertexVBOID);
-		GL.BufferData(GLC.GL_ARRAY_BUFFER, LEN(pvertex,0)*8*4, SYSTEM.ADR(pvertex[0].x), GLC.GL_STATIC_DRAW);
+		GL.BufferData(GLC.GL_ARRAY_BUFFER, LEN(pvertex,0)*8*4, ADDRESSOF(pvertex[0].x), GLC.GL_STATIC_DRAW);
 
 		GL.EnableVertexAttribArray(0);
 		offset := 0;
@@ -202,9 +202,9 @@ TYPE
 		offset := 12;
 		GL.VertexAttribPointer(1, 3, GLC.GL_FLOAT, GLC.GL_FALSE, 8*4, offset);
 
-		GL.GenBuffers(1, SYSTEM.ADR(indexVBOID));
+		GL.GenBuffers(1, ADDRESSOF(indexVBOID));
 		GL.BindBuffer(GLC.GL_ELEMENT_ARRAY_BUFFER, indexVBOID);
-		GL.BufferData(GLC.GL_ELEMENT_ARRAY_BUFFER, 3*2, SYSTEM.ADR(pindices[0]), GLC.GL_STATIC_DRAW);
+		GL.BufferData(GLC.GL_ELEMENT_ARRAY_BUFFER, 3*2, ADDRESSOF(pindices[0]), GLC.GL_STATIC_DRAW);
 
 		DeActivate();
 		RETURN TRUE;

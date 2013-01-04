@@ -32,7 +32,7 @@ MODULE WMGLDemoLorenz; (** AUTHOR "fnecati"; PURPOSE "opengl Lorenz Strange Attr
 IMPORT
 	WMRectangles, WMGraphics, Strings, Kernel, Random, MathL,
 	WM := WMWindowManager,  WMDialogs, Inputs, WMMessages,
-	GL := OpenGL, GLC := OpenGLConst, WMGL := WMGLWindow;
+	gl := OpenGL, glc := OpenGLConst, WMGL := WMGLWindow;
 
 
 CONST
@@ -47,7 +47,7 @@ CONST
 	SCALE_FACTOR = 0.8;
 
 TYPE
-	Vector3d = ARRAY [3] OF GL.Double;
+	Vector3d = ARRAY [3] OF gl.Double;
 	Positions = ARRAY [NUM_POINTS] OF Vector3d;
 
 
@@ -136,42 +136,42 @@ TYPE
 			IF  keysym = Inputs.KsLeft  THEN
 				MakeCurrent();
 
-				GL.Rotated ( ROTATION_ANGLE, 0.0, 0.0, 1.0 );
+				gl.Rotated ( ROTATION_ANGLE, 0.0, 0.0, 1.0 );
 
 				DeActivate();
 				UpdateImage;
 			ELSIF keysym = Inputs.KsRight THEN
 				MakeCurrent();
 
-				GL.Rotated ( -ROTATION_ANGLE, 0.0, 0.0, 1.0 );
+				gl.Rotated ( -ROTATION_ANGLE, 0.0, 0.0, 1.0 );
 
 				DeActivate();
 				UpdateImage;
 			ELSIF keysym = Inputs.KsDown THEN
 				MakeCurrent();
 
-				GL.Rotated ( -ROTATION_ANGLE, 0.0, 1.0, 0.0 );
+				gl.Rotated ( -ROTATION_ANGLE, 0.0, 1.0, 0.0 );
 
 				DeActivate();
 				UpdateImage;
 			ELSIF keysym = Inputs.KsUp THEN
 				MakeCurrent();
 
-				GL.Rotated ( ROTATION_ANGLE, 0.0, 1.0, 0.0 );
+				gl.Rotated ( ROTATION_ANGLE, 0.0, 1.0, 0.0 );
 
 				DeActivate();
 				UpdateImage;
 			ELSIF keysym = Inputs.KsPageDown THEN
 				MakeCurrent();
 
-				GL.Scaled ( SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR );
+				gl.Scaled ( SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR );
 
 				DeActivate();
 				UpdateImage;
 			ELSIF keysym = Inputs.KsPageUp THEN
 				MakeCurrent();
 
-				GL.Scaled ( 1.0 / SCALE_FACTOR, 1.0 / SCALE_FACTOR, 1.0 / SCALE_FACTOR );
+				gl.Scaled ( 1.0 / SCALE_FACTOR, 1.0 / SCALE_FACTOR, 1.0 / SCALE_FACTOR );
 
 				DeActivate();
 				UpdateImage;
@@ -199,7 +199,7 @@ TYPE
 		MakeCurrent();
 			Display;
 			 TimerCB;
-		SwapGLBuffer();
+			SwapGLBuffer();
 		DeActivate();
 
 		canvas.SetColor(WMGraphics.White);
@@ -235,9 +235,9 @@ TYPE
 
 		MakeCurrent;
 		(* Set up the OpenGL parameters *)
-		GL.Enable ( GLC.GL_DEPTH_TEST ) ;
-		GL.ClearColor ( 0.0, 0.0, 0.0, 0.0 ) ;
-		GL.ClearDepth ( 1.0 ) ;
+		gl.Enable ( glc.GL_DEPTH_TEST ) ;
+		gl.ClearColor ( 0.0, 0.0, 0.0, 0.0 ) ;
+		gl.ClearDepth ( 1.0 ) ;
 		DeActivate;
 	END initGL;
 
@@ -245,62 +245,62 @@ TYPE
 	VAR i: LONGINT;
 	BEGIN
 		i := index;
-		GL.Begin (GLC.GL_LINE_STRIP) ;
+		gl.Begin (glc.GL_LINE_STRIP) ;
 
 		REPEAT
 			IF i = NUM_POINTS-1 THEN i := 0 ELSE i := i + 1 END;
-			 GL.Vertex3dv ( position[i] ) ;
+			 gl.Vertex3dv ( position[i] ) ;
 		 UNTIL ( i = index ) ;
 
-		GL.End () ;
+		gl.End () ;
 	END DrawCurve;
 
 	PROCEDURE Display;
 	BEGIN
-		GL.Clear ( GLC.GL_COLOR_BUFFER_BIT + GLC.GL_DEPTH_BUFFER_BIT );
+		gl.Clear ( glc.GL_COLOR_BUFFER_BIT + glc.GL_DEPTH_BUFFER_BIT );
 
 		(* Draw some axes *)
-		GL.Begin ( GLC.GL_LINES ) ;
-		GL.Color3f ( 0.0, 0.0, 1.0 ) ;  (* blue *)
-		GL.Vertex3d ( 0.0, 0.0, 0.0 ) ;
-		GL.Vertex3d ( 2.0, 0.0, 0.0 ) ; (* x- axis *)
+		gl.Begin ( glc.GL_LINES ) ;
+		gl.Color3f ( 0.0, 0.0, 1.0 ) ;  (* blue *)
+		gl.Vertex3d ( 0.0, 0.0, 0.0 ) ;
+		gl.Vertex3d ( 2.0, 0.0, 0.0 ) ; (* x- axis *)
 
-		GL.Color3f ( 1.0, 1.0, 0.0 ) ;  (* yellow *)
-		GL.Vertex3d ( 0.0, 0.0, 0.0 ) ;
-		GL.Vertex3d ( 0.0, 1.0, 0.0 ) ; (* y- axis *)
+		gl.Color3f ( 1.0, 1.0, 0.0 ) ;  (* yellow *)
+		gl.Vertex3d ( 0.0, 0.0, 0.0 ) ;
+		gl.Vertex3d ( 0.0, 1.0, 0.0 ) ; (* y- axis *)
 
-		GL.Color3f (0.0, 1.0, 1.0 ) ;  (* cyan *)
-		GL.Vertex3d ( 0.0, 0.0, 0.0 ) ;
-		GL.Vertex3d ( 0.0, 0.0, 1.0 ) ; (* z- axis *)
-	 	GL.End ();
+		gl.Color3f (0.0, 1.0, 1.0 ) ;  (* cyan *)
+		gl.Vertex3d ( 0.0, 0.0, 0.0 ) ;
+		gl.Vertex3d ( 0.0, 0.0, 1.0 ) ; (* z- axis *)
+	 	gl.End ();
 
-	 	GL.Color3d ( 1.0, 0.0, 0.0 ) ;  (* Red *)
+	 	gl.Color3d ( 1.0, 0.0, 0.0 ) ;  (* Red *)
 	 	DrawCurve ( array_index, red_position ) ;
 
-	 	GL.Color3d ( 0.0, 1.0, 0.0 ) ;  (* Green *)
+	 	gl.Color3d ( 0.0, 1.0, 0.0 ) ;  (* Green *)
 	 	DrawCurve ( array_index, grn_position ) ;
 	END Display;
 
 	PROCEDURE Reshape(w, h: LONGINT);
 	BEGIN
 		MakeCurrent();
-		GL.Viewport(0, 0, w, h);
+		gl.Viewport(0, 0, w, h);
 		(* Set up the OpenGL parameters *)
-		GL.Enable ( GLC.GL_DEPTH_TEST ) ;
-		GL.ClearColor ( 0.0, 0.0, 0.0, 0.0 ) ;
-		GL.ClearDepth ( 1.0 ) ;
+		gl.Enable ( glc.GL_DEPTH_TEST ) ;
+		gl.ClearColor ( 0.0, 0.0, 0.0, 0.0 ) ;
+		gl.ClearDepth ( 1.0 ) ;
 
-		GL.MatrixMode ( GLC.GL_PROJECTION ) ;
-		GL.LoadIdentity ();
+		gl.MatrixMode ( glc.GL_PROJECTION ) ;
+		gl.LoadIdentity ();
 
-			GL.Frustum ( -1.0, 1.0, -1.0, 1.0, 10.0, 100.0 ) ;
+			gl.Frustum ( -1.0, 1.0, -1.0, 1.0, 10.0, 100.0 ) ;
 
 		xcen := 0.0; ycen := 0.0; zcen := 0.0;
 
-		GL.MatrixMode ( GLC.GL_MODELVIEW ) ;
-		GL.LoadIdentity () ;
+		gl.MatrixMode ( glc.GL_MODELVIEW ) ;
+		gl.LoadIdentity () ;
 
-			GL.Translated ( 0.0, 0.0, zcen-40.0 ) ;
+			gl.Translated ( 0.0, 0.0, zcen-40.0 ) ;
 
 
 		DeActivate;
@@ -403,7 +403,7 @@ BEGIN
 	random.InitSeed(12345);
 END WMGLDemoLorenz.
 
-SystemTools.Free  WMGLDemoLorenz  WMGLWindow ~    OpenGL   OpenGLConst ~
+SystemTools.Free  WMGLDemoLorenz  WMGLWindow ~  
 
 WMGLDemoLorenz.Open ~
 

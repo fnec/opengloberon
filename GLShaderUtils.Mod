@@ -1,7 +1,7 @@
 MODULE GLShaderUtils; (** AUTHOR "fnecati"; PURPOSE "OpenGL GLSL utils "; *)
 
 IMPORT
-	SYSTEM, GL := OpenGL, GLC := OpenGLConst, GLU, Files, Strings, Streams, KernelLog;
+	SYSTEM, gl := OpenGL, glc := OpenGLConst, glu := GLU, Files, Strings, Streams, KernelLog;
 
 TYPE
 	PChar* = POINTER TO ARRAY OF CHAR;
@@ -14,7 +14,7 @@ PROCEDURE WriteProjMatrixf*(CONST title: ARRAY OF CHAR);
 VAR i: LONGINT;
 	v: Vector16f;
 BEGIN
-	GL.GetFloatv(GLC.GL_PROJECTION_MATRIX, SYSTEM.ADR(v[0]));
+	gl.GetFloatv(glc.GL_PROJECTION_MATRIX, ADDRESSOF(v[0]));
 	wr.String("-----------------"); wr.Ln;
 	wr.String("Float PROJECTION_MATRIX: "); wr.String(title); wr.Ln;
 	FOR i:=0 TO 15 DO
@@ -28,7 +28,7 @@ PROCEDURE WriteModelMatrixf*(CONST title: ARRAY OF CHAR);
 VAR i : LONGINT;
 	v: Vector16f;
 BEGIN
-	GL.GetFloatv(GLC.GL_MODELVIEW_MATRIX, SYSTEM.ADR(v[0]));
+	gl.GetFloatv(glc.GL_MODELVIEW_MATRIX, ADDRESSOF(v[0]));
 	wr.String("-----------------"); wr.Ln;
 	wr.String("Float GL_MODELVIEW_MATRIX: ");wr.String(title); wr.Ln;
 	FOR i:=0 TO 15 DO
@@ -52,35 +52,35 @@ BEGIN
 	f.ReadBytes(rider, str^, 0, len);
 (*	wr.String(str^); wr.Ln; wr.Update*)
 
-	 RETURN SYSTEM.VAL(PChar, SYSTEM.ADR(str[0]));
+	 RETURN SYSTEM.VAL(PChar, ADDRESSOF(str[0]));
 END TextFileRead;
 
-PROCEDURE PrintShaderSource*(obj: GL.Uint);
+PROCEDURE PrintShaderSource*(obj: gl.Uint);
 VAR sourceLength, sslength: LONGINT;
 	ssource: PChar;
 BEGIN
-	GL.GetShaderiv(obj, GLC.GL_SHADER_SOURCE_LENGTH, SYSTEM.ADR(sourceLength));
+	gl.GetShaderiv(obj, glc.GL_SHADER_SOURCE_LENGTH, ADDRESSOF(sourceLength));
 	wr.Int(obj, 0);  wr.String(" sourceLength= "); wr.Int(sourceLength, 0); wr.Ln;
 	NEW(ssource, sourceLength);
-	GL.GetShaderSource(obj, sourceLength, sslength, SYSTEM.ADR(ssource^[0]));
+	gl.GetShaderSource(obj, sourceLength, sslength, ADDRESSOF(ssource^[0]));
 	wr.String("************** SOURCE *********************************"); wr.Ln;
 	wr.String(ssource^); wr.Ln;
 	wr.String("*******************************************************"); wr.Ln; wr.Update;
 END PrintShaderSource;
 
 PROCEDURE PrintOpenGLError*(CONST title: ARRAY OF CHAR);
-VAR glErr: GL.Enum;
+VAR glErr: gl.Enum;
 	str: Strings.String;
 BEGIN
-	glErr := GL.GetError();
-	WHILE glErr # GLC.GL_NO_ERROR DO
-		str := GLU.ErrorString(glErr);
+	glErr := gl.GetError();
+	WHILE glErr # glc.GL_NO_ERROR DO
+		str := glu.ErrorString(glErr);
 		wr.String(title);  wr.String(" glError: "); wr.String(str^); wr.Ln; wr.Update;
-		glErr := GL.GetError();
+		glErr := gl.GetError();
 	END;
 END PrintOpenGLError;
 
-PROCEDURE PrintShaderInfoLog*(obj: GL.Uint);
+PROCEDURE PrintShaderInfoLog*(obj: gl.Uint);
 VAR infologLength, charsWritten: LONGINT;
 	infoLog: PChar;
 BEGIN
@@ -88,87 +88,110 @@ BEGIN
 	charsWritten  := 0;
 	PrintOpenGLError("sinfo-1: "); (* Check for OpenGL errors *)
 
-	GL.GetShaderiv(obj, GLC.GL_INFO_LOG_LENGTH, SYSTEM.ADR(infologLength));
+	gl.GetShaderiv(obj, glc.GL_INFO_LOG_LENGTH, ADDRESSOF(infologLength));
 	PrintOpenGLError("sinfo-2: "); (* Check for OpenGL errors *)
 
 	IF infologLength > 0 THEN
 		NEW(infoLog, infologLength);
-		GL.GetShaderInfoLog(obj, infologLength, charsWritten, SYSTEM.ADR(infoLog[0]));
+		gl.GetShaderInfoLog(obj, infologLength, charsWritten, ADDRESSOF(infoLog[0]));
 		wr.String(infoLog^); wr.Ln; wr.Update;
 		infoLog := NIL;
 	END;
 END PrintShaderInfoLog;
 
-PROCEDURE PrintProgramInfoLog*(obj: GL.Uint);
+PROCEDURE PrintProgramInfoLog*(obj: gl.Uint);
 VAR infologLength, charsWritten: LONGINT;
 	infoLog: PChar;
 BEGIN
 	infologLength := 0;
 	charsWritten  := 0;
 	PrintOpenGLError("pinfo-1: "); (* Check for OpenGL errors *)
-	GL.GetProgramiv(obj, GLC.GL_INFO_LOG_LENGTH, SYSTEM.ADR(infologLength));
+	gl.GetProgramiv(obj, glc.GL_INFO_LOG_LENGTH, ADDRESSOF(infologLength));
 
 	PrintOpenGLError("pinfo-2: "); (* Check for OpenGL errors *)
 
 	IF infologLength > 0 THEN
 		NEW(infoLog, infologLength);
-		GL.GetProgramInfoLog(obj, infologLength, charsWritten, SYSTEM.ADR(infoLog[0]));
+		gl.GetProgramInfoLog(obj, infologLength, charsWritten, ADDRESSOF(infoLog[0]));
 		wr.String(infoLog^); wr.Ln; wr.Update;
 		infoLog := NIL;
 	END;
 END PrintProgramInfoLog;
 
-PROCEDURE LoadShaders*( VAR vertshader, fragshader: PChar;  VAR prog: GL.Uint): BOOLEAN;
+PROCEDURE LoadTheseShaders*( VAR vertshader, fragshader: PChar;  VAR prog: gl.Uint): BOOLEAN;
 VAR
-	vs, fs: GL.Uint;                       (* handles for shaders *)
-	vertcompiled, fragcompiled: GL.Int;  (* status values *)
-	linked: GL.Int;
+	vs, fs: gl.Uint;                       (* handles for shaders *)
+	vertcompiled, fragcompiled: gl.Int;  (* status values *)
+	linked: gl.Int;
 BEGIN
 	(* Create shaders *)
-	vs := GL.CreateShader(GLC.GL_VERTEX_SHADER);
-	fs := GL.CreateShader(GLC.GL_FRAGMENT_SHADER);
+	vs := gl.CreateShader(glc.GL_VERTEX_SHADER);
+	fs := gl.CreateShader(glc.GL_FRAGMENT_SHADER);
 
 	(* Load source code strings into shaders *)
-	GL.ShaderSource(vs, 1, SYSTEM.ADR(vertshader), 0);
-	GL.ShaderSource(fs, 1, SYSTEM.ADR(fragshader), 0);
+	gl.ShaderSource(vs, 1, ADDRESSOF(vertshader), 0);
+	gl.ShaderSource(fs, 1, ADDRESSOF(fragshader), 0);
 
 	(* Compile the vertex shader and print out the compiler log *)
-	GL.CompileShader(vs);
-	GL.GetShaderiv(vs, GLC.GL_COMPILE_STATUS, SYSTEM.ADR(vertcompiled));
-	IF vertcompiled = GLC.GL_FALSE THEN
+	gl.CompileShader(vs);
+	gl.GetShaderiv(vs, glc.GL_COMPILE_STATUS, ADDRESSOF(vertcompiled));
+	IF vertcompiled = glc.GL_FALSE THEN
 			KernelLog.String("ERROR: vertex shader is not compiled "); KernelLog.Ln;
 			PrintShaderInfoLog(vs);
-			GL.DeleteShader(vs);
+			gl.DeleteShader(vs);
 			RETURN FALSE;
 	END;
 
 	(* PrintShaderSource(vs); *)
 
 	 (* Compile the fragment shader and print out the compiler log *)
-	GL.CompileShader(fs);
-	GL.GetShaderiv(fs, GLC.GL_COMPILE_STATUS, SYSTEM.ADR(fragcompiled));
-	IF fragcompiled = GLC.GL_FALSE THEN
+	gl.CompileShader(fs);
+	gl.GetShaderiv(fs, glc.GL_COMPILE_STATUS, ADDRESSOF(fragcompiled));
+	IF fragcompiled = glc.GL_FALSE THEN
 		KernelLog.String("ERROR: fragment shader is not compiled "); KernelLog.Ln;
 		PrintShaderInfoLog(fs);
-		GL.DeleteShader(fs);
+		gl.DeleteShader(fs);
 		RETURN FALSE;
 	END;
 
 	(* PrintShaderSource(fs);*)
 
 	(* Create a program and attach the two compiled shaders *)
-	prog := GL.CreateProgram();
-	GL.AttachShader(prog, vs);
-	GL.AttachShader(prog, fs);
+	prog := gl.CreateProgram();
+	gl.AttachShader(prog, vs);
+	gl.AttachShader(prog, fs);
 
 	(* Link the program *)
-	GL.LinkProgram(prog);
-	GL.GetProgramiv(prog, GLC.GL_LINK_STATUS, SYSTEM.ADR(linked));
-	IF  linked = GLC.GL_FALSE THEN
+	gl.LinkProgram(prog);
+	gl.GetProgramiv(prog, glc.GL_LINK_STATUS, ADDRESSOF(linked));
+	IF  linked = glc.GL_FALSE THEN
 		KernelLog.String("ERROR: program is not linked"); KernelLog.Ln;
+		PrintProgramInfoLog(prog);
+		gl.DeleteShader(fs);
+		gl.DeleteShader(vs);
 		RETURN FALSE
 	END;
+		gl.DeleteShader(fs);
+		gl.DeleteShader(vs);	
 	RETURN TRUE
+END LoadTheseShaders;
+
+PROCEDURE LoadShaders*( CONST vertshaderFile, fragshaderFile: ARRAY OF CHAR): gl.Uint;
+VAR
+	vss, fss: PChar; (* shader source pointers *)
+	program: gl.Uint;
+	ok: BOOLEAN;
+BEGIN
+	vss :=TextFileRead(vertshaderFile);
+	IF vss = NIL THEN RETURN 0 END;
+		
+	fss :=TextFileRead(fragshaderFile);
+	IF fss = NIL THEN RETURN 0 END;
+
+	ok := LoadTheseShaders(vss, fss, program);
+	IF ~ ok THEN program := 0 END;
+
+	RETURN program
 END LoadShaders;
 
 BEGIN

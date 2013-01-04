@@ -3,7 +3,7 @@ MODULE WMGLDemo9; (** AUTHOR "fnecati"; PURPOSE "a demo using opengl Frame Buffe
 IMPORT
 	WMRectangles, WMGraphics, Strings, Kernel, Raster, Inputs, KernelLog,
 	WM := WMWindowManager,  WMMessages, WMDialogs,
-	SYSTEM, GL := OpenGL, GLC := OpenGLConst, GLU, WMGL := WMGLWindow;
+	GL := OpenGL, GLC := OpenGLConst, GLU, WMGL := WMGLWindow;
 
 CONST
 		waittime=20;
@@ -17,7 +17,6 @@ TYPE
 	END KillerMsg;
 
 
-	Vector = ARRAY [*] OF REAL;
 	Vertex = RECORD
 		tu, tv: REAL;
     		x, y, z: REAL;
@@ -231,8 +230,8 @@ BEGIN
 	(* Create a frame-buffer object and a render-buffer object...*)
 
 
-	GL.GenFramebuffersEXT( 1, SYSTEM.ADR(frameBuffer));
-	GL.GenRenderbuffersEXT( 1, SYSTEM.ADR(depthRenderBuffer));
+	GL.GenFramebuffersEXT( 1, ADDRESSOF(frameBuffer));
+	GL.GenRenderbuffersEXT( 1, ADDRESSOF(depthRenderBuffer));
 
 	(* Initialize the render-buffer for usage as a depth buffer.
 	 We don't really need this to render things into the frame-buffer object,
@@ -258,7 +257,7 @@ BEGIN
 
 
 
-	GL.GenTextures( 1, SYSTEM.ADR(dynamicTextureID));
+	GL.GenTextures( 1, ADDRESSOF(dynamicTextureID));
 
 	GL.BindTexture( GLC.GL_TEXTURE_2D, dynamicTextureID );
 
@@ -283,7 +282,7 @@ BEGIN
  teximg := WMGraphics.LoadImage("WMIcons.tar://WMKernelLog.png", FALSE);
 IF teximg # NIL THEN
 
-	GL.GenTextures( 1, SYSTEM.ADR(testTextureID) );
+	GL.GenTextures( 1, ADDRESSOF(testTextureID) );
 	GL.BindTexture(GLC.GL_TEXTURE_2D, testTextureID);
 
 	GL.TexParameteri(GLC.GL_TEXTURE_2D, GLC.GL_TEXTURE_MAG_FILTER, GLC.GL_LINEAR);
@@ -301,11 +300,11 @@ END loadTexture;
 PROCEDURE CleanBuffers;
 BEGIN
 MakeCurrent();
-   GL.DeleteTextures( 1, SYSTEM.ADR(testTextureID) );
-    GL.DeleteTextures( 1, SYSTEM.ADR(dynamicTextureID) );
+   GL.DeleteTextures( 1, ADDRESSOF(testTextureID) );
+    GL.DeleteTextures( 1, ADDRESSOF(dynamicTextureID) );
 
-	GL.DeleteFramebuffersEXT( 1, SYSTEM.ADR(frameBuffer) );
-	GL.DeleteRenderbuffersEXT( 1, SYSTEM.ADR(depthRenderBuffer) );
+	GL.DeleteFramebuffersEXT( 1, ADDRESSOF(frameBuffer) );
+	GL.DeleteRenderbuffersEXT( 1, ADDRESSOF(depthRenderBuffer) );
 DeActivate;
 END CleanBuffers;
 
@@ -347,7 +346,7 @@ BEGIN
 	*)
 
 	GL.BindTexture( GLC.GL_TEXTURE_2D, testTextureID );
-	GL.InterleavedArrays( GLC.GL_T2F_V3F, 0, SYSTEM.ADR(cubeVertices[0]) );
+	GL.InterleavedArrays( GLC.GL_T2F_V3F, 0, ADDRESSOF(cubeVertices[0]) );
 	GL.DrawArrays( GLC.GL_QUADS, 0, 24 );
 
 
@@ -376,7 +375,7 @@ BEGIN
     (* Finally, we'll use the dynamic texture like a regular static texture.*)
 
 	GL.BindTexture( GLC.GL_TEXTURE_2D, dynamicTextureID );
-	GL.InterleavedArrays( GLC.GL_T2F_V3F, 0, SYSTEM.ADR(cubeVertices[0].tu));
+	GL.InterleavedArrays( GLC.GL_T2F_V3F, 0, ADDRESSOF(cubeVertices[0].tu));
 	GL.DrawArrays( GLC.GL_QUADS, 0, 24 );
 END displayCB;
 
