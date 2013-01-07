@@ -6183,7 +6183,7 @@ VAR h: ADDRESS;  i, j, k: INTEGER;
 	p: ARRAY 256 OF CHAR;
 BEGIN
 	(* first, find the library in the search parth of A2*)
-	 h := Unix.Dlopen(libname, mode );
+	 h := Unix.Dlopen(libname, mode );	 
 	 IF h = 0 THEN (* else search in libraryPaths *)
 		i := 0;  h := 0;
 		WHILE (h = 0) & (i <= 7) DO
@@ -10820,15 +10820,15 @@ BEGIN
 	
 	(* add following serach paths for libGL.so.1 to mulitiarch i386 systems*)
 	(* nvidia *)
-	libraryPaths[0] := "/usr/lib32/nvidia_current";
-	libraryPaths[1] := "/usr//lib/i386-linux-gnu/nvidia_current";
+	libraryPaths[0] := "/usr/lib32/nvidia-current";
+	libraryPaths[1] := "/usr//lib/i386-linux-gnu/nvidia-current";
 	
 	(* amd, ati *)
 	libraryPaths[2] := "/usr/lib32/fglrx";
 	libraryPaths[3] := "/usr/lib/i386-linux-gnu/fglrx";
 	
 	(* i386 systems *)
-	libraryPaths[4] := "/usr/lib/nvidia_current";
+	libraryPaths[4] := "/usr/lib/nvidia-current";
 	libraryPaths[5] := "/usr/lib/fglrx";
 
 	(* mesa *)
