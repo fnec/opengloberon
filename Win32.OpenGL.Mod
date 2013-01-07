@@ -10373,10 +10373,10 @@ VAR
 	(* At least one number must be before and one after the dot. *)
 	IF (Separator > 0) & (Separator < Strings.Length(Buffer)) & ((isNumber(Buffer[Separator - 1])) &
 	      isNumber(Buffer[Separator + 1])) THEN
-	      Max := ORD(Buffer[Separator + 1]);
-	      Min := ORD(Buffer[Separator - 1]);
+	      Min := ORD(buffer[separator + 1])-ORD("0");
+	      Max := ORD(buffer[separator - 1])-ORD("0");
 	ELSE
-	      Max := 0;
+	      Max := 1;
 	      Min := 0;
 	END;
 	END TrimAndSplitVersionString;

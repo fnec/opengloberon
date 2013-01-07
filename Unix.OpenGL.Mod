@@ -9809,10 +9809,10 @@ VAR
 	(* At least one number must be before and one after the dot.  *)
 	IF (separator > 0) & (separator < Strings.Length(buffer)) & ((isNumber(buffer[separator - 1])) &
 	      isNumber(buffer[separator + 1])) THEN
-	      Max := ORD(buffer[separator + 1]);
-	      Min := ORD(buffer[separator - 1]);
+	      Min := ORD(buffer[separator + 1])-ORD("0");
+	      Max := ORD(buffer[separator - 1])-ORD("0");
 	ELSE
-	      Max := 0;
+	      Max := 1;
 	      Min := 0;
 	END;
 	END TrimAndSplitVersionString;
@@ -9823,8 +9823,10 @@ BEGIN
     Unix.Dlsym(GL_LibHandle, "glGetString", ADDRESSOF( XglGetString));
   END;
    Buffer := GetString(GLC.GL_VERSION );
+   KernelLog.String("Buffer^= "); KernelLog.String(Buffer^); KernelLog.Ln; 
   TrimAndSplitVersionString(Buffer^, MajorVersion, MinorVersion);
-
+   KernelLog.String("MajorVersion= "); KernelLog.Int(MajorVersion, 0); KernelLog.Ln; 
+   KernelLog.String("MinorVersion= "); KernelLog.Int(MinorVersion, 0); KernelLog.Ln; 
   GL_VERSION_1_0 := TRUE;
   GL_VERSION_1_1 := FALSE;
   GL_VERSION_1_2 := FALSE;
