@@ -1,6 +1,7 @@
 MODULE OpenGL; (** AUTHOR "fnecati"; PURPOSE "OpenGL binding for UnixAos";  *)
 
-(*!
+(*!  search libGL.so.xx;  libraryPaths Added.
+
 	GLU library removed to GLU.Mod
 	replaced ARRAY OF CHAR -->  LONGINT  for Darwin compatibility and
 	Xgl... and corresponding gl.. wrapper procedures added for FPU controls.
@@ -24,12 +25,14 @@ VAR
 	Log : Streams.Writer;
 	(* handle to library  *)
 	GL_LibHandle: LONGINT;
-
+	
+	libraryPaths: ARRAY 8 OF ARRAY 64 OF CHAR;
+	
 	oldfcr, newfcr: SET; (* for FPU Control registers  *)
 
 CONST
 	debug = FALSE; (* used in ReadImplementationProperties, when extension is not available  *)
-	GL_LibName = 'libGL.so';
+	GL_LibName = 'libGL.so.1';
 
 TYPE
 
@@ -6174,10 +6177,29 @@ END GetProcAddress;
 
 
 (*! --------------------------   *)
+(* from Linux.Unix.Mod *)
+PROCEDURE Dlopen*( CONST libname: ARRAY OF CHAR;  mode: LONGINT ): ADDRESS;
+VAR h: ADDRESS;  i, j, k: INTEGER;
+	p: ARRAY 256 OF CHAR;
+BEGIN
+	(* first, find the library in the search parth of A2*)
+	 h := Unix.Dlopen(libname, mode );
+	 IF h = 0 THEN (* else search in libraryPaths *)
+		i := 0;  h := 0;
+		WHILE (h = 0) & (i <= 7) DO
+			COPY( libraryPaths[i], p );  j := 0;
+			WHILE p[j] # 0X DO  INC( j )  END;
+			p[j] := '/';  k := 0;
+			REPEAT  INC( j );  p[j] := libname[k];  INC( k )  UNTIL p[j] = 0X;
+			h := Unix.Dlopen( p , mode );  INC( i )
+		END
+	END;
+	RETURN h
+END Dlopen;
 
 PROCEDURE InitOpenGL*;
 BEGIN
-	GL_LibHandle := Unix.Dlopen(GL_LibName, 2);
+	GL_LibHandle := Dlopen(GL_LibName, 2);
   	ASSERT(GL_LibHandle # 0,101);
 
 	(* load GL functions *)
@@ -10795,6 +10817,24 @@ BEGIN
 	(* put x86 FPU in 64 bit precision mode. Default under linux is to use 80-bit mode   *)
 
 	(* newfcr := SYSTEM.VAL(SET, 895);  *)
+	
+	(* add following serach paths for libGL.so.1 to mulitiarch i386 systems*)
+	(* nvidia *)
+	libraryPaths[0] := "/usr/lib32/nvidia_current";
+	libraryPaths[1] := "/usr//lib/i386-linux-gnu/nvidia_current";
+	
+	(* amd, ati *)
+	libraryPaths[2] := "/usr/lib32/fglrx";
+	libraryPaths[3] := "/usr/lib/i386-linux-gnu/fglrx";
+	
+	(* i386 systems *)
+	libraryPaths[4] := "/usr/lib/nvidia_current";
+	libraryPaths[5] := "/usr/lib/fglrx";
+
+	(* mesa *)
+	libraryPaths[6] := "/usr/lib/mesa";
+	libraryPaths[7] := "/usr/lib/i386-linux-gnu/mesa";
+	
 	InitOpenGL();
 	ReadOpenGLCore();
 END OpenGL.
