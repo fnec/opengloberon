@@ -10822,19 +10822,19 @@ BEGIN
 	(* add following serach paths for libGL.so.1 to mulitiarch i386 systems*)
 	(* nvidia *)
 	libraryPaths[0] := "/usr/lib32/nvidia-current";
-	libraryPaths[1] := "/usr//lib/i386-linux-gnu/nvidia-current";
+	libraryPaths[1] := "/usr/lib/i386-linux-gnu/nvidia-current";
 	
 	(* amd, ati *)
 	libraryPaths[2] := "/usr/lib32/fglrx";
 	libraryPaths[3] := "/usr/lib/i386-linux-gnu/fglrx";
+	(* mesa *)
+	libraryPaths[7] := "/usr/lib/i386-linux-gnu/mesa";
 	
 	(* i386 systems *)
 	libraryPaths[4] := "/usr/lib/nvidia-current";
 	libraryPaths[5] := "/usr/lib/fglrx";
-
 	(* mesa *)
 	libraryPaths[6] := "/usr/lib/mesa";
-	libraryPaths[7] := "/usr/lib/i386-linux-gnu/mesa";
 	
 	InitOpenGL();
 	ReadOpenGLCore();

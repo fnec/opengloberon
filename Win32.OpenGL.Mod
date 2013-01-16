@@ -10364,23 +10364,23 @@ VAR
 	END isNumber;
 
 
-	PROCEDURE TrimAndSplitVersionString(CONST Buffer: ARRAY OF CHAR; VAR Max, Min: LONGINT);
+	PROCEDURE TrimAndSplitVersionString(CONST buffer: ARRAY OF CHAR; VAR Max, Min: LONGINT);
 	 VAR
-	    Separator,i : LONGINT;
+	    separator,i : LONGINT;
 	BEGIN
 	i := 0;
-	Separator := Strings.Pos('.', Buffer);
-	(* At least one number must be before and one after the dot. *)
-	IF (Separator > 0) & (Separator < Strings.Length(Buffer)) & ((isNumber(Buffer[Separator - 1])) &
-	      isNumber(Buffer[Separator + 1])) THEN
-	      Min := ORD(buffer[separator + 1])-ORD("0");
-	      Max := ORD(buffer[separator - 1])-ORD("0");
+	separator := Strings.Pos('.', buffer);
+	(* At least one number must be before and one after the dot.  *)
+	IF (separator > 0) & (separator < Strings.Length(buffer)) & ((isNumber(buffer[separator - 1])) &
+	      isNumber(buffer[separator + 1])) THEN
+	      Min := ORD(buffer[separator + 1]) - ORD("0");
+	      Max := ORD(buffer[separator - 1]) - ORD("0");
 	ELSE
 	      Max := 1;
 	      Min := 0;
 	END;
 	END TrimAndSplitVersionString;
-
+	
 BEGIN
   (* determine version of implementation
    GL *)

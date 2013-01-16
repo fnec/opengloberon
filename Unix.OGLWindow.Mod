@@ -131,6 +131,18 @@ VAR
 		GL.glXSwapBuffers(display, win);
 	END SwapBuffers;
 
+	(* get current display of this window *)
+	PROCEDURE GetDisplay*(): LONGINT;
+	BEGIN
+		RETURN display;
+	END GetDisplay;
+
+	(* get current gl context of this window *)
+	PROCEDURE GetContext*(): LONGINT;
+	BEGIN
+		RETURN glctx;
+	END GetContext;
+
 	(** Abstract Window Procedures *)
 	(** called when window get focus *)
 	PROCEDURE FocusGot*();

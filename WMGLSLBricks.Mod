@@ -7,7 +7,6 @@ IMPORT
 	GLLib, GLSUtil := GLShaderUtils;
 
 TYPE
-	PChar = GLSUtil.PChar;
 
 	KillerMsg = OBJECT
 	END KillerMsg;
@@ -303,18 +302,12 @@ TYPE
 		END getUniLoc;
 
 		PROCEDURE InstallBrickShaders(): BOOLEAN;
-		VAR
-			vss, fss: PChar;
+
 		BEGIN
-		    (* Create a vertex shader object and a fragment shader object *)
-
-			vss := GLSUtil.TextFileRead("opengloberon/brick.vert");
-			fss := GLSUtil.TextFileRead("opengloberon/brick.frag");
-			IF (fss = NIL) OR (vss = NIL ) THEN RETURN FALSE END;
-
-		    (* Install program object as part of current state *)
-
-			IF ~ GLSUtil.LoadTheseShaders(vss, fss, brickProg) THEN
+		    (* Create a vertex shader object and a fragment shader object,
+		    	install program object as part of current state *)
+			brickProg :=  GLSUtil.LoadShaders("opengloberon/brick.vert", "opengloberon/brick.frag" );
+			IF brickProg = 0 THEN
 				KernelLog.String("LoadShader Error"); KernelLog.Ln;
 				RETURN FALSE;
 			END;
