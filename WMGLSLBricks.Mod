@@ -42,7 +42,7 @@ TYPE
 			rotate := TRUE;
 			RotL := 1 * 3.14 / 180;
 
-			IF ~initGL() THEN Close; END;
+			IF ~initGL() THEN Close; RETURN; END;
 			Reshape(w, h);
 			UpdateImage;
 		END New;
@@ -238,6 +238,7 @@ TYPE
 				GL.Rotatef(fZDiff, 0,0,1);
 				GL.Scalef(fScale, fScale, fScale);
 
+			(*GL.UseProgram(brickProg);*)
 			GL.Uniform3f(getUniLoc(brickProg, "MortarColor"), 0.85, 0.86, 0.84);
 			GL.Uniform3f(getUniLoc(brickProg, "LightPosition"), 0.0, 0.0, 4.0);
 			DrawCube();
@@ -253,10 +254,10 @@ TYPE
 
 			GL.Uniform3f(getUniLoc(brickProg, "MortarColor"), 0.1, 1.0, 0.2);
 			GL.Uniform3f(getUniLoc(brickProg, "LightPosition"), 2.0, 0.0, 2.0);
-			GLLib.SolidTeapot(0.8);
+			GLLib.SolidTeapot(0.8); 
 (*			GLLib.SolidSphere(0.8, 50,40); *)
 (*			GLLib.SolidDodecahedron;*)
-(*			GLLib.SolidTorus(0.2, 0.9, 10, 40); *)
+			GLLib.SolidTorus(0.2, 0.9, 10, 40); 
 
 		END Display;
 

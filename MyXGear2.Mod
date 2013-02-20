@@ -1,8 +1,7 @@
-MODULE MyXGear2; (** AUTHOR "fnecati"; PURPOSE "Adjusted for commandline run"; *)
+MODULE MyXGear2; (** AUTHOR "fnecati"; PURPOSE "glxgears for commandline run"; *)
 
-(* Test: FULLSCREEN,  Press F1, F11 F12,  window close events*)
+(* Test: FULLSCREEN,  Press F1, F11 F12,  window close events *)
 
-(*!   fullscreen messages  *)
 IMPORT
 	X11, Api := X11Api, GL:=OpenGL, GLC := OpenGLConst, Kernel, Inputs, KS := X11KeySymDef,
 	 Math , Raster, WMGraphics,  SYSTEM, V := XF86VMode, StdIO, Commands ;

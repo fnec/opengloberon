@@ -1,7 +1,7 @@
 MODULE  GLTest; (** AUTHOR "fnecati"; PURPOSE "Simple GL rendering with commands"; *)
 
 IMPORT  GL := OpenGL, GLC := OpenGLConst, KernelLog,
-			SYSTEM, Math, GLContext, GLU, WMGraphics, Raster ;
+			Math, GLContext, GLU, WMGraphics, Raster ;
 
 (* Note:
 	Since GL is state machine, drawing with different commands may leave

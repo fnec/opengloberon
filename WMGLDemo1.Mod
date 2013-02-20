@@ -37,19 +37,12 @@ TYPE
 		drawMode := 0;
 		light := TRUE;
 
-		InitContext;
-		alive := TRUE;
-	END New;
-
-	PROCEDURE InitContext;
-	BEGIN
-		MakeCurrent();
-
-			IF ~ initGL() THEN Close END;
-		DeActivate();
+		IF ~ initGL() THEN Close; RETURN END;
+		Reshape(w, h);
 		DrawMode(0);
 		UpdateImage;
-	END InitContext;
+		alive := TRUE;
+	END New;
 
 	PROCEDURE KeyEvent (ucs: LONGINT; flags: SET; keysym: LONGINT);
 	BEGIN
@@ -114,10 +107,16 @@ TYPE
 	PROCEDURE Reshape(w,h: LONGINT);
 	BEGIN
 		MakeCurrent();
+		GL.Viewport(0,0, w, h);
+		
+		GL.MatrixMode(GLC.GL_PROJECTION);
+		GL.LoadIdentity();
+		GLU.Perspective(45, 1, 1, 1000);
+
 		GL.MatrixMode(GLC.GL_MODELVIEW);
 		GL.LoadIdentity();
-			GLU.LookAt(5, 5, eyeposz,   0, 0, 0,   0, 1, 0); (* eye(x,y,z), focal(x,y,z), up(x,y,z) *)
-
+		GLU.LookAt(5, 5, eyeposz,   0, 0, 0,   0, 1, 0); (* eye(x,y,z), focal(x,y,z), up(x,y,z) *)		
+		
 		  DeActivate();
 	END Reshape;
 
@@ -144,6 +143,7 @@ TYPE
 
 	PROCEDURE initGL(): BOOLEAN;
 	BEGIN
+		MakeCurrent();
 		GL.ReadImplementationProperties;
 		IF ~ GL.GL_ARB_vertex_buffer_object THEN
 			KernelLog.String("GL_ARB_vertex_buffer_object extesion not supported" ); KernelLog.Ln;
@@ -228,7 +228,7 @@ TYPE
 		GL.ColorMaterial(GLC.GL_FRONT_AND_BACK, GLC.GL_AMBIENT_AND_DIFFUSE);
 		GL.Enable(GLC.GL_COLOR_MATERIAL);
 
-		GL.MatrixMode(GLC.GL_PROJECTION);
+	(*	GL.MatrixMode(GLC.GL_PROJECTION);
 		GL.LoadIdentity();
 		GLU.Perspective(45, 1, 1, 1000);
 
@@ -237,6 +237,7 @@ TYPE
 
 
 			GLU.LookAt(5, 5, eyeposz,   0, 0, 0,   0, 1, 0); (* eye(x,y,z), focal(x,y,z), up(x,y,z) *)
+		*)	
 		RETURN TRUE;
 	END initGL;
 
@@ -276,17 +277,13 @@ TYPE
 		GL.EnableClientState(GLC.GL_NORMAL_ARRAY);
 
 		GL.PushMatrix();
-
 			GL.Rotatef(angle, 0,0,1);
-
-		GL.DrawArrays(GLC.GL_QUADS, 0, 24);
+			GL.DrawArrays(GLC.GL_QUADS, 0, 24);
 		GL.PopMatrix();
 
 		GL.DisableClientState(GLC.GL_NORMAL_ARRAY);
 		GL.DisableClientState(GLC.GL_COLOR_ARRAY);
 		GL.DisableClientState(GLC.GL_VERTEX_ARRAY);  (* disable vertex arrays *)
-
-		GL.Finish();
 	END displayCB;
 
 

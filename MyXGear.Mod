@@ -1,8 +1,8 @@
-MODULE MyXGear; (** AUTHOR "fnecati"; PURPOSE "Adjusted for commandline run"; *)
+MODULE MyXGear; (** AUTHOR "fnecati"; PURPOSE "glxgears for commandline run"; *)
 
 IMPORT
 	X11, Api := X11Api, GL:=OpenGL, GLC := OpenGLConst, Kernel, Commands,
-	StdIO,  Math ,  SYSTEM ;
+	StdIO,  Math ;
 
 (*
 Opens a native X11 window and renders.

@@ -19,7 +19,7 @@ TYPE
 
 TYPE Context = OBJECT
 	VAR
-		glWin- {UNTRACED}  : WindowStruct;
+		glWin- : WindowStruct;
 		doublebuffered-: BOOLEAN; (* is context doublebuffered *)
 	 	buffer: Buffer; (* for speedup flip image in y*)
 	 	rastermode: Raster.Mode;
@@ -169,16 +169,11 @@ TYPE Context = OBJECT
 
 	PROCEDURE MakeCurrent();
 	 VAR res: LONGINT;
-	 BEGIN
-	 	GL.SetFCR();
-		Machine.Acquire( Machine.X11 );
-	(*	GL.glXWaitX();
-		X11.Sync(glWin.display,X11.False);
-*)
+	 BEGIN 
+	(* 	Machine.Acquire( Machine.X11 );*)
 		res := GL.glXMakeCurrent(glWin.display, glWin.glxpixmap, glWin.glctx);
 		 IF debug THEN KernelLog.String(" MakeCurrent:"); KernelLog.Boolean(res=1); KernelLog.Ln; END;
-
- 		Machine.Release( Machine.X11 );
+	(* Machine.Release( Machine.X11 ); *)
 	END MakeCurrent;
 
 	PROCEDURE SwapBuffers;
@@ -195,13 +190,10 @@ TYPE Context = OBJECT
 	PROCEDURE DeActivate();
  	VAR res: LONGINT;
  	BEGIN
-		Machine.Acquire( Machine.X11 );
-(*		GL.glXWaitX();
-		X11.Sync(glWin.display,X11.False);
-*)
+	(*	Machine.Acquire( Machine.X11 ); *)
 		res := GL.glXMakeCurrent(glWin.display, 0, 0);
 		IF debug THEN KernelLog.String(" DeActivate:"); KernelLog.Boolean(res=1); KernelLog.Ln; END;
-		Machine.Release( Machine.X11 );
+	(*	Machine.Release( Machine.X11 ); *)
 	END DeActivate;
 
 		(** Close the window *)
@@ -214,9 +206,6 @@ TYPE Context = OBJECT
 	VAR res: LONGINT;
 	BEGIN
 		Machine.Acquire( Machine.X11 );
-(*		GL.glXWaitX();
-		X11.Sync(glWin.display,X11.False); *)
-
 		(* do we have a rendering context *)
 		IF glWin.glctx # 0 THEN
 			(* Release the context *)
@@ -266,15 +255,15 @@ TYPE Context = OBJECT
 	BEGIN
 		w := image.width;
 		h := image.height;
-		Machine.Acquire( Machine.X11 );
-	(*	GL.glXWaitGL();*)
-		GL.ReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, ADDRESSOF(buffer^[0]));
-		Machine.Release( Machine.X11 );
+		Machine.Acquire( Machine.X11 );		
+		GL.ReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, ADDRESSOF(buffer^[0])); 
+		Machine.Release( Machine.X11 ); 
 
 		(* flip vertical, y *)
 		FOR i := 0 TO h - 1 DO
 			Raster.PutPixels(image, 0, h-1-i, w, Raster.BGRA8888, buffer^, i * w * 4, rastermode)
 		END
+		
 	END RenderInto;
 
 	(** *)

@@ -1,7 +1,11 @@
 MODULE Lists; (** AUTHOR "SAGE"; PURPOSE "Generic lists for different base and complex types"; *)
 
 (*
-	Parts taken from TFClasses.Mod
+
+	2013/02/10 - SAGE: Much more effective (for about 40% less comparisons needed in some algorithms) implementation of binary search algorithm.
+	2013/02/10 - SAGE: Binary search algorithm integer overflow bug of middle position calculation fixed.
+	2013/02/10 - SAGE: Special list growth strategy for preventing waste of memory.
+	
 *)
 
 IMPORT
@@ -12,7 +16,7 @@ CONST
 	LIST_NO_DUPLICATES* = 1;
 
 TYPE
-
+	
 	ObjectArray* = POINTER TO ARRAY OF ANY;
 
 	(** CompareMethod defines a Method that compares two Objects.
@@ -29,7 +33,7 @@ TYPE
 		readLock: LONGINT;
 		compare: CompareMethod;
 		bSorted, bNoDuplicates: BOOLEAN;
-
+		
 		PROCEDURE &Init*(m: CompareMethod; options: SET);
 		BEGIN
 			compare := m;
@@ -37,9 +41,9 @@ TYPE
 			count := 0;
 			bSorted := {LIST_SORTED} * options # {};
 			bNoDuplicates := {LIST_NO_DUPLICATES} * options # {};
-			NEW(list, 8)
+			NEW(list, 4)
 		END Init;
-
+		
 		(** Lock prevents modifications to the list. All calls to Lock
 			must be followed by a call to Unlock. Lock can be nested. *)
 		PROCEDURE Lock*;
@@ -53,19 +57,34 @@ TYPE
 		BEGIN {EXCLUSIVE}
 			DEC(readLock); ASSERT(readLock >= 0)
 		END Unlock;
-
+	
 		PROCEDURE Grow;
 		VAR
 			old: ObjectArray;
-			i: LONGINT;
+			nLen, i: LONGINT;
 		BEGIN
 			old := list;
-			NEW(list, LEN(list) * 2);
+			
+			(*
+				Special list growth strategy for
+				preventing waste of memory.
+				Same strategy used in Qt containers.
+			*)
+			nLen := LEN(old);
+			IF nLen < 20 THEN
+				INC(nLen, 4)
+			ELSIF nLen < 4084 THEN
+				nLen := nLen * 2 + 12
+			ELSE
+				INC(nLen, 2048)
+			END;
+			
+			NEW(list, nLen);
 			FOR i := 0 TO LEN(old) - 1 DO
 				list[i] := old[i]
 			END
 		END Grow;
-
+		
 		PROCEDURE FindSequentially(x: ANY): LONGINT;
 		VAR
 			i: LONGINT;
@@ -80,44 +99,76 @@ TYPE
 			RETURN -1
 		END FindSequentially;
 
+		(*
 		PROCEDURE FindPosition(x: ANY): LONGINT;
 		VAR
-			lowerBound, upperBound: LONGINT;
-			middle: LONGINT;
+			lower, middle, upper: LONGINT;
 			value: LONGINT;
 		BEGIN
-			IF count = 0 THEN RETURN 0; END;
-			IF compare(list[0], x) >= 1 THEN RETURN 0; END;
-			IF compare(list[count-1], x) <= -1 THEN RETURN count; END;
-			lowerBound := 0;
-			upperBound := count - 1;
-			WHILE (upperBound - lowerBound) > 1 DO
-				middle := (lowerBound + upperBound) DIV 2;
+			IF count = 0 THEN RETURN 0 END;
+			IF compare(list[0], x) > 0 THEN RETURN 0 END;
+			IF compare(list[count-1], x) < 0 THEN RETURN count END;
+			lower := 0;
+			upper := count - 1;
+			WHILE (upper - lower) > 1 DO
+
+				middle := (upper + lower) DIV 2;
+
 				value := compare(list[middle], x);
-				IF value = 0 THEN RETURN middle; END;
+				IF value = 0 THEN RETURN middle END;
 				IF value < 0 THEN
-					lowerBound := middle;
+					lower := middle
 				ELSE
-					upperBound := middle;
+					upper := middle
 				END;
 			END;
-			IF compare(list[lowerBound], x) = 0 THEN
-				RETURN lowerBound;
+			IF compare(list[lower], x) = 0 THEN
+				RETURN lower
 			ELSE
-				RETURN upperBound;
+				RETURN upper
 			END;
 		END FindPosition;
-
+		*)
+		
+		PROCEDURE FindPosition(x: ANY; VAR bFound: BOOLEAN): LONGINT;
+		VAR
+			lower, middle, upper: LONGINT;
+			value: LONGINT;
+		BEGIN
+			bFound := FALSE;
+			IF count = 0 THEN RETURN 0 END;
+			lower := 0;
+			upper := count - 1;
+			WHILE lower <= upper DO
+				middle := lower + (upper - lower) DIV 2;
+				value := compare(list[middle], x);
+				IF value = 0 THEN
+					bFound := TRUE;
+					RETURN middle
+				ELSIF value < 0 THEN
+					lower := middle + 1
+				ELSE
+					upper := middle - 1
+				END;
+			END;
+			IF lower <= upper THEN
+				RETURN upper
+			ELSE
+				RETURN lower
+			END;
+		END FindPosition;
+		
 		(** return the index of an object. In a multi-process situation, the process calling the IndexOf method should
 			call Lock before IndexOf and Unlock after the last use of an index based on IndexOf.
 			If the object is not found, -1 is returned *)
 		PROCEDURE IndexOf*(x: ANY): LONGINT;
 		VAR
 			pos: LONGINT;
+			bFound: BOOLEAN;
 		BEGIN {EXCLUSIVE}
 			IF bSorted THEN
-				pos := FindPosition(x);
-				IF (pos < count) & (list[pos] # NIL) & (compare(x, list[pos]) = 0) THEN
+				pos := FindPosition(x, bFound);
+				IF bFound THEN
 					RETURN pos
 				ELSE
 					RETURN -1
@@ -126,7 +177,7 @@ TYPE
 				RETURN FindSequentially(x)
 			END
 		END IndexOf;
-
+		
 		(** return the number of objects in the list. If count is used for indexing elements (e.g. FOR - Loop) in a multi-process
 			situation, the process calling the GetCount method should call Lock before GetCount and Unlock after the
 			last use of an index based on GetCount *)
@@ -134,7 +185,7 @@ TYPE
 		BEGIN
 			RETURN count
 		END GetCount;
-
+		
 		(** return an object based on an index. In a multi-process situation, GetItem is only safe in a locked region Lock / Unlock *)
 		PROCEDURE GetItem*(pos: LONGINT): ANY;
 		BEGIN
@@ -149,7 +200,7 @@ TYPE
 			AWAIT(readLock = 0);
 			IF bSorted THEN AddUnlocked(x) ELSE AppendUnlocked(x) END
 		END Add;
-
+		
 		PROCEDURE Insert*(pos: LONGINT; x: ANY);
 		BEGIN {EXCLUSIVE}
 			AWAIT(readLock = 0);
@@ -160,11 +211,13 @@ TYPE
 		(** Does the actual Adding without locking (should already
 			have been done by the caller) *)
 		PROCEDURE AddUnlocked(x: ANY);
-		VAR i, pos: LONGINT;
+		VAR
+			i, pos: LONGINT;
+			bFound: BOOLEAN;
 		BEGIN
-			pos := FindPosition(x);
-			IF bNoDuplicates & (pos < count) & (list[pos] # NIL) THEN
-				ASSERT(compare(x, list[pos]) # 0)
+			pos := FindPosition(x, bFound);
+			IF bNoDuplicates THEN
+				ASSERT(~bFound)
 			END;
 			IF count = LEN(list) THEN Grow END;
 			i := count - 1;
@@ -175,7 +228,7 @@ TYPE
 			list[pos] := x;
 			INC(count)
 		END AddUnlocked;
-
+		
 		PROCEDURE AppendUnlocked(x: ANY);
 		BEGIN
 			IF bNoDuplicates THEN
@@ -185,7 +238,7 @@ TYPE
 			list[count] := x;
 			INC(count)
 		END AppendUnlocked;
-
+		
 		PROCEDURE InsertUnlocked(pos: LONGINT; x: ANY);
 		VAR
 			i: LONGINT;
@@ -200,7 +253,7 @@ TYPE
 				DEC(i)
 			END;
 			list[pos] := x;
-			INC(count)
+			INC(count)			
 		END InsertUnlocked;
 
 		(** Remove an object from the list. Remove may block if number of calls to Lock is bigger than the number of calls to Unlock *)
@@ -235,45 +288,45 @@ TYPE
 	CustomList* = OBJECT
 		VAR
 			list*: List;
-
+			
 		PROCEDURE Lock*;
 		BEGIN
 			list.Lock
 		END Lock;
-
+		
 		PROCEDURE Unlock*;
 		BEGIN
 			list.Unlock
 		END Unlock;
-
+		
 		PROCEDURE Remove*(i: LONGINT);
 		BEGIN
 			list.Remove(i)
 		END Remove;
-
+		
 		PROCEDURE GetCount*(): LONGINT;
 		BEGIN
 			RETURN list.GetCount()
 		END GetCount;
-
+		
 		PROCEDURE IsEmpty*(): BOOLEAN;
 		BEGIN
 			RETURN list.GetCount() = 0
 		END IsEmpty;
-
+			
 	END CustomList;
-
+	
 	LongintItem* = POINTER TO RECORD
 		value*: LONGINT;
 	END;
-
+	
 	LongintList* = OBJECT(CustomList)
-
+			
 		PROCEDURE &New*(options: SET);
 		BEGIN
 			NEW(list, Compare, options)
 		END New;
-
+		
 		PROCEDURE Compare(first, second: ANY): LONGINT;
 		VAR
 			nFirst, nSecond: LONGINT;
@@ -288,7 +341,7 @@ TYPE
 				RETURN 0
 			END
 		END Compare;
-
+				
 		PROCEDURE Add*(x: LONGINT);
 		VAR
 			item: LongintItem;
@@ -297,7 +350,7 @@ TYPE
 			item.value := x;
 			list.Add(item)
 		END Add;
-
+		
 		PROCEDURE Insert*(pos: LONGINT; x: LONGINT);
 		VAR
 			item: LongintItem;
@@ -306,7 +359,7 @@ TYPE
 			item.value := x;
 			list.Insert(pos, item)
 		END Insert;
-
+		
 		PROCEDURE IndexOf*(x: LONGINT): LONGINT;
 		VAR
 			item: LongintItem;
@@ -315,7 +368,7 @@ TYPE
 			item.value := x;
 			RETURN list.IndexOf(item)
 		END IndexOf;
-
+		
 		PROCEDURE GetItem*(i: LONGINT): LONGINT;
 		VAR
 			item: ANY;
@@ -323,36 +376,36 @@ TYPE
 			item := list.GetItem(i);
 			RETURN item(LongintItem).value
 		END GetItem;
-
+			
 	END LongintList;
-
+	
 	LongintListList* = OBJECT(CustomList)
-
+			
 		PROCEDURE &New*(options: SET);
 		BEGIN
 			NEW(list, Compare, options)
 		END New;
-
+		
 		PROCEDURE Compare(first, second: ANY): LONGINT;
 		BEGIN
 			RETURN CompareLongintLists(first(LongintList), second(LongintList))
 		END Compare;
-
+				
 		PROCEDURE Add*(x: LongintList);
 		BEGIN
 			list.Add(x)
 		END Add;
-
+		
 		PROCEDURE Insert*(pos: LONGINT; x: LongintList);
 		BEGIN
 			list.Insert(pos, x)
 		END Insert;
-
+		
 		PROCEDURE IndexOf*(x: LongintList): LONGINT;
 		BEGIN
 			RETURN list.IndexOf(x)
 		END IndexOf;
-
+		
 		PROCEDURE GetItem*(i: LONGINT): LongintList;
 		VAR
 			item: ANY;
@@ -360,28 +413,28 @@ TYPE
 			item := list.GetItem(i);
 			RETURN item(LongintList)
 		END GetItem;
-
+		
 	END LongintListList;
-
+	
 	String* = Strings.String;
-
+	
 	StringItem* = POINTER TO RECORD
 		value*: String;
 	END;
-
+	
 	StringList* = OBJECT(CustomList)
-
+			
 		PROCEDURE &New*(options: SET);
 		BEGIN
 			NEW(list, Compare, options)
 		END New;
-
+		
 		PROCEDURE Compare(first, second: ANY): LONGINT;
 		BEGIN
 			RETURN UTF8Strings.Compare(first(StringItem).value^,
 				second(StringItem).value^)
 		END Compare;
-
+				
 		PROCEDURE Add*(CONST x: ARRAY OF CHAR);
 		VAR
 			item: StringItem;
@@ -390,7 +443,7 @@ TYPE
 			item.value := Strings.NewString(x);
 			list.Add(item)
 		END Add;
-
+		
 		PROCEDURE Insert*(pos: LONGINT; CONST x: ARRAY OF CHAR);
 		VAR
 			item: StringItem;
@@ -399,7 +452,7 @@ TYPE
 			item.value := Strings.NewString(x);
 			list.Insert(pos, item)
 		END Insert;
-
+		
 		PROCEDURE IndexOf*(CONST x: ARRAY OF CHAR): LONGINT;
 		VAR
 			item: StringItem;
@@ -408,7 +461,7 @@ TYPE
 			item.value := Strings.NewString(x);
 			RETURN list.IndexOf(item)
 		END IndexOf;
-
+		
 		PROCEDURE GetItem*(i: LONGINT): String;
 		VAR
 			item: ANY;
@@ -416,9 +469,9 @@ TYPE
 			item := list.GetItem(i);
 			RETURN item(StringItem).value
 		END GetItem;
-
+		
 	END StringList;
-
+	
 	PROCEDURE CompareLongintLists*(itemFirst, itemSecond: LongintList): LONGINT;
 	VAR
 		n, i, nRes: LONGINT;
@@ -455,6 +508,6 @@ TYPE
 			END
 		END
 	END CompareLongintLists;
-
+	
 END Lists.
 
