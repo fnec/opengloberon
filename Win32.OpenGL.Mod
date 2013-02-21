@@ -4167,16 +4167,16 @@ TYPE
 	Uniform3i- : TglUniform3i;
 	Uniform4i- : TglUniform4i;
 	Uniform1fv- : TglUniform1fv;
-	XglUniform2fv- : TglUniform2fv;
-	XglUniform3fv- : TglUniform3fv;
-	XglUniform4fv- : TglUniform4fv;
+	lUniform2fv- : TglUniform2fv;
+	Uniform3fv- : TglUniform3fv;
+	Uniform4fv- : TglUniform4fv;
 	Uniform1iv- : TglUniform1iv;
 	Uniform2iv- : TglUniform2iv;
 	Uniform3iv- : TglUniform3iv;
 	Uniform4iv- : TglUniform4iv;
 	UniformMatrix2fv- : TglUniformMatrix2fv;
-	XglUniformMatrix3fv- : TglUniformMatrix3fv;
-	XglUniformMatrix4fv- : TglUniformMatrix4fv;
+	UniformMatrix3fv- : TglUniformMatrix3fv;
+	UniformMatrix4fv- : TglUniformMatrix4fv;
 	ValidateProgram- : TglValidateProgram;
 	VertexAttrib1d- : TglVertexAttrib1d;
 	VertexAttrib1dv- : TglVertexAttrib1dv;
@@ -4553,16 +4553,16 @@ TYPE
 	Uniform3iARB- : TglUniform3iARB;
 	Uniform4iARB- : TglUniform4iARB;
 	Uniform1fvARB- : TglUniform1fvARB;
-	XglUniform2fvARB- : TglUniform2fvARB;
-	XglUniform3fvARB- : TglUniform3fvARB;
-	XglUniform4fvARB- : TglUniform4fvARB;
+	Uniform2fvARB- : TglUniform2fvARB;
+	Uniform3fvARB- : TglUniform3fvARB;
+	Uniform4fvARB- : TglUniform4fvARB;
 	Uniform1ivARB- : TglUniform1ivARB;
 	Uniform2ivARB- : TglUniform2ivARB;
 	Uniform3ivARB- : TglUniform3ivARB;
 	Uniform4ivARB- : TglUniform4ivARB;
 	UniformMatrix2fvARB- : TglUniformMatrix2fvARB;
-	XglUniformMatrix3fvARB- : TglUniformMatrix3fvARB;
-	XglUniformMatrix4fvARB- : TglUniformMatrix4fvARB;
+	UniformMatrix3fvARB- : TglUniformMatrix3fvARB;
+	UniformMatrix4fvARB- : TglUniformMatrix4fvARB;
 	GetObjectParameterfvARB- : TglGetObjectParameterfvARB;
 	GetObjectParameterivARB- : TglGetObjectParameterivARB;
 	GetInfoLogARB- : TglGetInfoLogARB;
@@ -6980,16 +6980,16 @@ BEGIN
 	Uniform3i := SYSTEM.VAL(TglUniform3i, GetProcAddress('glUniform3i'));
 	Uniform4i := SYSTEM.VAL(TglUniform4i, GetProcAddress('glUniform4i'));
 	Uniform1fv := SYSTEM.VAL(TglUniform1fv, GetProcAddress('glUniform1fv'));
-	XglUniform2fv := SYSTEM.VAL(TglUniform2fv, GetProcAddress('glUniform2fv'));
-	XglUniform3fv := SYSTEM.VAL(TglUniform3fv, GetProcAddress('glUniform3fv'));
-	XglUniform4fv := SYSTEM.VAL(TglUniform4fv, GetProcAddress('glUniform4fv'));
+	Uniform2fv := SYSTEM.VAL(TglUniform2fv, GetProcAddress('glUniform2fv'));
+	Uniform3fv := SYSTEM.VAL(TglUniform3fv, GetProcAddress('glUniform3fv'));
+	Uniform4fv := SYSTEM.VAL(TglUniform4fv, GetProcAddress('glUniform4fv'));
 	Uniform1iv := SYSTEM.VAL(TglUniform1iv, GetProcAddress('glUniform1iv'));
 	Uniform2iv := SYSTEM.VAL(TglUniform2iv, GetProcAddress('glUniform2iv'));
 	Uniform3iv := SYSTEM.VAL(TglUniform3iv, GetProcAddress('glUniform3iv'));
 	Uniform4iv := SYSTEM.VAL(TglUniform4iv, GetProcAddress('glUniform4iv'));
 	UniformMatrix2fv := SYSTEM.VAL(TglUniformMatrix2fv, GetProcAddress('glUniformMatrix2fv'));
-	XglUniformMatrix3fv := SYSTEM.VAL(TglUniformMatrix3fv, GetProcAddress('glUniformMatrix3fv'));
-	XglUniformMatrix4fv := SYSTEM.VAL(TglUniformMatrix4fv, GetProcAddress('glUniformMatrix4fv'));
+	UniformMatrix3fv := SYSTEM.VAL(TglUniformMatrix3fv, GetProcAddress('glUniformMatrix3fv'));
+	UniformMatrix4fv := SYSTEM.VAL(TglUniformMatrix4fv, GetProcAddress('glUniformMatrix4fv'));
 	ValidateProgram := SYSTEM.VAL(TglValidateProgram, GetProcAddress('glValidateProgram'));
 	VertexAttrib1d := SYSTEM.VAL(TglVertexAttrib1d, GetProcAddress('glVertexAttrib1d'));
 	VertexAttrib1dv := SYSTEM.VAL(TglVertexAttrib1dv, GetProcAddress('glVertexAttrib1dv'));
@@ -7500,16 +7500,16 @@ BEGIN
 	Uniform3iARB := SYSTEM.VAL(TglUniform3iARB, GetProcAddress('glUniform3iARB'));
 	Uniform4iARB := SYSTEM.VAL(TglUniform4iARB, GetProcAddress('glUniform4iARB'));
 	Uniform1fvARB := SYSTEM.VAL(TglUniform1fvARB, GetProcAddress('glUniform1fvARB'));
-	XglUniform2fvARB := SYSTEM.VAL(TglUniform2fvARB, GetProcAddress('glUniform2fvARB'));
-	XglUniform3fvARB := SYSTEM.VAL(TglUniform3fvARB, GetProcAddress('glUniform3fvARB'));
-	XglUniform4fvARB := SYSTEM.VAL(TglUniform4fvARB, GetProcAddress('glUniform4fvARB'));
+	Uniform2fvARB := SYSTEM.VAL(TglUniform2fvARB, GetProcAddress('glUniform2fvARB'));
+	Uniform3fvARB := SYSTEM.VAL(TglUniform3fvARB, GetProcAddress('glUniform3fvARB'));
+	Uniform4fvARB := SYSTEM.VAL(TglUniform4fvARB, GetProcAddress('glUniform4fvARB'));
 	Uniform1ivARB := SYSTEM.VAL(TglUniform1ivARB, GetProcAddress('glUniform1ivARB'));
 	Uniform2ivARB := SYSTEM.VAL(TglUniform2ivARB, GetProcAddress('glUniform2ivARB'));
 	Uniform3ivARB := SYSTEM.VAL(TglUniform3ivARB, GetProcAddress('glUniform3ivARB'));
 	Uniform4ivARB := SYSTEM.VAL(TglUniform4ivARB, GetProcAddress('glUniform4ivARB'));
 	UniformMatrix2fvARB := SYSTEM.VAL(TglUniformMatrix2fvARB, GetProcAddress('glUniformMatrix2fvARB'));
-	XglUniformMatrix3fvARB := SYSTEM.VAL(TglUniformMatrix3fvARB, GetProcAddress('glUniformMatrix3fvARB'));
-	XglUniformMatrix4fvARB := SYSTEM.VAL(TglUniformMatrix4fvARB, GetProcAddress('glUniformMatrix4fvARB'));
+	UniformMatrix3fvARB := SYSTEM.VAL(TglUniformMatrix3fvARB, GetProcAddress('glUniformMatrix3fvARB'));
+	UniformMatrix4fvARB := SYSTEM.VAL(TglUniformMatrix4fvARB, GetProcAddress('glUniformMatrix4fvARB'));
 	(* GL_ARB_vertex_shader  *)
 	GetActiveAttribARB := SYSTEM.VAL(TglGetActiveAttribARB, GetProcAddress('glGetActiveAttribARB'));
 	XglGetAttribLocationARB := SYSTEM.VAL(TglGetAttribLocationARB, GetProcAddress('glGetAttribLocationARB'));
@@ -11200,56 +11200,6 @@ PROCEDURE Color3dv* (CONST c: ARRAY [3] OF Double);
 BEGIN
 	XglColor3dv(ADDRESSOF(c[0]));
 END Color3dv;
-
-PROCEDURE Uniform2fv*(location: Int; count: Sizei; CONST value: ARRAY [2] OF Float);
-BEGIN
-  XglUniform2fv(location, count, ADDRESSOF(value[0]));
-END Uniform2fv;
-
-PROCEDURE Uniform3fv*(location: Int; count: Sizei; CONST value: ARRAY [3] OF Float);
-BEGIN
- XglUniform3fv(location, count, ADDRESSOF(value[0]));
-END Uniform3fv;
-
-PROCEDURE Uniform4fv*(location: Int; count: Sizei; CONST value: ARRAY [4] OF Float);
-BEGIN
- XglUniform4fv(location, count, ADDRESSOF(value[0]));
-END Uniform4fv;
-
-PROCEDURE Uniform2fvARB*(location: Int; count: Sizei; CONST value: ARRAY [2] OF Float);
-BEGIN
- XglUniform2fvARB(location, count, ADDRESSOF(value[0]));
-END Uniform2fvARB;
-
-PROCEDURE Uniform3fvARB*(location: Int; count: Sizei; CONST value: ARRAY [3] OF Float);
-BEGIN
- XglUniform3fvARB(location, count, ADDRESSOF(value[0]));
-END Uniform3fvARB;
-
-PROCEDURE Uniform4fvARB*(location: Int; count: Sizei; CONST value: ARRAY [4] OF Float);
-BEGIN
- XglUniform4fvARB(location, count, ADDRESSOF(value[0]));
-END Uniform4fvARB;
-
-PROCEDURE UniformMatrix3fv*(location: Int; count: Sizei; transpose: Boolean; CONST value: ARRAY [3,3] OF Float);
-BEGIN
-  XglUniformMatrix3fv(location, count, transpose, ADDRESSOF(value[0,0]));
-END UniformMatrix3fv;
-
-PROCEDURE UniformMatrix3fvARB*(location: Int; count: Sizei; transpose: Boolean; CONST value: ARRAY [3,3] OF Float);
-BEGIN
-  XglUniformMatrix3fvARB(location, count, transpose, ADDRESSOF(value[0,0]));
-END UniformMatrix3fvARB;
-
-PROCEDURE UniformMatrix4fv*(location: Int; count: Sizei; transpose: Boolean; CONST value: ARRAY [4,4] OF Float);
-BEGIN
-  XglUniformMatrix4fv(location, count, transpose, ADDRESSOF(value[0,0]));
-END UniformMatrix4fv;
-
-PROCEDURE UniformMatrix4fvARB*(location: Int; count: Sizei; transpose: Boolean; CONST value: ARRAY [4,4] OF Float);
-BEGIN
-  XglUniformMatrix4fvARB(location, count, transpose, ADDRESSOF(value[0,0]));
-END UniformMatrix4fvARB;
 
 (* ---------------------- *)
 PROCEDURE OnClose;
