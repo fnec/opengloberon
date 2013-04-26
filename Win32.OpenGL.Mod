@@ -4167,7 +4167,7 @@ TYPE
 	Uniform3i- : TglUniform3i;
 	Uniform4i- : TglUniform4i;
 	Uniform1fv- : TglUniform1fv;
-	lUniform2fv- : TglUniform2fv;
+	Uniform2fv- : TglUniform2fv;
 	Uniform3fv- : TglUniform3fv;
 	Uniform4fv- : TglUniform4fv;
 	Uniform1iv- : TglUniform1iv;

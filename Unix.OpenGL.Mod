@@ -17,7 +17,7 @@ VAR
 	(* handle to library  *)
 	GL_LibHandle: LONGINT;
 
-	libraryPaths: ARRAY 8 OF ARRAY 64 OF CHAR;
+	libraryPaths: ARRAY 9 OF ARRAY 64 OF CHAR;
 
 CONST
 	debug = FALSE; (* used in ReadImplementationProperties, when extension is not available  *)
@@ -10589,15 +10589,19 @@ BEGIN
 	(* amd, ati *)
 	libraryPaths[2] := "/usr/lib32/fglrx";
 	libraryPaths[3] := "/usr/lib/i386-linux-gnu/fglrx";
-	(* mesa *)
-	libraryPaths[7] := "/usr/lib/i386-linux-gnu/mesa";
 
 	(* i386 systems *)
 	libraryPaths[4] := "/usr/lib/nvidia-current";
 	libraryPaths[5] := "/usr/lib/fglrx";
+
 	(* mesa *)
 	libraryPaths[6] := "/usr/lib/mesa";
+	libraryPaths[7] := "/usr/lib/i386-linux-gnu/mesa";
+
+	(* local, libGL.so.1 needs to be 32bit *)
+	libraryPaths[8] := "/usr/local/lib";
 
 	InitOpenGL();
 	ReadOpenGLCore();
 END OpenGL.
+

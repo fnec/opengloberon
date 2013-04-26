@@ -256,7 +256,7 @@ TYPE Context = OBJECT
 		w := image.width;
 		h := image.height;
 		Machine.Acquire( Machine.X11 );		
-		GL.ReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, ADDRESSOF(buffer^[0])); 
+		GL.ReadPixels(0, 0, w, h, GLC.GL_BGRA, GLC.GL_UNSIGNED_BYTE, ADDRESSOF(buffer[0])); 
 		Machine.Release( Machine.X11 ); 
 
 		(* flip vertical, y *)
