@@ -1,7 +1,7 @@
 MODULE Decoder3DS; (** AUTHOR "fnecati"; PURPOSE "a simple 3ds model loader"; *)
 
-IMPORT KernelLog, Files, Strings, Lists, Commands, Math, Streams, Reals, WMGraphics, Raster,
-	GLC := OpenGLConst, GL := OpenGL, GLU, SYSTEM;
+IMPORT KernelLog, Files, Strings, Containers, Commands, Math, Streams, Reals, WMGraphics, Raster,
+	GLC := OpenGLConst, GL := OpenGL, GLU;
 
 CONST
 	debug = FALSE; (* for writing chunk values *)
@@ -113,7 +113,7 @@ MAIN3DS  = 4D4DH;
 	  COL_UNK = 00013H; (* unknown *)
 
 TYPE
-	List = Lists.List;
+	List = Containers.Vector;
 
 (*
 (* Here is our structure for our 3DS indicies (since .3DS stores 4 unsigned shorts) *)
@@ -219,11 +219,14 @@ VAR
 
 	(* This function reads in a chunk ID and it's length in bytes *)
 	PROCEDURE ReadChunk(VAR chunk: Chunk);
+	VAR s: ARRAY 2 OF CHAR;
 	BEGIN
 		(* This reads the chunk ID which is 2 bytes.
 		 The chunk ID is like OBJECT or EDIT_MATERIAL.  It tells what data is
 		 able to be read in within the chunks section.  *)
-		 Files.ReadInt(rider, chunk.ID);
+		(* Files.ReadInt(rider, chunk.ID); *)
+		file.ReadBytes(rider, s, 0,2);
+		chunk.ID := ORD(s[1])*100H + ORD(s[0]);
 		chunk.bytesRead := 2;
 		(* Then, we read the length of the chunk which is 4 bytes.
 		 This is how we know how much to read in, or read past. *)

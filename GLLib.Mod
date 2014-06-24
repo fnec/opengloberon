@@ -121,7 +121,7 @@ BEGIN
 	glu.Sphere(quadObj, radius, slices, stacks)
 END WireSphere;
 
-PROCEDURE  SolidSphere* (radius: REAL;  slices, stacks: LONGINT);
+PROCEDURE SolidSphere* (radius: REAL;  slices, stacks: LONGINT);
 BEGIN
 	InitQuadObj;
 	glu.QuadricDrawStyle(quadObj, glu.GLU_FILL);
@@ -129,7 +129,26 @@ BEGIN
 	glu.Sphere(quadObj, radius, slices, stacks)
 END SolidSphere;
 
-PROCEDURE  WireCone* (base, height: REAL;  slices, stacks: LONGINT);
+
+(** baseradius at z=0, topradius at x=height *)
+PROCEDURE WireCylinder* (baseradius, topradius, height: REAL;  slices, stacks: LONGINT);
+BEGIN
+	InitQuadObj;
+	glu.QuadricDrawStyle(quadObj, glu.GLU_LINE);
+	glu.QuadricNormals(quadObj, glu.GLU_SMOOTH);
+	glu.Cylinder(quadObj, baseradius, topradius, height, slices, stacks)
+END WireCylinder;
+
+(** baseradius at z=0, topradius at x=height *)
+PROCEDURE SolidCylinder* (baseradius, topradius, height: REAL;  slices, stacks: LONGINT);
+BEGIN
+	InitQuadObj;
+	glu.QuadricDrawStyle(quadObj, glu.GLU_FILL);
+	glu.QuadricNormals(quadObj, glu.GLU_SMOOTH);
+	glu.Cylinder(quadObj, baseradius, topradius, height, slices, stacks)
+END SolidCylinder;
+
+PROCEDURE WireCone* (base, height: REAL;  slices, stacks: LONGINT);
 BEGIN
 	InitQuadObj;
 	glu.QuadricDrawStyle(quadObj, glu.GLU_LINE);

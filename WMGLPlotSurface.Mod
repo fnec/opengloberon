@@ -1,7 +1,7 @@
 MODULE WMGLPlotSurface; (** AUTHOR "fnecati"; PURPOSE "a test for 3D function plotting with light"; *)
 
 IMPORT
-	WMRectangles, WMGraphics, Strings, Math:=MathL, Inputs,
+	WMRectangles, WMGraphics, Strings, Math:=MathL, Inputs, Modules,
 	WM := WMWindowManager,  WMMessages,  WMDialogs,
 	GL := OpenGL, GLC := OpenGLConst, GLU, WMGL := WMGLWindow;
 
@@ -43,6 +43,7 @@ TYPE
 		initGL;
 		Reshape(w, h);
 		UpdateImage;
+		IncCount
 	END New;
 
 
@@ -65,7 +66,7 @@ TYPE
 		END;
 	END KeyEvent;
 
-	PROCEDURE WheelMove*(dz : LONGINT);
+	PROCEDURE WheelMove(dz : LONGINT);
 	BEGIN
 		IF dz < 0 THEN
 			MakeCurrent();
@@ -88,9 +89,10 @@ TYPE
 		END
 	END Handle;
 
-	PROCEDURE Close*;
-	BEGIN {EXCLUSIVE}
+	PROCEDURE Close;
+	BEGIN 
 		Close^;
+		DecCount
 	END Close;
 
 	PROCEDURE UpdateImage;
@@ -141,14 +143,14 @@ TYPE
 		END
 	END VLength3;
 
-	PROCEDURE VScaled3*(a:TVector3d; factor:LONGREAL):TVector3d;
+	PROCEDURE VScaled3(a:TVector3d; factor:LONGREAL):TVector3d;
 	VAR result : TVector3d;
 	BEGIN
 	       result := factor*a;
 		RETURN result
 	END VScaled3;
 
-	PROCEDURE VNormed3*(a: TVector3d):TVector3d;
+	PROCEDURE VNormed3(a: TVector3d):TVector3d;
 	BEGIN
 		RETURN VScaled3(a, 1/VLength3(a))
 	END VNormed3;
@@ -328,6 +330,9 @@ TYPE
 BEGIN
 END GLWindow;
 
+VAR
+	nofWindows : LONGINT;
+	
 PROCEDURE Open*;
 VAR
 	window: GLWindow;
@@ -335,10 +340,33 @@ BEGIN
 	NEW(window, 256, 256);
 END Open;
 
-BEGIN
+PROCEDURE IncCount;
+BEGIN {EXCLUSIVE}
+	INC(nofWindows)
+END IncCount;
 
+PROCEDURE DecCount;
+BEGIN {EXCLUSIVE}
+	DEC(nofWindows)
+END DecCount;
+
+PROCEDURE Cleanup;
+VAR die : KillerMsg;
+	 msg : WMMessages.Message;
+	 m : WM.WindowManager;
+BEGIN {EXCLUSIVE}
+	NEW(die);
+	msg.ext := die;
+	msg.msgType := WMMessages.MsgExt;
+	m := WM.GetDefaultManager();
+	m.Broadcast(msg);
+	AWAIT(nofWindows = 0)
+END Cleanup;
+
+BEGIN
+	Modules.InstallTermHandler(Cleanup)
 END WMGLPlotSurface.
 
-SystemTools.Free  WMGLPlotSurface  WMGLWindow ~    OpenGL   OpenGLConst ~
+SystemTools.Free  WMGLPlotSurface ~
 
 WMGLPlotSurface.Open ~
