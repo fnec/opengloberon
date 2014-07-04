@@ -621,8 +621,8 @@ CONST
 		HWND* = HANDLE;
 		HBITMAP* = HANDLE;
 		HFONT* = HANDLE;
-		WORD* = INTEGER;
-		DWORD* = LONGINT;
+	(*	WORD* = INTEGER;
+		DWORD* = LONGINT; *)
 
 		RGBQUAD* = RECORD
 			rgbBlur*, rgbGreen*, rgbRed*, rgbReserved*: CHAR;

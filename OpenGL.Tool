@@ -50,7 +50,6 @@ Compiler.Compile
 # utilities
 # =========================================
 Compiler.Compile 
-	opengloberon/GLTextures.Mod
 	opengloberon/GLLib.Mod	
 	opengloberon/Containers.Mod
 	opengloberon/Decoder3DS.Mod	
