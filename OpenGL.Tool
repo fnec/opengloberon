@@ -1,14 +1,16 @@
  OpenGL Framework for A2- WinAos and LinuxAos versions
 
 # =================================================
-#        OpenGL 4.3 - Headertranslation
-#        Version 4.3
-#        Date : 22.11.2012
-#        Works with : LinuxAos and WinAos
+# OpenGL 4.5 - Header translation
+# Version 4.5
+# Date : 17.10.2014
+# Works with : LinuxAos and WinAos
 #
-#        All contributions and corrections are welcome ...
-#        Available at:  http://code.google.com/p/opengloberon
+# All contributions and corrections are welcome ...
+# Available at:  https://github.com/fnec/opengloberon
 # =================================================
+
+SystemTools.CollectGarbage ~ 
 
 # 1- Compile platform dependent bindings:
 
@@ -17,35 +19,35 @@
 Compiler.Compile
 	opengloberon/OpenGLConst.Mod
 	opengloberon/Unix.OpenGL.Mod
-	opengloberon/Unix.GLU.Mod
-	opengloberon/Unix.GLContext.Mod
-	opengloberon/Unix.GLContextPB.Mod
-	opengloberon/Unix.XF86VMode.Mod
-	opengloberon/Unix.OGLWindow.Mod
-	opengloberon/Unix.WMGLWindow.Mod
-	opengloberon/Unix.GLXinfo.Mod
+	opengloberon/Unix.GLU.Mod	
 	opengloberon/GLShaderUtils.Mod
+	opengloberon/Unix.WMGLWindow.Mod
+	opengloberon/Unix.GLContext.Mod
+	opengloberon/Unix.GLContextPB.Mod	
+	opengloberon/Unix.GLXinfo.Mod
 	opengloberon/GLShadersBuild.Mod
-~
+	opengloberon/Unix.XF86VMode.Mod
+	opengloberon/Unix.OGLWindow.Mod	
+	~
 	
-	GLXinfo.Do~  # display opengl info
+	GLXinfo.Do ~  # display opengl info
 	
 # WinAos:
 
 Compiler.Compile
 	opengloberon/OpenGLConst.Mod
-	opengloberon/WinApi.Mod	
+	opengloberon/Win32.WinApi.Mod	
 	opengloberon/Win32.OpenGL.Mod
-	opengloberon/Win32.GLU.Mod	
-	opengloberon/Win32.GLContext.Mod
-	opengloberon/Win32.OGLWindow.Mod
+	opengloberon/Win32.GLU.Mod
+	opengloberon/GLShaderUtils.Mod	
 	opengloberon/Win32.WMGLWindow.Mod
+	opengloberon/Win32.GLContext.Mod	
 	opengloberon/Win32.WGLinfo.Mod
-	opengloberon/GLShaderUtils.Mod
 	opengloberon/GLShadersBuild.Mod
+	opengloberon/Win32.OGLWindow.Mod
 	 ~
 
-	WGLinfo.Do ~ 
+	WGLinfo.Do ~ # display opengl info
 #==========================================
 # utilities
 # =========================================
@@ -53,7 +55,7 @@ Compiler.Compile
 	opengloberon/GLLib.Mod	
 	opengloberon/Containers.Mod
 	opengloberon/Decoder3DS.Mod	
-~
+	~
 
 # =========================================
 # 2- Compile platform independent demo examples of GLContext :
@@ -84,7 +86,7 @@ Compiler.Compile
 	opengloberon/MyXGear.Mod
 	opengloberon/MyXGear1.Mod
 	opengloberon/MyXGear2.Mod
-~
+	~
 
 
 # WinAos specific version of WMGLDemo7.Mod by tobj..@ .., thanks :
@@ -117,7 +119,7 @@ Compiler.Compile
 	opengloberon/OGLDemo1.Mod
 	opengloberon/OGLDemo2.Mod
 	opengloberon/SpaceSim3.Mod 
-~
+	~
 
 # Run Demos, click Midle Mouse (MM) on the following commands
 
