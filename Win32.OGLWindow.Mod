@@ -10,7 +10,7 @@ MODULE OGLWindow;  (** AUTHOR "fnecati"; PURPOSE "OpenGL enabled OO Win32 Window
  *)
 
 IMPORT SYSTEM, Machine, Kernel32, User32, Kernel, Modules, KernelLog,
-	Inputs, Objects, GL:=OpenGL, Strings, WinApi;
+	Inputs, Objects, GL:=OpenGL, Strings, WinApi, GLC := OpenGLConst;
 
 CONST
 	debug = FALSE;
@@ -851,8 +851,8 @@ END GameLogic;
 		MakeCurrent();
 
 		GL.ReadOpenGLCore();
-		GL.Read_WGL_EXT_swap_control; (* needed for swap interval *)
-		(* SetSwapInterval(0); *)
+	(*	GL.Read_WGL_EXT_swap_control; (* needed for swap interval *)
+		SetSwapInterval(0); *)
 
 		OnLoad();
 		Reshape(width, height);
