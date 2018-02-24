@@ -10,6 +10,8 @@
 # Available at:  https://github.com/fnec/opengloberon
 # =================================================
 
+SystemTools.FreeDownTo OpenGL ~
+
 SystemTools.CollectGarbage ~ 
 
 # 1- Compile platform dependent bindings:
@@ -21,9 +23,8 @@ Compiler.Compile
 	opengloberon/Unix.OpenGL.Mod
 	opengloberon/Unix.GLU.Mod	
 	opengloberon/GLShaderUtils.Mod
+	opengloberon/Unix.GLContext.Mod	
 	opengloberon/Unix.WMGLWindow.Mod
-	opengloberon/Unix.GLContext.Mod
-	opengloberon/Unix.GLContextPB.Mod	
 	opengloberon/Unix.GLXinfo.Mod
 	opengloberon/GLShadersBuild.Mod
 	opengloberon/Unix.XF86VMode.Mod
@@ -34,7 +35,7 @@ Compiler.Compile
 	
 # WinAos:
 
-Compiler.Compile
+Compiler.Compile 
 	opengloberon/OpenGLConst.Mod
 	opengloberon/Win32.WinApi.Mod	
 	opengloberon/Win32.OpenGL.Mod
@@ -60,7 +61,7 @@ Compiler.Compile
 # =========================================
 # 2- Compile platform independent demo examples of GLContext :
 
-Compiler.Compile
+Compiler.Compile 
 	 opengloberon/GLTest.Mod
 	 opengloberon/WMGLDemo.Mod
 	 opengloberon/WMGLDemo1.Mod
@@ -293,7 +294,7 @@ VAR
 		END Reshape;
 
 		BEGIN
-			MainLoop; (* run event processing *)
+			
 		END GLWindow.
 	.....
 
