@@ -102,8 +102,9 @@ BEGIN
 END PrintOpenGLError;
 
 PROCEDURE PrintShaderSource*(obj: Uint);
-VAR sourceLength, sslength: LONGINT;
+VAR sourceLength: LONGINT;
 	ssource: Strings.String;
+	sslength: gl.Sizei;
 BEGIN
 	gl.GetShaderiv(obj, glc.GL_SHADER_SOURCE_LENGTH, ADDRESSOF(sourceLength));
 	(* wr.Int(obj, 0);  wr.String(" sourceLength= "); wr.Int(sourceLength, 0); wr.Ln; *)
