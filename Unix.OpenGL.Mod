@@ -1,6 +1,6 @@
 MODULE OpenGL; (** AUTHOR "fnecati"; PURPOSE "OpenGL binding for UnixAos"; *)
 
-IMPORT SYSTEM, Unix, Modules, X11, X11Api, Strings, GLC := OpenGLConst, KernelLog;
+IMPORT SYSTEM, Unix, Modules, X11, Strings, GLC := OpenGLConst, KernelLog;
 
 (*
 	Compiler.Compile OpenGLConst.Mod Unix.OpenGL.Mod  ~
@@ -119,9 +119,9 @@ TYPE
 	PGLvdpauSurfaceNV* =  ADDRESS; (* POINTER TO ARRAY OF GLvdpauSurfaceNV; *)
 
 	(*! GLX - LINUX  *)
-	DisplayPtr* = X11Api.DisplayPtr;
-	VisualInfoPtr* = X11Api.VisualInfoPtr;
-	XID* = LONGWORD ;
+	DisplayPtr* = X11.DisplayPtr;
+	VisualInfoPtr* = X11.VisualInfoPtr;
+	XID* = X11.XID;
 	GLXContext* = XID;
 	GLXContextID* = XID;
 	GLXDrawable* = XID;

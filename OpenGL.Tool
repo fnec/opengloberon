@@ -62,26 +62,27 @@ Compiler.Compile
 # 2- Compile platform independent demo examples of GLContext :
 
 Compiler.Compile 
-	 opengloberon/GLTest.Mod
-	 opengloberon/WMGLDemo.Mod
-	 opengloberon/WMGLDemo1.Mod
-	 opengloberon/WMGLDemo2.Mod
-	 opengloberon/WMGLDemo3.Mod
-	 opengloberon/WMGLDemo4.Mod
-	 opengloberon/WMGLDemo6.Mod
-	 opengloberon/WMGLDemo7.Mod
-	 opengloberon/WMGLDemo9.Mod
-	 opengloberon/WMGLDemoFlags.Mod
-	 opengloberon/WMGLDemoLorenz.Mod
-	 opengloberon/WMGLPlotSurface.Mod
-	 opengloberon/WMGLSteamEngine.Mod
-	 opengloberon/WMGLPolyStipple.Mod
-	 opengloberon/WMGLSLBricks.Mod
+	opengloberon/GLTest.Mod
+	opengloberon/WMGLDemo.Mod
+	opengloberon/WMGLDemo1.Mod
+	opengloberon/WMGLDemo2.Mod
+	opengloberon/WMGLDemo3.Mod
+	opengloberon/WMGLDemo4.Mod
+	opengloberon/WMGLDemo6.Mod
+	opengloberon/WMGLDemo7.Mod
+	opengloberon/WMGLDemo9.Mod
+	opengloberon/WMGLDemoFlags.Mod
+	opengloberon/WMGLDemoLorenz.Mod
+	opengloberon/WMGLPlotSurface.Mod
+	opengloberon/WMGLSteamEngine.Mod
+	opengloberon/WMGLPolyStipple.Mod
+	opengloberon/WMGLSLBricks.Mod
 	opengloberon/WMSpaceSim3.Mod	 
 	~
 # =========================================
 
 # LinuxAos specific demos (using linux native X11-Window ):
+
 Compiler.Compile
 	opengloberon/Unix.X11KeySymDef.Mod
 	opengloberon/MyXGear.Mod
@@ -233,11 +234,11 @@ VAR
 	  		WM.AddWindow(SELF, 200, 200);	  		
 	  	END New;
 	  	
-	  	PROCEDURE Reshape(w, h: LONGINT);
+	  	PROCEDURE Reshape(w, h: SIZE);
 		BEGIN
 			MakeCurrent();
 				(* GL codes *)
-				GL.Viewport(0,0,w, h);
+				GL.Viewport(0,0,w(GL.Sizei), h(GL.Sizei));
 				
 			DeActivate();
 	  	END Reshape;

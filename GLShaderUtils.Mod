@@ -48,7 +48,7 @@ END WriteModelMatrixf;
 PROCEDURE TextFileRead*(CONST fname: ARRAY OF CHAR): Strings.String;
 VAR
 	f: Files.File; rider: Files.Rider;
-	str: Strings.String; len: LONGINT;
+	str: Strings.String; len: SIZE;
 BEGIN
 	f := Files.Old(fname);
 	IF f #  NIL THEN

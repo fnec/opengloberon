@@ -36,7 +36,7 @@ TYPE
 VAR
 	keySymbol: ARRAY 256 OF LONGINT;
 	xbuttons: SET32;
-	compstatus: Api.ComposeStatus;
+	compstatus: X11.ComposeStatus;
 
 
 (** OpenGL enabled Window Object *)
@@ -119,12 +119,11 @@ VAR
 	(** Redisplay proc for GL,  sends update message to the Window to call Display proc. *)
 	PROCEDURE ReDisplay*();
 	VAR
-		xev: Api.XEvent;
-		res: LONGINT;
+		xev: X11.Event;
 	BEGIN
-		xev.typ := Api.Expose;
+		xev.typ := X11.Expose;
 		xev.window := win;
-		res := Api.SendEvent(display, win, Api.False, Api.ExposureMask, ADDRESSOF(xev));
+		X11.SendEvent(display, win, X11.False, X11.ExposureMask, ADDRESSOF(xev));
 		X11.Flush(display);
 	END ReDisplay;
 
@@ -166,7 +165,7 @@ VAR
 	END GetDisplay;
 
 	(* get current gl context of this window *)
-	PROCEDURE GetContext*(): Api.XID;
+	PROCEDURE GetContext*(): X11.XID;
 	BEGIN
 		RETURN glctx;
 	END GetContext;
@@ -238,16 +237,16 @@ VAR
 		(* do we have a window *)
 		IF win # 0 THEN
 			(* Unmap the window*)
-			Api.UnmapWindow(display, win);
+			X11.UnmapWindow(display, win);
 			(* Destroy the window *)
-			res:= Api.DestroyWindow(display, win);
+			res:= X11.DestroyWindow(display, win);
 			IF debug THEN KernelLog.String("window deleted"); KernelLog.Ln; END;
 
 		END;
 
 		(* do we have a display *)
 		IF display # 0 THEN
-			res := Api.CloseDisplay(display);
+			res := X11.CloseDisplay(display);
 			IF debug THEN KernelLog.String("display deleted"); KernelLog.Ln; END;
 		END;
 
@@ -274,34 +273,33 @@ VAR
 			noCursor := X11.CreatePixmapCursor( display, pixmap, pixmap,  fg , fg, 0, 0 );
 
 			X11.DefineCursor( display, win, noCursor );
-			Api.FreeCursor(display, noCursor);
+			X11.FreeCursor(display, noCursor);
 			X11.FreePixmap(display, pixmap);
 		ELSE
-			X11.DefineCursor( display, win, Api.XC_X_cursor );
+			X11.DefineCursor( display, win, X11.XC_X_cursor );
 		END;
 	END HideMousePointer;
 
 	(** Set mouse position to x,y *)
 	PROCEDURE SetMousePosition*(x, y: LONGINT);
 	BEGIN
-		Api.WarpPointer(display, win, win,  0, 0, width, height, x, height-y-1);
+		X11.WarpPointer(display, win, win,  0, 0, width, height, x, height-y-1);
 		X11.Flush(display);
 	END SetMousePosition;
 
 	(** warp pointer to x,y *)
 	PROCEDURE WarpPointer*(w, h: LONGINT; x, y: LONGINT);
 	BEGIN
-		Api.WarpPointer( display, 0, win, 0,0, w, h, x, y);
+		X11.WarpPointer( display, 0, win, 0,0, w, h, x, y);
 		(*X11.Flush(display);*)
 	END WarpPointer;
 
 
 	(** set title of the window *)
-	PROCEDURE SetTitle*(tit: ARRAY OF CHAR);
-	VAR res: LONGINT;
+	PROCEDURE SetTitle*(CONST tit: ARRAY OF CHAR);
 	BEGIN
 		COPY(tit, title);
-		 res := Api.StoreName(display, win, title);
+		X11.StoreName(display, win, ADDRESSOF(title[0]));
 	END SetTitle;
 
 	(** set idle time  for calling IdleDisplay proc *)
@@ -346,38 +344,37 @@ VAR
 	BEGIN
 		IF  ~(fullscreen OR fullwindow) THEN
 			decorations := decor;
-			property := Api.InternAtom(display, "_MOTIF_WM_HINTS", Api.False);
+			property := X11.InternAtom(display, "_MOTIF_WM_HINTS", X11.False);
 			IF ~decor THEN
 				hints.flags := {1};
 			END;
-			X11.ChangeProperty(display, win, property, property, 32, Api.PropModeReplace, ADDRESSOF(hints), 5);
+			X11.ChangeProperty(display, win, property, property, 32, X11.PropModeReplace, ADDRESSOF(hints), 5);
 		END;
 	END SetDecorations;
 
 	(** Set  window state to full window *)
 	PROCEDURE SetFullWindow*(fullw: BOOLEAN);
 	VAR
-		cm: Api.XClientMessageEvent;
-		xev: Api.XEvent;
-		dl: Api.Data40;
-		res: LONGINT;
+		cm: X11.ClientMessageEvent;
+		xev: X11.Event;
+		dl: X11.Data40;
 		wmstate, wmfullscreen: X11.Atom;
 		defwin: X11.Window;
 	BEGIN
 		IF (fullw = fullwindow) THEN RETURN END; (* no need to set again*)
 
-		wmstate := Api.InternAtom(display, "_NET_WM_STATE", Api.False);
-		wmfullscreen := Api.InternAtom(display, "_NET_WM_STATE_FULLSCREEN", Api.False);
+		wmstate := X11.InternAtom(display, "_NET_WM_STATE", X11.False);
+		wmfullscreen := X11.InternAtom(display, "_NET_WM_STATE_FULLSCREEN", X11.False);
 
 		fullwindow := fullw;
 
-		cm.typ := Api.ClientMessage; cm.window := win;  cm.messageType := wmstate;
+		cm.typ := X11.ClientMessage; cm.window := win;  cm.messageType := wmstate;
 		cm.format := 32;
 		IF fullwindow THEN dl[0] := 1; ELSE dl[0] := 0; END;
 		dl[1] := wmfullscreen;  dl[2] := 0;
-		cm.data:=dl;  xev := SYSTEM.VAL(Api.XEvent, cm);
+		cm.data:=dl;  xev := SYSTEM.VAL(X11.Event, cm);
 		defwin := X11.DefaultRootWindow(display);
-		res := Api.SendEvent(display, defwin, Api.False, Api.SubstructureNotifyMask, ADDRESSOF(xev));
+		X11.SendEvent(display, defwin, X11.False, X11.SubstructureNotifyMask, ADDRESSOF(xev));
 	END SetFullWindow;
 
 	(** create a new opengl context with opengl version major, minor *)
@@ -462,10 +459,10 @@ VAR
 		res: LONGINT;
 		resb: X11.Bool;
 		attrib : POINTER TO ARRAY OF GL.Int;  (* attributes of GL window *)
-		swa : Api.XSetWindowAttributes; (* set window attributes*)
-		visinfoptr : Api.VisualInfoPtr; (* pointer to X11 VisualInfo *)
+		swa : X11.XSetWindowAttributes; (* set window attributes*)
+		visinfoptr : X11.VisualInfoPtr; (* pointer to X11 VisualInfo *)
 
-		sizehints: Api.XSizeHints;
+		sizehints: X11.XSizeHints;
 
 		modeInfos {UNTRACED}: V.PModeInfo;
 		bestmodeInfo {UNTRACED} : V.ModeInfo;
@@ -473,12 +470,12 @@ VAR
 
 		i: LONGINT;
 		isbestFound: BOOLEAN;
-		rootwin: Api.Window;
+		rootwin: X11.Window;
 	BEGIN
 
 
 	     (* get a connection *)
-		display := X11.OpenDisplay(0);
+		display := X11.OpenDisplay("");
 		IF display =0 THEN
 			KernelLog.String(" cannot connect to X server"); KernelLog.Ln;
 		     RETURN FALSE;
@@ -543,7 +540,7 @@ VAR
 			KernelLog.Char("."); KernelLog.Int(glxMinor,0); KernelLog.Ln;
 		END;
 
-		rootwin :=  Api.RootWindow(display, visinfoptr.screen);
+		rootwin :=  X11.RootWindow(display, visinfoptr.screen);
 
  		(* window attributes *)
  		swa.backgroundPixel := 0;
@@ -632,42 +629,42 @@ VAR
 			res := V.LockModeSwitch(display, screen, 1);
 			swa.overrideRedirect := TRUE;
 			 (* window event masks *)
-			swa.eventMask := Api.KeyPressMask + Api.KeyReleaseMask + Api.ButtonPressMask+ Api.ButtonReleaseMask + Api.PointerMotionMask +
-	 		Api.ButtonMotionMask + Api.ExposureMask + Api.StructureNotifyMask + Api.FocusChangeMask ;
+			swa.eventMask := X11.KeyPressMask + X11.KeyReleaseMask + X11.ButtonPressMask+ X11.ButtonReleaseMask + X11.PointerMotionMask +
+	 		X11.ButtonMotionMask + X11.ExposureMask + X11.StructureNotifyMask + X11.FocusChangeMask ;
 
-			masks := Api.CWBorderPixel + Api.CWColormap + Api.CWEventMask + Api.CWOverrideRedirect;
+			masks := X11.CWBorderPixel + X11.CWColormap + X11.CWEventMask + X11.CWOverrideRedirect;
 
-			win := Api.CreateWindow(display,  rootwin, 0, 0, width, height,
-				        0, visinfoptr.depth, Api.InputOutput,  visinfoptr.visual, masks, swa);
+			win := X11.CreateWindow(display,  rootwin, 0, 0, width, height,
+				        0, visinfoptr.depth, X11.InputOutput,  visinfoptr.visual, masks, swa);
 
 			IF win = 0 THEN RETURN FALSE END;
 
-			(* Api.WarpPointer(display, Api.None, win, 0, 0, 0, 0, 0, 0);*)
-			Api.WarpPointer(display, Api.None, win, 0, 0, 0, 0, width DIV 2, height DIV 2);
-			Api.MapWindow(display, win);
-			res := Api.GrabKeyboard(display, win, Api.True, Api.GrabModeAsync , Api.GrabModeAsync, Api.CurrentTime);
-			res := Api.GrabPointer(display, win, Api.True, Api.ButtonPressMask, Api.GrabModeAsync, Api.GrabModeAsync, win, X11.None, Api.CurrentTime);
+			(* X11.WarpPointer(display, X11.None, win, 0, 0, 0, 0, 0, 0);*)
+			X11.WarpPointer(display, X11.None, win, 0, 0, 0, 0, width DIV 2, height DIV 2);
+			X11.MapWindow(display, win);
+			res := X11.GrabKeyboard(display, win, X11.True, X11.GrabModeAsync , X11.GrabModeAsync, X11.CurrentTime);
+			res := X11.GrabPointer(display, win, X11.True, X11.ButtonPressMask, X11.GrabModeAsync, X11.GrabModeAsync, win, X11.None, X11.CurrentTime);
 
 		ELSE
  			(* create a window in windowed mode *)
 	 		(* window event masks *)
-			swa.eventMask := Api.KeyPressMask + Api.KeyReleaseMask + Api.ButtonPressMask+ Api.ButtonReleaseMask + Api.PointerMotionMask +
-	 		Api.ButtonMotionMask + Api.ExposureMask + Api.StructureNotifyMask + Api.FocusChangeMask ;
+			swa.eventMask := X11.KeyPressMask + X11.KeyReleaseMask + X11.ButtonPressMask+ X11.ButtonReleaseMask + X11.PointerMotionMask +
+	 		X11.ButtonMotionMask + X11.ExposureMask + X11.StructureNotifyMask + X11.FocusChangeMask ;
 
-	 		masks := Api.CWBorderPixel + Api.CWColormap + Api.CWEventMask ;
+	 		masks := X11.CWBorderPixel + X11.CWColormap + X11.CWEventMask ;
 
-	 		win := Api.CreateWindow(display, rootwin, left, top, width, height,
-			        0, visinfoptr.depth, Api.InputOutput,  visinfoptr.visual, masks, swa);
+	 		win := X11.CreateWindow(display, rootwin, left, top, width, height,
+			        0, visinfoptr.depth, X11.InputOutput,  visinfoptr.visual, masks, swa);
 			IF win = 0 THEN RETURN FALSE END;
 
 			(* set wm_delete_events if in windowed mode *)
-			wmDelete := Api.InternAtom(display, "WM_DELETE_WINDOW", Api.True);
-			res := Api.SetWMProtocols(display, win, ADDRESSOF(wmDelete), 1);
+			wmDelete := X11.InternAtom(display, "WM_DELETE_WINDOW", X11.True);
+			res := X11.SetWMProtocols(display, win, ADDRESSOF(wmDelete), 1);
 
-			sizehints.flags := Api.USPosition + Api.USSize;
+			sizehints.flags := X11.USPosition + X11.USSize;
 			sizehints.x := left;  sizehints.y := top;  sizehints.width := width; sizehints.height := height;
-			Api.SetStandardProperties(display, win, title, title, 0, 0, 0, sizehints);
-	 		Api.MapWindow(display, win);
+			X11.SetStandardProperties(display, win, title, title, 0, 0, 0, sizehints);
+	 		X11.MapWindow(display, win);
 		END;
 
 		IF ~fullscreen & fullwindow THEN
@@ -690,11 +687,11 @@ VAR
 	VAR keys: SET32;
 	BEGIN
 		keys := {};
-		IF Api.ShiftMask IN xbuttons THEN  INCL( keys, Inputs.LeftShift )  END;
-		IF Api.ControlMask IN xbuttons THEN  INCL( keys, Inputs.LeftCtrl )  END;
-		IF Api.Mod1Mask IN xbuttons THEN  INCL( keys, Inputs.LeftAlt )  END;
-		IF Api.Mod4Mask IN xbuttons THEN  INCL( keys, Inputs.LeftMeta )  END;
-		IF Api.Mod5Mask IN xbuttons THEN  INCL( keys, Inputs.RightAlt )  END;
+		IF X11.ShiftMask IN xbuttons THEN  INCL( keys, Inputs.LeftShift )  END;
+		IF X11.ControlMask IN xbuttons THEN  INCL( keys, Inputs.LeftCtrl )  END;
+		IF X11.Mod1Mask IN xbuttons THEN  INCL( keys, Inputs.LeftAlt )  END;
+		IF X11.Mod4Mask IN xbuttons THEN  INCL( keys, Inputs.LeftMeta )  END;
+		IF X11.Mod5Mask IN xbuttons THEN  INCL( keys, Inputs.RightAlt )  END;
 		RETURN keys
 	END KeyState;
 
@@ -702,10 +699,10 @@ VAR
 	PROCEDURE LoopForEvents*();
 	CONST bufsize=20;
 	VAR
-		event: Api.XEvent;
-		kp : Api.XKeyEvent; 	be : Api.XButtonPressedEvent; em: Api.XExposeEvent;
-		cm : Api.XClientMessageEvent; cn : Api.XConfigureEvent; me: Api.XMotionEvent;
-	       keycount, xr, yr, x, y, i: LONGINT;
+		event: X11.Event;
+		kp : X11.KeyEvent; 	be : X11.ButtonEvent; em: X11.ExposeEvent;
+		cm : X11.ClientMessageEvent; cn : X11.ConfigureEvent; me: Api.MotionEvent;
+		keycount, xr, yr, x, y, i: LONGINT;
 		keysym: X11.KeySym;
 		newxbuttons, bdiff: SET32;
 		rw, cw: X11.Window;
@@ -714,24 +711,24 @@ VAR
 		buffer: ARRAY bufsize OF CHAR;
 		events: LONGINT;
 	BEGIN
-		events := Api.Pending(display);
+		events := X11.Pending(display);
 		WHILE  events > 0 DO
-			Api.NextEvent(display, event);
+			X11.NextEvent(display, event);
 			CASE event.typ OF
 
-			Api.KeyPress:
-				kp := SYSTEM.VAL(Api.XKeyEvent, event);
-				keycount := Api.LookupString( kp, buffer, bufsize, keysym, compstatus );
+			X11.KeyPress:
+				kp := SYSTEM.VAL(X11.KeyEvent, event);
+				keycount := X11.LookupString( kp, buffer, bufsize, keysym, compstatus );
 				X11.QueryPointer( display, event.window, rw, cw, xr, yr, x, y, newxbuttons );
 				i := 0;
 				IF keycount = 0 THEN
 					bdiff := newxbuttons / xbuttons;  xbuttons := newxbuttons;
 					ch := 0X;
-					IF Api.ShiftMask IN bdiff THEN keysym := Inputs.KsShiftL
-					ELSIF Api.ControlMask IN bdiff THEN keysym := Inputs.KsControlL
-					ELSIF Api.Mod1Mask IN bdiff THEN keysym := Inputs.KsAltL
-					ELSIF Api.Mod4Mask IN bdiff THEN keysym := Inputs.KsMetaL
-					ELSIF Api.Mod5Mask IN bdiff THEN keysym := Inputs.KsAltR
+					IF X11.ShiftMask IN bdiff THEN keysym := Inputs.KsShiftL
+					ELSIF X11.ControlMask IN bdiff THEN keysym := Inputs.KsControlL
+					ELSIF X11.Mod1Mask IN bdiff THEN keysym := Inputs.KsAltL
+					ELSIF X11.Mod4Mask IN bdiff THEN keysym := Inputs.KsMetaL
+					ELSIF X11.Mod5Mask IN bdiff THEN keysym := Inputs.KsAltR
 					END;
 					flags := KeyState();
 					KeyEvent( ORD(0X), flags, LONGINT(keysym) )
@@ -748,58 +745,58 @@ VAR
 					END
 				END;
 
-			| Api.KeyRelease:
-				kp := SYSTEM.VAL(Api.XKeyEvent, event);
+			| X11.KeyRelease:
+				kp := SYSTEM.VAL(X11.KeyEvent, event);
 				X11.QueryPointer( display, event.window, rw, cw, xr, yr, x, y, newxbuttons );
 				bdiff := newxbuttons / xbuttons;  xbuttons := newxbuttons;
 				IF bdiff # {} THEN
 					ch := 0X;
-					IF Api.ShiftMask IN bdiff THEN keysym := Inputs.KsShiftL
-					ELSIF Api.ControlMask IN bdiff THEN keysym := Inputs.KsControlL
-					ELSIF Api.Mod1Mask IN bdiff THEN keysym := Inputs.KsAltL
-					ELSIF Api.Mod4Mask IN bdiff THEN keysym := Inputs.KsMetaL
-					ELSIF Api.Mod5Mask IN bdiff THEN keysym := Inputs.KsAltR
+					IF X11.ShiftMask IN bdiff THEN keysym := Inputs.KsShiftL
+					ELSIF X11.ControlMask IN bdiff THEN keysym := Inputs.KsControlL
+					ELSIF X11.Mod1Mask IN bdiff THEN keysym := Inputs.KsAltL
+					ELSIF X11.Mod4Mask IN bdiff THEN keysym := Inputs.KsMetaL
+					ELSIF X11.Mod5Mask IN bdiff THEN keysym := Inputs.KsAltR
 					END;
 					flags := KeyState( ) + {Inputs.Release};
 					KeyEvent(ORD(ch), flags, LONGINT(keysym));
 				END;
 
-			| Api.ButtonPress: be := SYSTEM.VAL(Api.XButtonPressedEvent, event); Wr("ButtonPressed");
+			| X11.ButtonPress: be := SYSTEM.VAL(X11.ButtonEvent, event); Wr("ButtonPressed");
 				be.y := height-be.y-1; (* gl window coord is lower-left *)
 				CASE be.button OF
-					| Api.Button1:   INCL( xbuttons, ML ); PointerDown( be.x, be.y, xbuttons );
-					| Api.Button2:   INCL( xbuttons, MM ); PointerDown( be.x, be.y, xbuttons );
-					| Api.Button3:   INCL( xbuttons, MR ); PointerDown( be.x, be.y, xbuttons );
-					| Api.Button4:  WheelMove(-1);
-					| Api.Button5:  WheelMove(+1);
+					| X11.Button1:   INCL( xbuttons, ML ); PointerDown( be.x, be.y, xbuttons );
+					| X11.Button2:   INCL( xbuttons, MM ); PointerDown( be.x, be.y, xbuttons );
+					| X11.Button3:   INCL( xbuttons, MR ); PointerDown( be.x, be.y, xbuttons );
+					| X11.Button4:  WheelMove(-1);
+					| X11.Button5:  WheelMove(+1);
 					ELSE  (* ignore *)
 					END;
 
-			| Api.ButtonRelease:
-				be := SYSTEM.VAL(Api.XButtonReleasedEvent, event);
+			| X11.ButtonRelease:
+				be := SYSTEM.VAL(X11.ButtonEvent, event);
 				be.y := height-be.y -1 ; (* gl window coord is lower-left *)
 				CASE be.button OF
-					| Api.Button1:   EXCL( xbuttons, ML );PointerUp( be.x, be.y, xbuttons );
-					| Api.Button2:   EXCL( xbuttons, MM );  PointerUp( be.x, be.y, xbuttons );
-					| Api.Button3:  EXCL( xbuttons, MR );  PointerUp( be.x, be.y, xbuttons );
-				(* 	| Api.Button4:  WheelMove(-1);
-					| Api.Button5:  WheelMove(+1);
+					| X11.Button1:   EXCL( xbuttons, ML );PointerUp( be.x, be.y, xbuttons );
+					| X11.Button2:   EXCL( xbuttons, MM );  PointerUp( be.x, be.y, xbuttons );
+					| X11.Button3:  EXCL( xbuttons, MR );  PointerUp( be.x, be.y, xbuttons );
+				(* 	| X11.Button4:  WheelMove(-1);
+					| X11.Button5:  WheelMove(+1);
 				*)
 				ELSE  (* ignore *)
 				END;
 
-			| Api.MotionNotify: Wr("MotionNotify");
-				me := SYSTEM.VAL(Api.XMotionEvent, event);
+			| X11.MotionNotify: Wr("MotionNotify");
+				me := SYSTEM.VAL(Api.MotionEvent, event);
 				PointerMove( me.x, height-me.y-1,  xbuttons );
 
-			| Api.Expose, Api.GraphicsExpose:
-				em := SYSTEM.VAL( Api.XExposeEvent, event );
+			| X11.Expose, X11.GraphicsExpose:
+				em := SYSTEM.VAL( X11.ExposeEvent, event );
 				IF em.count = 0 THEN (* wait until last message*)
 					Display;
 				END;
 
-			| Api.ConfigureNotify: Wr("ConfigureNotify");
-				cn := SYSTEM.VAL(Api.XConfigureEvent, event);
+			| X11.ConfigureNotify: Wr("ConfigureNotify");
+				cn := SYSTEM.VAL(X11.ConfigureEvent, event);
 				(* call Reshape only if our window-size changed *)
 				IF (cn.width # width) OR  (cn.height # height) THEN
 					left := cn.x; top := cn.y;
@@ -814,18 +811,18 @@ VAR
 					KernelLog.Ln;
 				END;
 
-			| Api.FocusIn: FocusGot();
-			| Api.FocusOut: FocusLost();
+			| X11.FocusIn: FocusGot();
+			| X11.FocusOut: FocusLost();
 
-			| Api.ClientMessage:
-				cm := SYSTEM.VAL( Api.XClientMessageEvent, event );
+			| X11.ClientMessage:
+				cm := SYSTEM.VAL( X11.ClientMessageEvent, event );
 				IF  cm.data[0]  = wmDelete THEN
 					(* shutdown *)
 					Close;
 				END;
 			ELSE
 			END;
-			events := Api.Pending( display );
+			events := X11.Pending( display );
 	  	END;
 	END LoopForEvents;
 
