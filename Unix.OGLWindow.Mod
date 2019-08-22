@@ -1,7 +1,7 @@
 MODULE OGLWindow; (** AUTHOR "fnecati"; PURPOSE "OpenGL enabled OO X11Window wrapper"; *)
 (*! fullscreen added *)
 IMPORT
-	 SYSTEM, X11, Api := X11Api, V := XF86VMode, Modules, GL:=OpenGL, GLC := OpenGLConst,
+	 SYSTEM, X11, V := XF86VMode, Modules, GL:=OpenGL, GLC := OpenGLConst,
 	 Kernel, Inputs , Objects, KernelLog;
 
 (* Note: in OpenGL, window origin is lower left
@@ -701,7 +701,7 @@ VAR
 	VAR
 		event: X11.Event;
 		kp : X11.KeyEvent; 	be : X11.ButtonEvent; em: X11.ExposeEvent;
-		cm : X11.ClientMessageEvent; cn : X11.ConfigureEvent; me: Api.MotionEvent;
+		cm : X11.ClientMessageEvent; cn : X11.ConfigureEvent; me: X11.MotionEvent;
 		keycount, xr, yr, x, y, i: LONGINT;
 		keysym: X11.KeySym;
 		newxbuttons, bdiff: SET32;
@@ -786,7 +786,7 @@ VAR
 				END;
 
 			| X11.MotionNotify: Wr("MotionNotify");
-				me := SYSTEM.VAL(Api.MotionEvent, event);
+				me := SYSTEM.VAL(X11.MotionEvent, event);
 				PointerMove( me.x, height-me.y-1,  xbuttons );
 
 			| X11.Expose, X11.GraphicsExpose:
