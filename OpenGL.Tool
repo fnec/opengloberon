@@ -28,6 +28,7 @@ Compiler.Compile
 	opengloberon/Unix.GLXinfo.Mod
 	opengloberon/GLShadersBuild.Mod
 	opengloberon/Unix.XF86VMode.Mod
+	opengloberon/Unix.X11Api2.Mod	
 	opengloberon/Unix.OGLWindow.Mod	
 	~
 	
