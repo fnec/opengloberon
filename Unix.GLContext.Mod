@@ -30,7 +30,7 @@ TYPE Context* = OBJECT
 	VAR
 		resb: X11.Bool;
 		att: ARRAY 13 OF GL.Int;
-	  	dumy1, dumy2: LONGINT;
+	  	dumy1, dumy2: SIGNED32;
 
 	BEGIN
 		NEW(glWin);
@@ -82,7 +82,7 @@ TYPE Context* = OBJECT
 		END;
 
 		glWin.root := X11.DefaultRootWindow(glWin.display);
-		glWin.pixmap := X11.CreatePixmap(glWin.display, glWin.root, w(WORD), h(WORD), glWin.visualInfoPtr.depth);
+		glWin.pixmap := X11.CreatePixmap(glWin.display, glWin.root, w(SIGNED16), h(SIGNED16), glWin.visualInfoPtr.depth);
 		IF glWin.pixmap = NIL THEN
 			Machine.Release( Machine.X11 );
 			KernelLog.String(" glWin.pixmap ERROR"); KernelLog.Ln;
@@ -137,7 +137,7 @@ TYPE Context* = OBJECT
 	END Close;
 
 	PROCEDURE CloseWindow;
-	VAR resb: X11.Bool; res: WORD;
+	VAR resb: X11.Bool; res: INTEGER;
 	BEGIN
 		Machine.Acquire( Machine.X11 );
 		GL.glXWaitGL();
@@ -193,7 +193,7 @@ TYPE Context* = OBJECT
 		END;
 
 		(* now create them *)
-		glWin.pixmap := X11.CreatePixmap(glWin.display, glWin.root, w(WORD), h(WORD), glWin.visualInfoPtr.depth);
+		glWin.pixmap := X11.CreatePixmap(glWin.display, glWin.root, w(SIGNED16), h(SIGNED16), glWin.visualInfoPtr.depth);
 		IF glWin.pixmap = NIL THEN
 			KernelLog.String(" glWin.pixmap ERROR"); KernelLog.Ln;
 			Machine.Release( Machine.X11 );
@@ -210,17 +210,17 @@ TYPE Context* = OBJECT
 		Machine.Release( Machine.X11 );
 	END CreatePixmaps;
 
-	PROCEDURE GetDisplay*(): LONGWORD;
+	PROCEDURE GetDisplay*(): LONGINTEGER;
 	BEGIN
 		RETURN glWin.display;
 	END GetDisplay;
 
-	PROCEDURE GetContext*(): LONGWORD;
+	PROCEDURE GetContext*(): LONGINTEGER;
 	BEGIN
 		RETURN glWin.glctx;
 	END GetContext;
 
-	PROCEDURE GetScreen*(): LONGINT;
+	PROCEDURE GetScreen*(): SIGNED32;
 	BEGIN
 		RETURN 0; (*context.glWin.screen*)
 	END GetScreen;

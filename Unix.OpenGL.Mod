@@ -28,22 +28,22 @@ TYPE
 	PAnsiChar* = ADDRESS;
 
 	(* GL data types *)
-	Enum* = LONGINT;	(* 4 bytes *)
+	Enum* = SIGNED32;	(* 4 bytes *)
 	Boolean* = UNSIGNED8;	(*? BOOELAN  *)
 	Bitfield* = SET32;	(* SET *)
-	Byte* = SHORTINT;	(* 1 byte signed *)
-	Short* = INTEGER;	(* 2 bytes signed *)
-	Int* = LONGINT;		(* 4 bytes signed *)
-	Sizei* = LONGINT;	(* 4 bytes signed	  *)
+	Byte* = SIGNED8;	(* 1 byte signed *)
+	Short* = SIGNED16;	(* 2 bytes signed *)
+	Int* = INTEGER;		(* 4 bytes signed *)
+	Sizei* = SIGNED32;	(* 4 bytes signed	  *)
 	Ubyte* = UNSIGNED8;	(* 1 byte unsigned *)
 	Ushort* = UNSIGNED16;	(* 2 bytes unsigned *)
-	Uint* = WORD;		(* 4 bytes unsigned *)
-	Float* = REAL;		(* single precision real *)
-	Clampf* = REAL;		(* single precision real in [0,1] *)
-	Double* = LONGREAL;	(* double precision real *)
-	Clampd* = LONGREAL;	(* double precision real in [0,1] *)
+	Uint* = UNSIGNED32;		(* 4 bytes unsigned *)
+	Float* = FLOAT32;		(* single precision real *)
+	Clampf* = FLOAT32;		(* single precision real in [0,1] *)
+	Double* = FLOAT64;	(* double precision real *)
+	Clampd* = FLOAT64;	(* double precision real in [0,1] *)
 	Void* = ADDRESS;
-	Int64* = HUGEINT;
+	Int64* = SIGNED64;
 	Uint64* = UNSIGNED64;
 
 	PBoolean* = ADDRESS;	(* POINTER TO ARRAY OF Boolean; *)
@@ -3684,7 +3684,7 @@ TYPE
 	(* GLX_SGI_swap_control *)
 	TglXSwapIntervalSGI* = PROCEDURE{C}(interval: Int): Int;
 	(* GLX_MESA_swap_control *)
-	TglXSwapIntervalMESA* = PROCEDURE{C}(interval: Uint): Int;
+	TglXSwapIntervalMESA* = PROCEDURE{C}(interval: Int): Int;
 
   VAR
 
@@ -10622,7 +10622,7 @@ END GetStringFromAddr;
 PROCEDURE GetStringFromAddr*(adr: ADDRESS): Strings.String;
 VAR
 	sadr, sadr1: ADDRESS;
-	i, cnt: LONGINT;
+	i, cnt: SIGNED32;
 	ch: CHAR;
 	s: Strings.String;
 BEGIN
@@ -10660,14 +10660,14 @@ BEGIN
 	RETURN GetStringFromAddr(sadr);
 END GetString;
 
-PROCEDURE GetStringi*(name: Enum; index: Int): Strings.String;
+PROCEDURE GetStringi*(name: Enum; index: Uint): Strings.String;
 VAR  sadr: ADDRESS;
 BEGIN
 	sadr := XglGetStringi(name, index);
 	RETURN GetStringFromAddr(sadr);
 END GetStringi;
 
-PROCEDURE GLXQueryExtensionString*(display: DisplayPtr; screen: LONGINT): Strings.String;
+PROCEDURE GLXQueryExtensionString*(display: DisplayPtr; screen: SIGNED32): Strings.String;
 VAR  sadr: ADDRESS;
 BEGIN
   	sadr := glXQueryExtensionsString(display, screen);
@@ -10691,11 +10691,11 @@ END GLXQueryServerString;
 PROCEDURE ReadCoreVersion*;
 VAR
 	Buffer: Strings.String;
-	MajorVersion, MinorVersion: LONGINT;
+	MajorVersion, MinorVersion: SIGNED32;
 
 	PROCEDURE isNumber(ch: CHAR): BOOLEAN;
 	VAR
-	      val: LONGINT;
+	      val: SIGNED32;
 	      res: BOOLEAN;
 	BEGIN
 		res := FALSE;
@@ -10704,7 +10704,7 @@ VAR
 		RETURN res;
 	END isNumber;
 
-	PROCEDURE TrimAndSplitVersionString(CONST buffer: ARRAY OF CHAR; VAR Max, Min: LONGINT);
+	PROCEDURE TrimAndSplitVersionString(CONST buffer: ARRAY OF CHAR; VAR Max, Min: SIGNED32);
 	VAR separator: SIZE;
 	BEGIN
 		separator := Strings.Pos('.', buffer);
@@ -10771,8 +10771,8 @@ END ReadCoreVersion;
 PROCEDURE Int_GetExtensionString(): Strings.String;
 VAR
 	buffer0, es : Strings.String;
-	i: LONGINT;
-	extensionCount : LONGINT;
+	i: Uint;
+	extensionCount : Uint;
 	strarray: Strings.StringArray;
 BEGIN
 	IF GL_VERSION_3_0 THEN

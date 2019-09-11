@@ -58,17 +58,17 @@ TYPE
 			UpdateImage;
 		END Resized;
 
-		PROCEDURE GetDisplay*(): LONGWORD;
+		PROCEDURE GetDisplay*(): LONGINTEGER;
 		BEGIN
 			RETURN context.GetDisplay();
 		END GetDisplay;
 
-		PROCEDURE GetContext*(): LONGWORD;
+		PROCEDURE GetContext*(): LONGINTEGER;
 		BEGIN
 			RETURN context.GetContext();
 		END GetContext;
 
-		PROCEDURE GetScreen*(): LONGINT;
+		PROCEDURE GetScreen*(): SIGNED32;
 		BEGIN
 			RETURN 0; (*context.glWin.screen *)
 		END GetScreen;

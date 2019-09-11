@@ -24,17 +24,17 @@ CONST
 TYPE
 	Hints = RECORD
 		flags: SET;
-		functions: LONGWORD;
-		decorations: LONGWORD;
-		inputMode: LONGWORD;
-		status: LONGWORD;
+		functions: LONGINTEGER;
+		decorations: LONGINTEGER;
+		inputMode: LONGINTEGER;
+		status: LONGINTEGER;
 	END;
 
 	GLXFBConfig = POINTER {UNSAFE} TO RECORD END;
 	GLXFBConfigPtr =  POINTER {UNSAFE} TO ARRAY OF GLXFBConfig;
 
 VAR
-	keySymbol: ARRAY 256 OF LONGINT;
+	keySymbol: ARRAY 256 OF SIGNED32;
 	xbuttons: SET32;
 	compstatus: X11.ComposeStatus;
 
@@ -46,7 +46,7 @@ VAR
 
 	(* window variables *)
 	display: X11.DisplayPtr;
-	screen: LONGINT;
+	screen: SIGNED32;
 	win : X11.Window ; (* window handle *)
 	glctx : GL.GLXContext;  (* GL context handle *)
 
@@ -56,29 +56,29 @@ VAR
 	title-: ARRAY 128 OF CHAR; (** title of window *)
 	active : BOOLEAN; (* for main loop control *)
 
-	left-, top-: LONGINT; (** top left origin of window *)
-	width-, height- : LONGINT; (** size of window *)
+	left-, top-: SIGNED32; (** top left origin of window *)
+	width-, height- : SIGNED32; (** size of window *)
 
 	debugframes-: BOOLEAN; (** print FPS ? *)
-	frames-:LONGINT;  (** # of frames *)
+	frames-:SIGNED32;  (** # of frames *)
 
-	idletime-: LONGINT; (** ms, for IdleDisplay *)
+	idletime-: SIGNED32; (** ms, for IdleDisplay *)
 	cmdlinerun*: BOOLEAN; (** is this window opened from command line? *)
 
 	fullscreen-, fullwindow-, decorations-: BOOLEAN;
 
 
-	glxMajor, glxMinor, wmMajor, wmMinor: LONGINT;
-(*	dispWidth, dispHeight: LONGINT; *)
+	glxMajor, glxMinor, wmMajor, wmMinor: SIGNED32;
+(*	dispWidth, dispHeight: SIGNED32; *)
 
 	gamemode-: BOOLEAN; (** if true poll Display procedure *)
 	hidecursor-: BOOLEAN; (** hide/show cursor *)
-	currentfms-: LONGINT; (* current frame update time *)
+	currentfms-: SIGNED32; (* current frame update time *)
 	wmDelete : X11.Atom;
 (*	wmstate, wmfullscreen: X11.Atom; *)
 
 	(** constructor, initlialize window object, fs: fullscreen: true/false *)
-	PROCEDURE & Init*(w, h, l, t: LONGINT; fs: BOOLEAN);
+	PROCEDURE & Init*(w, h, l, t: SIGNED32; fs: BOOLEAN);
 	BEGIN
 		width := w; height := h;
 		left := l;  top := t ;
@@ -92,12 +92,12 @@ VAR
 		IF ~ InitWindow() THEN Close; RETURN END;
 	END Init;
 
-	PROCEDURE GetWidth*(): LONGINT;
+	PROCEDURE GetWidth*(): SIGNED32;
 	BEGIN
 		RETURN width;
 	END GetWidth;
 
-	PROCEDURE GetHeight*(): LONGINT;
+	PROCEDURE GetHeight*(): SIGNED32;
 	BEGIN
 		RETURN height;
 	END GetHeight;
@@ -109,7 +109,7 @@ VAR
 	END Close;
 
 	(** abstract: reshape GL window, called while resizing the window *)
-	PROCEDURE Reshape*(w, h: LONGINT);
+	PROCEDURE Reshape*(w, h: SIGNED32);
 	END Reshape;
 
 	(** abstract: Display procedure for GL window *)
@@ -159,13 +159,13 @@ VAR
 	END SwapBuffers;
 
 	(* get current display of this window *)
-	PROCEDURE GetDisplay*(): ADDRESS;
+	PROCEDURE GetDisplay*(): LONGINTEGER;
 	BEGIN
 		RETURN display;
 	END GetDisplay;
 
 	(* get current gl context of this window *)
-	PROCEDURE GetContext*(): X11.XID;
+	PROCEDURE GetContext*(): LONGINTEGER;
 	BEGIN
 		RETURN glctx;
 	END GetContext;
@@ -180,33 +180,33 @@ VAR
 	END FocusLost;
 
 	(** called when a key pressed *)
-	PROCEDURE KeyEvent* (ucs : LONGINT; flags : SET; keysym : LONGINT);
+	PROCEDURE KeyEvent* (ucs : SIGNED32; flags : SET; keysym : SIGNED32);
 	END KeyEvent ;
 
 	(** called when mouse button pressed *)
-	PROCEDURE PointerDown* (x, y : LONGINT; keys : SET);
+	PROCEDURE PointerDown* (x, y : SIGNED32; keys : SET);
 	END PointerDown;
 
 	(** called when mouse button up  *)
-	PROCEDURE PointerUp* (x, y : LONGINT; keys : SET);
+	PROCEDURE PointerUp* (x, y : SIGNED32; keys : SET);
 	END PointerUp;
 
 	(** called when mouse pointer moved *)
-	PROCEDURE PointerMove* (x, y : LONGINT; keys : SET);
+	PROCEDURE PointerMove* (x, y : SIGNED32; keys : SET);
 	END PointerMove;
 
 	(** called when mouse wheel changed  *)
-	PROCEDURE WheelMove*(dz : LONGINT);
+	PROCEDURE WheelMove*(dz : SIGNED32);
 	END WheelMove;
 
 	(** resize the window *)
-	PROCEDURE ResizeWindow*(w, h: LONGINT);
+	PROCEDURE ResizeWindow*(w, h: SIGNED32);
 	BEGIN
 		X11.ResizeWindow(display, win, ABS(w) ,ABS(h));
 	END ResizeWindow;
 
 	(** move the window to x,y and  resize width,height *)
-	PROCEDURE MoveResizeWindow*(left0, top0, w, h: LONGINT);
+	PROCEDURE MoveResizeWindow*(left0, top0, w, h: SIGNED32);
 	BEGIN
 		X11.MoveResizeWindow(display, win, left0, top0, ABS(w) ,ABS(h));
 	END MoveResizeWindow;
@@ -214,7 +214,7 @@ VAR
 	(* close the window and its resources *)
 	 PROCEDURE CloseWindow*();
 	  VAR resb: X11.Bool;
-	  	    res: LONGINT;
+	  	    res: SIGNED32;
 	 BEGIN
 		(* do we have a rendering context *)
 		IF glctx # 0 THEN
@@ -262,7 +262,7 @@ VAR
 		pixmap: X11.Pixmap;
 		noCursor: X11.Cursor;
 		data: ARRAY 8 OF CHAR;
-		i : LONGINT;
+		i : SIGNED32;
 	BEGIN
 	(*	IF hide = hidecursor THEN RETURN END; *)
 		hidecursor := hide;
@@ -281,14 +281,14 @@ VAR
 	END HideMousePointer;
 
 	(** Set mouse position to x,y *)
-	PROCEDURE SetMousePosition*(x, y: LONGINT);
+	PROCEDURE SetMousePosition*(x, y: SIGNED32);
 	BEGIN
 		X11.WarpPointer(display, win, win,  0, 0, width, height, x, height-y-1);
 		X11.Flush(display);
 	END SetMousePosition;
 
 	(** warp pointer to x,y *)
-	PROCEDURE WarpPointer*(w, h: LONGINT; x, y: LONGINT);
+	PROCEDURE WarpPointer*(w, h: SIGNED32; x, y: SIGNED32);
 	BEGIN
 		X11.WarpPointer( display, 0, win, 0,0, w, h, x, y);
 		(*X11.Flush(display);*)
@@ -303,7 +303,7 @@ VAR
 	END SetTitle;
 
 	(** set idle time  for calling IdleDisplay proc *)
-	PROCEDURE SetIdleTime*(ms: LONGINT);
+	PROCEDURE SetIdleTime*(ms: SIGNED32);
 	BEGIN
 		IF ms < 0 THEN ms := 0 END;
 		idletime := ms;
@@ -322,8 +322,8 @@ VAR
 	END SetGameMode;
 
 	(** interval=1: vertical sync to video update rate; interval=0: disable vsynch, full speed *)
-	PROCEDURE SetSwapInterval*(interval: LONGINT);
-	VAR bres: LONGINT;
+	PROCEDURE SetSwapInterval*(interval: INTEGER);
+	VAR bres: SIGNED32;
 	BEGIN
 		IF GL.glXSwapIntervalEXT # NIL THEN
 			GL.glXSwapIntervalEXT(display, win, interval);
@@ -378,9 +378,9 @@ VAR
 	END SetFullWindow;
 
 	(** create a new opengl context with opengl version major, minor *)
-	PROCEDURE SetProfile*(major, minor: LONGINT; flags: SET): BOOLEAN;
+	PROCEDURE SetProfile*(major, minor: SIGNED32; flags: SET): BOOLEAN;
 	VAR
-		elemc, i: LONGINT;
+		elemc, i: SIGNED32;
 		fbcfg {UNTRACED}: GLXFBConfig;
 		fbcfgPtr {UNTRACED} : GLXFBConfigPtr;
 (*		str: Strings.String;*)
@@ -455,8 +455,8 @@ VAR
 	(* create an X11 window, and GL context *)
 	PROCEDURE  InitWindow*(): BOOLEAN;
 	VAR
-		masks: LONGWORD;
-		res: LONGINT;
+		masks: LONGINTEGER;
+		res: SIGNED32;
 		resb: X11.Bool;
 		attrib : POINTER TO ARRAY OF GL.Int;  (* attributes of GL window *)
 		swa : X11.XSetWindowAttributes; (* set window attributes*)
@@ -466,9 +466,9 @@ VAR
 
 		modeInfos {UNTRACED}: V.PModeInfo;
 		bestmodeInfo {UNTRACED} : V.ModeInfo;
-		numModes, bestmodeNum: LONGINT;
+		numModes, bestmodeNum: SIGNED32;
 
-		i: LONGINT;
+		i: SIGNED32;
 		isbestFound: BOOLEAN;
 		rootwin: X11.Window;
 	BEGIN
@@ -702,14 +702,14 @@ VAR
 		event: X11.Event;
 		kp : X11.KeyEvent; 	be : X11.ButtonEvent; em: X11.ExposeEvent;
 		cm : X11.ClientMessageEvent; cn : X11.ConfigureEvent; me: X11.MotionEvent;
-		keycount, xr, yr, x, y, i: LONGINT;
+		keycount, xr, yr, x, y, i: SIGNED32;
 		keysym: X11.KeySym;
 		newxbuttons, bdiff: SET32;
 		rw, cw: X11.Window;
 		ch: CHAR;
 		flags: SET32;
 		buffer: ARRAY bufsize OF CHAR;
-		events: LONGINT;
+		events: SIGNED32;
 	BEGIN
 		events := X11.Pending(display);
 		WHILE  events > 0 DO
@@ -731,7 +731,7 @@ VAR
 					ELSIF X11.Mod5Mask IN bdiff THEN keysym := Inputs.KsAltR
 					END;
 					flags := KeyState();
-					KeyEvent( ORD(0X), flags, LONGINT(keysym) )
+					KeyEvent( ORD(0X), flags, SIGNED32(keysym) )
 				ELSE
 					xbuttons := newxbuttons;
 					WHILE i < keycount DO
@@ -740,7 +740,7 @@ VAR
 						IF ch = 0F1X THEN  ch := 0A4X
 						ELSIF ch = 0F2X THEN ch := 0A5X
 						END;
-						KeyEvent( ORD(ch), flags, LONGINT(keysym));
+						KeyEvent( ORD(ch), flags, SIGNED32(keysym));
 						INC( i )
 					END
 				END;
@@ -758,7 +758,7 @@ VAR
 					ELSIF X11.Mod5Mask IN bdiff THEN keysym := Inputs.KsAltR
 					END;
 					flags := KeyState( ) + {Inputs.Release};
-					KeyEvent(ORD(ch), flags, LONGINT(keysym));
+					KeyEvent(ORD(ch), flags, SIGNED32(keysym));
 				END;
 
 			| X11.ButtonPress: be := SYSTEM.VAL(X11.ButtonEvent, event); Wr("ButtonPressed");
@@ -882,7 +882,7 @@ VAR
 *)
 
 
-PROCEDURE GetCurrentFrameMs*():LONGINT;
+PROCEDURE GetCurrentFrameMs*():SIGNED32;
 BEGIN
 	RETURN currentfms;
 END GetCurrentFrameMs;
@@ -894,9 +894,9 @@ END GameLogic;
 
 	(** windows main loop *)
 	PROCEDURE MainLoop*();
-		VAR fms,fmsum: LONGINT;
-		ft: ARRAY 10 OF LONGINT;
-		i,ii: LONGINT;
+		VAR fms,fmsum: SIGNED32;
+		ft: ARRAY 10 OF SIGNED32;
+		i,ii: SIGNED32;
 	BEGIN
 		MakeCurrent();
 		OnLoad;
@@ -952,7 +952,7 @@ BEGIN  {ACTIVE, PRIORITY (Objects.Normal) }
 END Window;
 
 PROCEDURE InitKeysym;
-VAR i: LONGINT;
+VAR i: SIGNED32;
 BEGIN
 	FOR i := 0 TO 255 DO keySymbol[i] := i END;
 	keySymbol[07FH] := Inputs.KsBackSpace;
