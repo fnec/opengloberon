@@ -21,7 +21,7 @@ System.CollectGarbage ~
 Compiler.Compile
 	opengloberon/OpenGLConst.Mod
 	opengloberon/Unix.OpenGL.Mod
-	opengloberon/Unix.GLU.Mod	
+	opengloberon/GLU.Mod	
 	opengloberon/GLShaderUtils.Mod
 	opengloberon/Unix.GLContext.Mod	
 	opengloberon/Unix.WMGLWindow.Mod
@@ -39,7 +39,7 @@ Compiler.Compile
 	opengloberon/OpenGLConst.Mod
 	opengloberon/Win32.WinApi.Mod	
 	opengloberon/Win32.OpenGL.Mod
-	opengloberon/Win32.GLU.Mod
+	opengloberon/GLU.Mod
 	opengloberon/GLShaderUtils.Mod	
 	opengloberon/Win32.WMGLWindow.Mod
 	opengloberon/Win32.GLContext.Mod	

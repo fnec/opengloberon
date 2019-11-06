@@ -1,13 +1,17 @@
-MODULE GLU; (** AUTHOR ""; PURPOSE "UnixAos GLU binding"; *)
+MODULE GLU; (** AUTHOR "fnecati"; PURPOSE "UnixAos/WinAos GLU binding"; *)
 
-IMPORT Unix, Modules, GL := OpenGL, Strings, KernelLog;
+IMPORT HostLibs, Modules, GL := OpenGL, Strings, KernelLog;
+
+CONST
+#IF UNIX THEN	
+	libname = 'libGLU.so.1';
+#ELSIF WIN THEN 
+	libname = 'glu32.dll';
+#END
 
 VAR
 	(* handle to library *)
-	lib: ADDRESS;
-
-CONST
-	libname = 'libGLU.so.1';
+	lib: HostLibs.LibHandle;
 
 TYPE
 	Enum = GL.Enum;
@@ -40,22 +44,22 @@ TYPE
 
 
 	(* QuadricCallback *)
-	TQuadricErrorProc* = PROCEDURE{C}(errorCode: Enum);
+	TQuadricErrorProc* = PROCEDURE {PlatformCC} (errorCode: Enum);
 	(* GLUTessCallback *)
-	TTessBeginProc* = PROCEDURE{C}(AType: Enum);
-	TTessEdgeFlagProc* = PROCEDURE{C}(Flag: Boolean);
-	TTessVertexProc* = PROCEDURE{C}(VertexData: Pointer);
-	TTessEndProc* = PROCEDURE{C};
-	TTessErrorProc* = PROCEDURE{C}(ErrNo: Enum);
-	TTessCombineProc* = PROCEDURE{C}(Coords: GLArray3d; VertexData: GLArray4p; Weight: GLArray4f; OutData: PPointer);
-	TTessBeginDataProc* = PROCEDURE{C}(AType: Enum; UserData: Pointer);
-	TTessEdgeFlagDataProc* = PROCEDURE{C}(Flag: Boolean; UserData: Pointer);
-	TTessVertexDataProc* = PROCEDURE{C}(VertexData: Pointer; UserData: Pointer);
-	TTessEndDataProc* = PROCEDURE{C}(UserData: Pointer);
-	TTessErrorDataProc* = PROCEDURE{C}(ErrNo: Enum; UserData: Pointer);
-	TTessCombineDataProc* = PROCEDURE{C}(Coords: GLArray3d; VertexData: GLArray4p; Weight: GLArray4f; OutData: PPointer; UserData: Pointer);
+	TTessBeginProc* = PROCEDURE {PlatformCC} (AType: Enum);
+	TTessEdgeFlagProc* = PROCEDURE {PlatformCC} (Flag: Boolean);
+	TTessVertexProc* = PROCEDURE {PlatformCC} (VertexData: Pointer);
+	TTessEndProc* = PROCEDURE {PlatformCC} ;
+	TTessErrorProc* = PROCEDURE {PlatformCC} (ErrNo: Enum);
+	TTessCombineProc* = PROCEDURE {PlatformCC} (Coords: GLArray3d; VertexData: GLArray4p; Weight: GLArray4f; OutData: PPointer);
+	TTessBeginDataProc* = PROCEDURE {PlatformCC} (AType: Enum; UserData: Pointer);
+	TTessEdgeFlagDataProc* = PROCEDURE {PlatformCC} (Flag: Boolean; UserData: Pointer);
+	TTessVertexDataProc* = PROCEDURE {PlatformCC} (VertexData: Pointer; UserData: Pointer);
+	TTessEndDataProc* = PROCEDURE {PlatformCC} (UserData: Pointer);
+	TTessErrorDataProc* = PROCEDURE {PlatformCC} (ErrNo: Enum; UserData: Pointer);
+	TTessCombineDataProc* = PROCEDURE {PlatformCC} (Coords: GLArray3d; VertexData: GLArray4p; Weight: GLArray4f; OutData: PPointer; UserData: Pointer);
 	(* NurbsCallback *)
-	TNurbsErrorProc* = PROCEDURE{C}(ErrorCode: Enum);
+	TNurbsErrorProc* = PROCEDURE {PlatformCC} (ErrorCode: Enum);
 
 CONST
 	(*  GLU constants *)
@@ -182,57 +186,57 @@ VAR
 	(*! GLU utility functions *)
 VAR
 
-	XgluErrorString - : PROCEDURE{C}(errCode: Enum): ADDRESS; (* AnsiChar; *)
-	XgluGetString - : PROCEDURE{C}(name: Enum): ADDRESS;
-	Ortho2D - : PROCEDURE{C}(left, right, bottom, top: Double);
-	Perspective - : PROCEDURE{C}(fovy, aspect, zNear, zFar: Double);
-	PickMatrix - : PROCEDURE{C}(x, y, width, height: Double; CONST viewport: GLVector4i);
-	LookAt - : PROCEDURE{C}(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz: Double);
-	Project - : PROCEDURE{C}(objx, objy, objz: Double; CONST modelMatrix: GLMatrix4d; CONST projMatrix: GLMatrix4d; CONST viewport: GLVector4i; winx, winy, winz: PDouble): Int;
-	UnProject - : PROCEDURE{C}(winx, winy, winz: Double; CONST modelMatrix: GLMatrix4d; CONST projMatrix: GLMatrix4d; CONST viewport: GLVector4i; objx, objy, objz: PDouble): Int;
-	ScaleImage - : PROCEDURE{C}(format: Enum; widthin, heightin: Int; typein: Enum; datain: Pointer; widthout, heightout: Int; typeout: Enum;  dataout: Pointer): Int;
-	Build1DMipmaps - : PROCEDURE{C}(target: Enum; components, width: Int; format, atype: Enum;  data: Pointer): Int;
-	Build2DMipmaps - : PROCEDURE{C}(target: Enum; components, width, height: Int; format, atype: Enum;  Data: Pointer): Int;
-	NewQuadric - : PROCEDURE{C}(): Quadric;
-	DeleteQuadric - : PROCEDURE{C}(state: Quadric);
-	QuadricNormals - : PROCEDURE{C}(quadObject: Quadric; normals: Enum);
-	QuadricTexture - : PROCEDURE{C}(quadObject: Quadric; textureCoords: Boolean);
-	QuadricOrientation - : PROCEDURE{C}(quadObject: Quadric; orientation: Enum);
-	QuadricDrawStyle - : PROCEDURE{C}(quadObject: Quadric; drawStyle: Enum);
-	Cylinder - : PROCEDURE{C}(quadObject: Quadric; baseRadius, topRadius, height: Double; slices, stacks: Int);
-	Disk - : PROCEDURE{C}(quadObject: Quadric; innerRadius, outerRadius: Double; slices, loops: Int);
-	PartialDisk - : PROCEDURE{C}(quadObject: Quadric; innerRadius, outerRadius: Double; slices, loops: Int; startAngle, sweepAngle: Double);
-	Sphere - : PROCEDURE{C}(quadObject: Quadric; radius: Double; slices, stacks: Int);
-	QuadricCallback - : PROCEDURE{C}(quadObject: Quadric; which: Enum; fn: TQuadricErrorProc);
-	NewTess - : PROCEDURE{C}(): Tesselator;
-	DeleteTess - : PROCEDURE{C}(tess: Tesselator);
-	TessBeginPolygon - : PROCEDURE{C}(tess: Tesselator; polygon_data: Pointer);
-	TessBeginContour - : PROCEDURE{C}(tess: Tesselator);
-	TessVertex - : PROCEDURE{C}(tess: Tesselator; CONST coords: GLArray3d; data: Pointer);
-	TessEndContour - : PROCEDURE{C}(tess: Tesselator);
-	TessEndPolygon - : PROCEDURE{C}(tess: Tesselator);
-	TessProperty - : PROCEDURE{C}(tess: Tesselator; which: Enum; value: Double);
-	TessNormal - : PROCEDURE{C}(tess: Tesselator; x, y, z: Double);
-	TessCallback - : PROCEDURE{C}(tess: Tesselator; which: Enum; fn: Pointer);
-	GetTessProperty - : PROCEDURE{C}(tess: Tesselator; which: Enum; value: PDouble);
-	NewNurbsRenderer - : PROCEDURE{C}(): Nurbs;
-	DeleteNurbsRenderer - : PROCEDURE{C}(nobj: Nurbs);
-	BeginSurface - : PROCEDURE{C}(nobj: Nurbs);
-	BeginCurve - : PROCEDURE{C}(nobj: Nurbs);
-	EndCurve - : PROCEDURE{C}(nobj: Nurbs);
-	EndSurface - : PROCEDURE{C}(nobj: Nurbs);
-	BeginTrim - : PROCEDURE{C}(nobj: Nurbs);
-	EndTrim - : PROCEDURE{C}(nobj: Nurbs);
-	PwlCurve - : PROCEDURE{C}(nobj: Nurbs; count: Int; points: PFloat; stride: Int; atype: Enum);
-	NurbsCurve - : PROCEDURE{C}(nobj: Nurbs; nknots: Int; knot: PFloat; stride: Int; ctlarray: PFloat; order: Int; atype: Enum);
-	NurbsSurface - : PROCEDURE{C}(nobj: Nurbs; sknot_count: Int; sknot: PFloat; tknot_count: Int; tknot: PFloat; s_stride, t_stride: Int; ctlarray: PFloat; sorder, torder: Int; atype: Enum);
-	LoadSamplingMatrices - : PROCEDURE{C}(nobj: Nurbs; CONST modelMatrix, projMatrix: GLMatrix4f; CONST viewport: GLVector4i);
-	NurbsProperty - : PROCEDURE{C}(nobj: Nurbs; aproperty: Enum; value: Float);
-	GetNurbsProperty - : PROCEDURE{C}(nobj: Nurbs; aproperty: Enum; value: PFloat);
-	NurbsCallback - : PROCEDURE{C}(nobj: Nurbs; which: Enum; fn: TNurbsErrorProc);
-	BeginPolygon - : PROCEDURE{C}(tess: Tesselator);
-	NextContour - : PROCEDURE{C}(tess: Tesselator; atype: Enum);
-	EndPolygon - : PROCEDURE{C}(tess: Tesselator);
+	XgluErrorString- : PROCEDURE {PlatformCC} (errCode: Enum): ADDRESS; (* AnsiChar; *)
+	XgluGetString-: PROCEDURE {PlatformCC} (name: Enum): ADDRESS;
+	Ortho2D-: PROCEDURE {PlatformCC} (left, right, bottom, top: Double);
+	Perspective-: PROCEDURE {PlatformCC} (fovy, aspect, zNear, zFar: Double);
+	PickMatrix-: PROCEDURE {PlatformCC} (x, y, width, height: Double; CONST viewport: GLVector4i);
+	LookAt-: PROCEDURE {PlatformCC} (eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz: Double);
+	Project-: PROCEDURE {PlatformCC} (objx, objy, objz: Double; CONST modelMatrix: GLMatrix4d; CONST projMatrix: GLMatrix4d; CONST viewport: GLVector4i; winx, winy, winz: PDouble): Int;
+	UnProject-: PROCEDURE {PlatformCC} (winx, winy, winz: Double; CONST modelMatrix: GLMatrix4d; CONST projMatrix: GLMatrix4d; CONST viewport: GLVector4i; objx, objy, objz: PDouble): Int;
+	ScaleImage-: PROCEDURE {PlatformCC} (format: Enum; widthin, heightin: Int; typein: Enum; datain: Pointer; widthout, heightout: Int; typeout: Enum;  dataout: Pointer): Int;
+	Build1DMipmaps-: PROCEDURE {PlatformCC} (target: Enum; components, width: Int; format, atype: Enum;  data: Pointer): Int;
+	Build2DMipmaps-: PROCEDURE {PlatformCC} (target: Enum; components, width, height: Int; format, atype: Enum;  Data: Pointer): Int;
+	NewQuadric-: PROCEDURE {PlatformCC} (): Quadric;
+	DeleteQuadric-: PROCEDURE {PlatformCC} (state: Quadric);
+	QuadricNormals-: PROCEDURE {PlatformCC} (quadObject: Quadric; normals: Enum);
+	QuadricTexture-: PROCEDURE {PlatformCC} (quadObject: Quadric; textureCoords: Boolean);
+	QuadricOrientation-: PROCEDURE {PlatformCC} (quadObject: Quadric; orientation: Enum);
+	QuadricDrawStyle-: PROCEDURE {PlatformCC} (quadObject: Quadric; drawStyle: Enum);
+	Cylinder-: PROCEDURE {PlatformCC} (quadObject: Quadric; baseRadius, topRadius, height: Double; slices, stacks: Int);
+	Disk-: PROCEDURE {PlatformCC} (quadObject: Quadric; innerRadius, outerRadius: Double; slices, loops: Int);
+	PartialDisk-: PROCEDURE {PlatformCC} (quadObject: Quadric; innerRadius, outerRadius: Double; slices, loops: Int; startAngle, sweepAngle: Double);
+	Sphere-: PROCEDURE {PlatformCC} (quadObject: Quadric; radius: Double; slices, stacks: Int);
+	QuadricCallback-: PROCEDURE {PlatformCC} (quadObject: Quadric; which: Enum; fn: TQuadricErrorProc);
+	NewTess-: PROCEDURE {PlatformCC} (): Tesselator;
+	DeleteTess-: PROCEDURE {PlatformCC} (tess: Tesselator);
+	TessBeginPolygon-: PROCEDURE {PlatformCC} (tess: Tesselator; polygon_data: Pointer);
+	TessBeginContour-: PROCEDURE {PlatformCC} (tess: Tesselator);
+	TessVertex-: PROCEDURE {PlatformCC} (tess: Tesselator; CONST coords: GLArray3d; data: Pointer);
+	TessEndContour-: PROCEDURE {PlatformCC} (tess: Tesselator);
+	TessEndPolygon-: PROCEDURE {PlatformCC} (tess: Tesselator);
+	TessProperty-: PROCEDURE {PlatformCC} (tess: Tesselator; which: Enum; value: Double);
+	TessNormal-: PROCEDURE {PlatformCC} (tess: Tesselator; x, y, z: Double);
+	TessCallback-: PROCEDURE {PlatformCC} (tess: Tesselator; which: Enum; fn: Pointer);
+	GetTessProperty-: PROCEDURE {PlatformCC} (tess: Tesselator; which: Enum; value: PDouble);
+	NewNurbsRenderer-: PROCEDURE {PlatformCC} (): Nurbs;
+	DeleteNurbsRenderer-: PROCEDURE {PlatformCC} (nobj: Nurbs);
+	BeginSurface-: PROCEDURE {PlatformCC} (nobj: Nurbs);
+	BeginCurve-: PROCEDURE {PlatformCC} (nobj: Nurbs);
+	EndCurve-: PROCEDURE {PlatformCC} (nobj: Nurbs);
+	EndSurface-: PROCEDURE {PlatformCC} (nobj: Nurbs);
+	BeginTrim-: PROCEDURE {PlatformCC} (nobj: Nurbs);
+	EndTrim-: PROCEDURE {PlatformCC} (nobj: Nurbs);
+	PwlCurve-: PROCEDURE {PlatformCC} (nobj: Nurbs; count: Int; points: PFloat; stride: Int; atype: Enum);
+	NurbsCurve-: PROCEDURE {PlatformCC} (nobj: Nurbs; nknots: Int; knot: PFloat; stride: Int; ctlarray: PFloat; order: Int; atype: Enum);
+	NurbsSurface-: PROCEDURE {PlatformCC} (nobj: Nurbs; sknot_count: Int; sknot: PFloat; tknot_count: Int; tknot: PFloat; s_stride, t_stride: Int; ctlarray: PFloat; sorder, torder: Int; atype: Enum);
+	LoadSamplingMatrices-: PROCEDURE {PlatformCC} (nobj: Nurbs; CONST modelMatrix, projMatrix: GLMatrix4f; CONST viewport: GLVector4i);
+	NurbsProperty-: PROCEDURE {PlatformCC} (nobj: Nurbs; aproperty: Enum; value: Float);
+	GetNurbsProperty-: PROCEDURE {PlatformCC} (nobj: Nurbs; aproperty: Enum; value: PFloat);
+	NurbsCallback-: PROCEDURE {PlatformCC} (nobj: Nurbs; which: Enum; fn: TNurbsErrorProc);
+	BeginPolygon-: PROCEDURE {PlatformCC} (tess: Tesselator);
+	NextContour-: PROCEDURE {PlatformCC} (tess: Tesselator; atype: Enum);
+	EndPolygon-: PROCEDURE {PlatformCC} (tess: Tesselator);
 
 (* wrapper procedures *)
 PROCEDURE ErrorString*(errCode: Enum): Strings.String;
@@ -294,17 +298,18 @@ BEGIN
 	END;
 END ReadVersion;
 
-(** Wrapper for Unix.Dlsym *)
-PROCEDURE GetProcAddress*( lib: ADDRESS;  CONST procName: ARRAY OF CHAR;  adr: ADDRESS );
+PROCEDURE GetProcAddress( lib: HostLibs.LibHandle; CONST procName: ARRAY OF CHAR; adr: ADDRESS );
+VAR res: BOOLEAN;
 BEGIN
-	Unix.Dlsym(lib, procName, adr);
+	res := HostLibs.GetProcedure(lib, procName, adr);
 END GetProcAddress;
 
 PROCEDURE InitGLU();
+VAR res: BOOLEAN;
 BEGIN
-	lib := Unix.Dlopen(libname, 2);
-	ASSERT(lib # 0, 102);
-
+	res := HostLibs.LoadLibrary(libname, lib);
+ 	ASSERT(res , 102);
+ 	
 	(* load GLU functions *)
 	GetProcAddress(lib, 'gluBeginCurve', ADDRESSOF( BeginCurve ));
 	GetProcAddress(lib, 'gluBeginPolygon', ADDRESSOF( BeginPolygon ));
@@ -358,15 +363,14 @@ BEGIN
 	GetProcAddress(lib, 'gluTessVertex', ADDRESSOF( TessVertex ));
 	GetProcAddress(lib, 'gluUnProject', ADDRESSOF( UnProject ));
 	KernelLog.String(libname); KernelLog.String(" loaded."); KernelLog.Ln;
-
 END InitGLU;
 
-PROCEDURE OnClose;
+PROCEDURE OnClose();
+VAR res: BOOLEAN; 
 BEGIN
-	IF lib # NIL THEN
-		Unix.Dlclose(lib);
-		KernelLog.String(libname); KernelLog.String(" unloaded."); KernelLog.Ln;
-	END;
+ IF lib # NIL THEN 
+ 	res := HostLibs.FreeLibrary(lib);
+ END;
 END OnClose;
 
 BEGIN
