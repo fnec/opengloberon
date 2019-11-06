@@ -11175,11 +11175,10 @@ BEGIN
 END ReadExtensions;
 
 (* utilities *)
-(* Get string from address *)
 
 (* Get string from address  *)
 PROCEDURE GetStringFromAddr*(adr0: ADDRESS): Strings.String;
-VAR s {UNTRACED}: POINTER {UNSAFE} TO ARRAY OF CHAR;
+VAR s {UNTRACED}: POINTER {UNSAFE} TO ARRAY MAX(SIZE) OF CHAR;
 	str: Strings.String;
 	size, pos: SIZE;
 BEGIN
@@ -11205,40 +11204,6 @@ BEGIN
 	RETURN str;
 
 END GetStringFromAddr;
-
-(*
-PROCEDURE GetStringFromAddr*(adr: ADDRESS): Strings.String;
-VAR
-	sadr, sadr1: ADDRESS;
-	i, cnt: SIGNED32;
-	ch: CHAR;
-	s: Strings.String;
-BEGIN
-	sadr := adr;
-
-	(* find length *)
-	cnt :=0;
-	sadr1 := sadr;
-	IF sadr1 # 0 THEN
-		SYSTEM.GET(sadr1,ch);
-		WHILE (ch # 0X) DO  INC(cnt); INC(sadr1); SYSTEM.GET(sadr1,ch); END;
-	END;
-
-	IF cnt = 0 THEN  (* empty string *)
-		NEW(s,1); s[0]:=0X; RETURN s
-	END;
-
-	NEW(s, cnt+1);
-	i:=0;
-	sadr1 := sadr;
-	SYSTEM.GET(sadr1,ch);
-	WHILE (i< cnt) & (ch # 0X) DO
-		s^[i] := ch; INC(i); INC(sadr1);
-		SYSTEM.GET(sadr1,ch);
-	END;
-	RETURN s;
-END GetStringFromAddr;
-*)
 
 (* wrapper procedures  *)
 PROCEDURE GetString*(name: Enum): Strings.String;

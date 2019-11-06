@@ -695,7 +695,7 @@ END SaveImage;
 		 cn : X11.ConfigureEvent;
 		 ee : X11.ExposeEvent;
 		 datal: X11.Data40;
-		 atomName: POINTER {UNSAFE} TO ARRAY OF CHAR;
+		 atomName: POINTER {UNSAFE} TO ARRAY 128 OF CHAR;
 	BEGIN
 	 WHILE X11.Pending(display) > 0 DO
 

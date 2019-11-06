@@ -31,7 +31,7 @@ TYPE
 	END;
 
 	GLXFBConfig = POINTER {UNSAFE} TO RECORD END;
-	GLXFBConfigPtr =  POINTER {UNSAFE} TO ARRAY OF GLXFBConfig;
+	GLXFBConfigPtr =  POINTER {UNSAFE} TO ARRAY MAX(SIZE) OF GLXFBConfig;
 
 VAR
 	keySymbol: ARRAY 256 OF SIGNED32;
@@ -159,13 +159,13 @@ VAR
 	END SwapBuffers;
 
 	(* get current display of this window *)
-	PROCEDURE GetDisplay*(): LONGINTEGER;
+	PROCEDURE GetDisplay*(): ADDRESS;
 	BEGIN
 		RETURN display;
 	END GetDisplay;
 
 	(* get current gl context of this window *)
-	PROCEDURE GetContext*(): LONGINTEGER;
+	PROCEDURE GetContext*(): ADDRESS;
 	BEGIN
 		RETURN glctx;
 	END GetContext;

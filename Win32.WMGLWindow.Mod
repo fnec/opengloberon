@@ -268,18 +268,14 @@ TYPE
 			UpdateImage;
 		END Resized;
 
-		PROCEDURE GetDisplay*(): LONGINTEGER;
-		VAR x: LONGINTEGER;
+		PROCEDURE GetDisplay*(): ADDRESS;
 		BEGIN
-			x := context.glWin.hDC;
-			RETURN x;
+			RETURN context.glWin.hDC;
 		END GetDisplay;
 
-		PROCEDURE GetContext*(): LONGINTEGER;
-		VAR x: LONGINTEGER;
+		PROCEDURE GetContext*(): ADDRESS;
 		BEGIN
-			x := context.glWin.hGLRC;
-			RETURN x
+			RETURN context.glWin.hGLRC
 		END GetContext;
 
 		PROCEDURE GetScreen*(): SIGNED32;

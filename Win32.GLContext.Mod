@@ -71,18 +71,14 @@ TYPE
 		RETURN glWin.height;
 	END GetHeight;
 
-		PROCEDURE GetDisplay*(): LONGINTEGER;
-		VAR x: LONGINTEGER;
+		PROCEDURE GetDisplay*(): ADDRESS;
 		BEGIN
-			x := glWin.hDC;
-			RETURN x;
+			RETURN glWin.hDC;
 		END GetDisplay;
 
-		PROCEDURE GetContext*(): LONGINTEGER;
-		VAR x: LONGINTEGER;
+		PROCEDURE GetContext*(): ADDRESS;
 		BEGIN
-			x := glWin.hGLRC;
-			RETURN x
+			RETURN glWin.hGLRC
 		END GetContext;
 
 	PROCEDURE GetScreen*(): SIGNED32;

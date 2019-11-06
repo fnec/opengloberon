@@ -67,8 +67,8 @@ CONST
 TYPE
 	CreateStruct = POINTER TO RECORD
 		win: Window;
-		dwExStyle: INTEGERSET;
-		dwStyle: INTEGERSET;
+		dwExStyle: SET32;
+		dwStyle: SET32;
 		x, y, w, h: SIGNED32;
 	END;
 
@@ -324,15 +324,15 @@ TYPE
 	END CreateGLRC;
 
 	(** get current display of this window *)
-	PROCEDURE GetDisplay*(): SIGNED32;
+	PROCEDURE GetDisplay*(): ADDRESS;
 	BEGIN
-		RETURN SIGNED32(hDC);
+		RETURN hDC;
 	END GetDisplay;
 
 	(** get current gl context of this window *)
-	PROCEDURE GetContext*(): SIGNED32;
+	PROCEDURE GetContext*(): ADDRESS;
 	BEGIN
-		RETURN SIGNED32(hGLRC);
+		RETURN hGLRC;
 	END GetContext;
 
 	(** Abstract Window Procedures *)
@@ -350,8 +350,7 @@ TYPE
 
 	(** Redisplay proc for GL,  sends update message to the Window to call Display proc. *)
 	PROCEDURE ReDisplay*();
-	VAR
-		res: User32.LResult;
+	VAR res: User32.LResult;
 	BEGIN
 		res := User32.SendMessage(hWnd, User32.WMPaint, 0, 0);
 	END ReDisplay;
@@ -1075,8 +1074,8 @@ VAR
 		str := "Cross.cur";  hAlternativeCursor := User32.LoadCursor( Kernel32.hInstance, str );
 *)
 
-		str := "../PELinker/Arrow.cur"; hCurrentCursor := User32.LoadCursorFromFile( str );
-		str := "../PELinker/Cross.cur";  hAlternativeCursor := User32.LoadCursorFromFile( str );
+		str := "Arrow.cur"; hCurrentCursor := User32.LoadCursorFromFile( str );
+		str := "Cross.cur";  hAlternativeCursor := User32.LoadCursorFromFile( str );
 
 		Kernel32.InitializeCriticalSection( moduleCS );
 
